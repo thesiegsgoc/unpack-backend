@@ -27,7 +27,7 @@
     "nodemon": "^2.0.21"
   },
   "scripts": {
-    "start": "npx ./index.js"
+    "start": "node ./index.js"
   },
   "description": ""
 }
