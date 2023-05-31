@@ -19,6 +19,7 @@ const fileFilter = (req, file, cb) => {
 const uploads = multer({ storage, fileFilter });
 
 // Implement the user routes:
+router.get("/");
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/upload-profile", uploads.single('profile'), uploadProfilePicture)
