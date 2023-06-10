@@ -1,12 +1,13 @@
 const Partner = require("../models/Partner");
+const Delivery = require("../models/Delivery");
 const db = require('../util/db');
 const Cryptr = require('cryptr');
 const cryptr = new Cryptr('myTotallySecretKey');
 
 module.exports = {
     registerPartner: async (req, res) => {
-        const { fullname, phonenumber, location, partnerId, rating, status, deliveries } = req.body;
-        if (!fullname || !phonenumber || !location) {
+        const { phonenumber, username, phone, password, confirm, location, expoPushToken, status} = req.body;
+        if (!phonenumber || !status) {
             return res.json({ success: false, message: 'Fill out empty fields.' });
         } else {
             try {
@@ -17,16 +18,14 @@ module.exports = {
                 }
 
                 const newPartner = new Partner({
-                    fullname,
                     phonenumber,
-                    location,
-                    partnerId,
-                    rating,
                     status,
-                    deliveries
+                    username,
+                    password,
+                    expoPushToken
                 });
                 await newPartner.save();
-                return res.json({ status: 'OK', data: newPartner });
+                return res.json({ success: true, data: newPartner });
             } catch (error) {
                 return res.json({ success: false, message: error.message });
             }
@@ -80,18 +79,41 @@ module.exports = {
         if (!encryptedData) {
             return res.json({ success: false, message: 'Cannot decrypt undefined data.' });
         }
+        const partner = await Partner.findById({ _id: partnerId });
 
+        if (!partner) {
+            return res.json({ success: false, message: 'You do not have authorization to read this data.' });
+        }
         const decryptedData = cryptr.decrypt(encryptedData);
         const pickupData = JSON.parse(JSON.parse(decryptedData));
-        
-        const deliveryItem = pickupData.filter(item => item.shippers === partnerId );
-        if (!deliveryItem) {
+
+        let deliveryIds = [];
+        pickupData?.deliveries.forEach(async (data) => {
+            const delivery = await Delivery.findById({ _id: data });
+            if (delivery.currentHandler === partnerId) {
+                deliveryIds.push(data);
+            }
+        });
+        if (deliveryIds.length === 0) {
             return res.json({ success: false, message: 'You do not have any assigned packages to pick.' });
         }
-        const deliveryIds = deliveryItem[0].deliveries;
+
         try {
+            const userPartner = await Partner.findById({ _id: pickupData.access[0] });
+            if (userPartner) {
+                await db.partners.updateOne(
+                { _id: pickupData.access[0] },
+                {
+                    $pull: {
+                        deliveries: {
+                            $each: deliveryIds
+                        }
+                    }
+                }
+            );
+            }
             await db.partners.updateOne(
-                { partnerId },
+                { _id: partnerId },
                 {
                     $push: {
                         deliveries: {
@@ -106,7 +128,12 @@ module.exports = {
                     {
                         $set: {
                             currentHandler: partnerId
+                        },
+                        $push: {
+                        previousHandlers: {
+                            $each: [ pickupData.access[0] ]
                         }
+                    }
                     }
                 );
                 if (index === deliveryIds.length - 1) {

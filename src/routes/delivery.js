@@ -2,7 +2,6 @@
 const express = require("express");
 const router = express.Router();
 const { isUserAuth } = require('../auth/isAuth');
-console.log(isUserAuth)
 /* Unpack Modules */
 const { 
     addDelivery,
@@ -12,11 +11,13 @@ const {
     encryptDeliveryDetails,
     decryptDeliveryDetails,
     getPartnerDeliveryHistory,
-    getDeliveryIds
+    getDeliveryIds,
+    pickupDelivery
 } = require("../controllers/deliveryController");
 
 // Implement the user routes:
 router.post('/deliveries/add', addDelivery);
+router.post('/delivery/pickup', pickupDelivery);
 router.post('/deliveries/decrypt', decryptDeliveryDetails);
 router.post('/deliveries/encrypt', isUserAuth, async (req, res) => {
     await encryptDeliveryDetails(req, res);
@@ -26,5 +27,6 @@ router.get('/deliveries/:trackingId/track', trackDelivery);
 router.put('/deliveries/:deliverId/update', updateDelivery);
 router.post('/deliveries/history/user', getUserDeliveryHistory);
 router.put('/deliveries/history/partner', getPartnerDeliveryHistory);
+
 
 module.exports = router;

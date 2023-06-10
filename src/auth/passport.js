@@ -11,7 +11,6 @@ module.exports = {
                 User.findOne({ phone: phone })
                     .then((user) => {
                         if (!user) {
-                            console.log("wrong phone");
                             return done();
                         }
                         //Match Password
@@ -20,7 +19,6 @@ module.exports = {
                             if (isMatch) {
                                 return done(null, user);
                             } else {
-                                console.log("Wrong password");
                                 return done();
                             }
                         });

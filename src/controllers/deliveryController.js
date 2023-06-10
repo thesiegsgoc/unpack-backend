@@ -7,14 +7,14 @@ const User = require('../models/User');
 
 module.exports = {
     addDelivery: async (req, res) => {
-        console.log(req.body)
         const {
             receiver, phonenumber, pickup, dropoff,
-            vendorId, size, type, parcel, notes, quantity
+            vendorId, size, type, parcel, notes, quantity, partnerId
          } = req.body;
-        if (false) {
+        if (!quantity || !dropoff || !pickup) {
             return res.json({ success: false, message: 'Fill out empty fields.' });
         } else {
+            
             try {
                 const numCurrentDeliveries = await db.deliveries.countDocuments();
                 const newDelivery = new Delivery({
@@ -24,11 +24,12 @@ module.exports = {
                     dropoff,
                     notes,
                     deliveryId: `D00${numCurrentDeliveries + 1}`,
-                    vendorId,
+                    sendorId: vendorId,
                     size,
                     type,
                     parcel,
-                    quantity
+                    quantity,
+                    scheduledHandler: partnerId
                 });
                 await newDelivery.save();
                 return res.json({ 
@@ -116,14 +117,12 @@ module.exports = {
 
     decryptDeliveryDetails: (req, res) => {
         const { encryptedDetails, user } = req.body;
-        //console.log(encryptedDetails, user)
         if (!encryptedDetails) {
             return res.json({ success: false, message: 'There are no any packages to be picked.' });
         }
 
         const decryptedDetails = cryptr.decrypt(encryptedDetails);
         const deliveryDetails = JSON.parse(decryptedDetails);
-        console.log(deliveryDetails)
         if (deliveryDetails && deliveryDetails.access && deliveryDetails.access.includes(user)) {
             return res.json({
                 success: true,
@@ -179,7 +178,6 @@ module.exports = {
         const { userId } = req.body;
         try {
             const { deliveries } = await User.findById({ _id: userId });
-            console.log(deliveries)
             if (!deliveries) {
                 return res.json({ success: false, message: 'Provide a valid user ID.' });
             }
@@ -309,17 +307,31 @@ module.exports = {
             if (!userID) {
             return res.json({ success: false, message: 'Provide user ID.' })
         }
+        const { status } = await User.findById({ _id: userID });
+        let deliveries;
+        if (status === 'vendor' || status === 'consumer') {
+            deliveries =  await Delivery.find(
+                { "sendorId" : userID }
+            ).exec();
+        }
+        // else if (status === 'driver' || status === 'cpp') {
+        //     deliveries =  await Delivery.find(
+        //         { scheduledHandler : { userID } }
+        //     )
+        // }
 
-        const { deliveries } = await User.findById({ _id: userID });
 
         if (!deliveries) {
             return res.json({ success: false, message: 'No deliveries from the user.' })
         }
+        let deliveryIds = [];
+        deliveries.forEach((delivery) => {
+            deliveryIds.push(delivery.deliveryId)
+        })
         const encryptedDeliveries = cryptr.encrypt(JSON.stringify({
-            deliveries,
+            deliveryIds,
             access: [userID, 'admin']
         }));
-        console.log(encryptedDeliveries);
         return res.json({
             success: true,
             body: encryptedDeliveries,
@@ -328,6 +340,111 @@ module.exports = {
        } catch (error) {
            return res.json({ success: false, message: error.message });
        }
+
+    },
+
+    pickupDelivery: async (req, res) => {
+        const { encryptedData, partnerId } = req.body;
+        if (!partnerId) {
+            return res.json({ success: false, message: 'Cannot be picked-up without a partner.' });
+        }
+
+        if (!encryptedData) {
+            return res.json({ success: false, message: 'Cannot decrypt undefined data.' });
+        }
+        const partner = await User.findById({ _id: partnerId });
+
+        if (!partner) {
+            return res.json({ success: false, message: 'You do not have authorization to read this data.' });
+        }
+        const decryptedData = cryptr.decrypt(encryptedData);
+        const deliveryData = JSON.parse(decryptedData);
+    
+        let deliveryIds = [];
+        try {
+            deliveryData?.deliveryIds.forEach(async (deliveryId, index) => {
+            const delivery = await Delivery.findOne({ deliveryId });
+            
+            if (delivery.scheduledHandler === partnerId) {
+                await db.deliveries.updateOne(
+                    { deliveryId },
+                    {
+                        $set: {
+                            currentHandler: { id: partnerId, time: `${(new Date(Date.now())).toString()}`},
+                            //scheduledHandler: undefined,
+                        },
+                        $push: {
+                        pickedUpFrom: {
+                            $each: [ {id: deliveryData.access[0], time: `${(new Date(Date.now())).toString()}`} ]
+                        }
+                    }
+                    }
+                );
+                deliveryIds.push(deliveryId); 
+                if (index === deliveryIds.length - 1) {
+                    return res.json({
+                        success: true,
+                        message: 'Package pickup process finished successfully.'
+                    });
+                }
+            }
+
+        });
+        // if (deliveryIds.length === 0) {
+        //     return res.json({ success: false, message: 'You do not have any assigned packages to pick.' });
+        // } 
+        } catch (error) {
+            return res.json({ success: false, message: error.message });
+        }
+
+        // try {
+        //     const userPartner = await Partner.findById({ _id: deliveryData.access[0] });
+        //     if (userPartner) {
+        //         await db.users.updateOne(
+        //         { _id: deliveryData.access[0] },
+        //         {
+        //             $pull: {
+        //                 deliveries: {
+        //                     $each: deliveryIds
+        //                 }
+        //             }
+        //         }
+        //     );
+        //     }
+        //     await db.partners.updateOne(
+        //         { _id: partnerId },
+        //         {
+        //             $push: {
+        //                 deliveries: {
+        //                     $each: deliveryIds
+        //                 }
+        //             }
+        //         }
+        //     );
+        //     deliveryIds.forEach(async (deliveryId, index) => {
+        //         await db.deliveries.updateOne(
+        //             { deliveryId },
+        //             {
+        //                 $set: {
+        //                     currentHandler: partnerId
+        //                 },
+        //                 $push: {
+        //                 previousHandlers: {
+        //                     $each: [ deliveryData.access[0] ]
+        //                 }
+        //             }
+        //             }
+        //         );
+        //         if (index === deliveryIds.length - 1) {
+        //             return await res.json({
+        //                 success: true,
+        //                 message: 'Package pickup process finished successfully.'
+        //             });
+        //         }
+        //     });
+        // } catch (error) {
+        //     return res.json({ success: false, message: error.message });
+        // }
 
     }
 };

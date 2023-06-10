@@ -33,7 +33,8 @@ const UserSchema = new mongoose.Schema({
         type: Array
     },
     status: {
-        type: String
+        type: String,
+        required: true
     },
     avatar: {
         type: Buffer
@@ -60,7 +61,7 @@ UserSchema.pre('save', async function(next) {
             this.password = hash;
             next();
         } catch (err) {
-            console.log(err);
+            return res.json({ success: false, message: err.message});
         }
     } else {
         next();
@@ -76,7 +77,6 @@ UserSchema.pre('save', async function(next) {
  * @returns { Boolean} true if the password is correct, otherwise false
  */
 UserSchema.methods.comparePassword = async function (password) {
-    console.log(password)
     if (!password) {
         return res.json({ success: false, error: 'Password is missing, provide one and try again.'});
     }
@@ -84,7 +84,7 @@ UserSchema.methods.comparePassword = async function (password) {
         const result = await argon2.verify(this.password, password);
         return result;
     } catch (error) {
-        console.log("incorrect password");
+        return res.json({ success: false, message: error.message});
     }
 }
 

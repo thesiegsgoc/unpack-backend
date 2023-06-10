@@ -6,15 +6,19 @@ const mongoose = require("mongoose");
 const DeliverySchema = new mongoose.Schema({
     deliveryId: {
         type: String,
-        required: true,
     },
-    vendorId: {
+    receiverId: {
         type: String,
-        required: true,
+    },
+    sendorId: {
+        type: String,
+        required: true
+    },
+    partnerId: {
+        type: String
     },
     receiver: {
-        type: String,
-        required: true,
+        type: String
     },
     quantity: {
         type: Number,
@@ -27,8 +31,7 @@ const DeliverySchema = new mongoose.Schema({
         type: String
     },
     type: {
-        type: String,
-        required: true
+        type: String
     },
     parcel: {
         type: String
@@ -45,11 +48,14 @@ const DeliverySchema = new mongoose.Schema({
         type: String,
         maxLength: 255
     },
-    previousHandlers: {
+    pickedUpFrom: {
         type: Array
     },
     currentHandler: {
-        type: String
+        type: Object
+    },
+    scheduledHandler: {
+        type: String || undefined
     },
     deliveryTime: {
         type: Date
@@ -66,6 +72,6 @@ const DeliverySchema = new mongoose.Schema({
     },
 });
 
-const Delivery = mongoose.model("Delivery", DeliverySchema);
+module.exports = mongoose.model("Delivery", DeliverySchema);
 
-module.exports = Delivery;
+

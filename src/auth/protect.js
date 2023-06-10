@@ -3,7 +3,6 @@ module.exports = {
         if (req.isAuthenticated()) {
             return next();
         }
-        console.log('Please log in to continue');
         res.redirect('/login');
     },
     allowIf: (req, res, next) => {

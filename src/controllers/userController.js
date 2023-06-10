@@ -2,18 +2,18 @@ const User = require("../models/User");
 const jwt = require('jsonwebtoken');
 const db = require('../util/db');
 const { v4: uuidv4 } = require('uuid');
-const sharp = require("sharp");
 const END_NUMBER = 1000000;
 const cloudinary = require('../util/cloudinary');
 
 module.exports = {
     registerUser: async (req, res) => {
-        const { username, phone, password, confirm, location, userId, expoPushToken } = req.body;
-        if (!username || !phone || !password || !confirm) {
-            console.log("Fill empty fields");
+        const { username, phone, password, confirm, location, expoPushToken, status } = req.body;
+        
+        if (!username || !phone || !password || !confirm || !status) {
+            return res.json({ success: false, message: "Fill empty fields" });
         }
         if (password !== confirm) {
-            console.log("Password must match");
+            return res.json({ success: false, message: "Password must match" });
         } else {
             try {
                 const user = await User.findOne({ phone: phone });
@@ -28,11 +28,12 @@ module.exports = {
                         phone,
                         location,
                         password,
+                        status,
                         deliveries: [],
                         expoPushToken
                     });
                     await newUser.save();
-                    return res.status(201).send({ status: 'OK', data: newUser });
+                    return res.status(201).send({ success: true, data: newUser });
                 }
             } catch (error) {
                 return res.json({ success: false, message: error.message });
@@ -60,7 +61,7 @@ module.exports = {
     },
 
     uploadProfilePicture: async (req, res) => {
-        const { user } = req;
+        const { userId } = req;
         try {
         const profilePhotObj = await cloudinary.uploader.upload(
             req.file.path,
@@ -77,6 +78,23 @@ module.exports = {
         }})
         } catch (error) {
             res.json({ success: false, message: error.message})
+        }
+    },
+
+     updateUserInfo: async (req, res) => {
+        const { userId } = req.body;
+        try {
+            await db.users.updateOne(
+                { _id: userId },
+                {
+                    $set: {
+                        ...req.body
+                    }
+                }
+            );
+            return res.json({ success: true, message: 'Partner info has updated successfully.' });
+        } catch (error) {
+            return res.json({ success: false, message: error.message });
         }
     }
 };
