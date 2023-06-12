@@ -30,7 +30,8 @@ module.exports = {
                         password,
                         status,
                         deliveries: [],
-                        expoPushToken
+                        expoPushToken,
+                        rating: 5.0
                     });
                     await newUser.save();
                     return res.status(201).send({ success: true, data: newUser });
@@ -54,7 +55,15 @@ module.exports = {
                 return res.json({ success: false, error: 'Incorrect password.' });
             }
             const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET_CODE, { expiresIn: '30d'});
-            return res.json({ success: true, userID: user._id, token, expoPushToken: user.expoPushToken, profilePhoto: user.profilePhoto });
+            return res.json({ 
+                success: true, 
+                userID: user._id, 
+                token, 
+                expoPushToken: user.expoPushToken, 
+                profilePhoto: user.profilePhoto,
+                username: user.fullname || user.username,
+                rating: user.rating || 5.0
+            });
         } catch (error) {
             return res.json({ success: false, error: error.message });
         }

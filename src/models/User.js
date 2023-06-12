@@ -45,6 +45,9 @@ const UserSchema = new mongoose.Schema({
     profilePhoto: {
         type: String
     },
+    rating: {
+        type: Number
+    },
     date: {
         type: Date,
         default: Date.now,
