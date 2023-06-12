@@ -147,6 +147,7 @@ module.exports = {
             }
 
             const { scheduledHandler, status, pickup, dropoff } = delivery;
+            console.log(await db.users.findOne({ _id: scheduledHandler }))
             const { fullname, username, rating } = await db.users.findOne({ _id: scheduledHandler });
             if (status.value === 'cancelled') {
                 return res.json({
