@@ -146,8 +146,8 @@ module.exports = {
                 return res.json({ success: false, message: 'Provide a valid order ID.' });
             }
 
-            const { currentHandler, status, pickup, dropoff } = delivery;
-            const { fullname, rating } = await db.partners.findOne({ partnerId: 'V005' });
+            const { scheduledHandler, status, pickup, dropoff } = delivery;
+            const { fullname, username, rating } = await db.users.findOne({ _id: scheduledHandler });
             if (status.value === 'cancelled') {
                 return res.json({
                     success: false,
@@ -166,7 +166,7 @@ module.exports = {
 
             return res.json({
                 success: true,
-                body: { pickup, dropoff, fullname, rating },
+                body: { pickup, dropoff, fullname: fullname || username, rating },
                 message: 'Tracking details retrieved successfully.'
             });
         } catch (error) {
