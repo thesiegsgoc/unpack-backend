@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 4111;
 const database = process.env.MONGODB_URL;
 const userRouter  = require("./src/routes/user");
 const orderRouter = require('./src/routes/order');
-const partnerRouter  = require("./src/routes/partner");
+const zoneRouter  = require("./src/routes/zone");
 const deliveryRouter = require('./src/routes/delivery');
 
 // MongoDB connection:
@@ -22,8 +22,8 @@ mongoose.connect(database, {
 // Implement the routes here:
 app.use(express.json());
 app.use(userRouter);
+app.use(zoneRouter);
 app.use(orderRouter);
-app.use(partnerRouter);
 app.use(deliveryRouter);
 
 // Serving port details:

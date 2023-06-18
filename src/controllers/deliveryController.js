@@ -3,13 +3,14 @@ const Cryptr = require('cryptr');
 const Delivery = require("../models/Delivery");
 const cryptr = new Cryptr('myTotallySecretKey');
 const db = require('../util/db');
+const scheduling = require('../util/scheduling');
 const User = require('../models/User');
 
 module.exports = {
     addDelivery: async (req, res) => {
         const {
             receiver, phonenumber, pickup, dropoff,
-            vendorId, size, type, parcel, notes, quantity, partnerId
+            vendorId, size, type, parcel, notes, quantity,
          } = req.body;
         if (!quantity || !dropoff || !pickup) {
             return res.json({ success: false, message: 'Fill out empty fields.' });
@@ -17,6 +18,7 @@ module.exports = {
             
             try {
                 const numCurrentDeliveries = await db.deliveries.countDocuments();
+                const handler = await scheduling.assignHandler(pickup);
                 const newDelivery = new Delivery({
                     receiver,
                     phonenumber,
@@ -29,7 +31,7 @@ module.exports = {
                     type,
                     parcel,
                     quantity,
-                    scheduledHandler: partnerId
+                    scheduledHandler: handler ? handler : '6481003e050a57815f7be8f0'
                 });
                 await newDelivery.save();
                 return res.json({ 
