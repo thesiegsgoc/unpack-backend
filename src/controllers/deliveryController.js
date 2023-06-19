@@ -31,7 +31,7 @@ module.exports = {
                     type,
                     parcel,
                     quantity,
-                    scheduledHandler: handler ? handler : '6481003e050a57815f7be8f0'
+                    scheduledHandler: handler.success && handler.body.handler? handler.body.handler : '6481003e050a57815f7be8f0'
                 });
                 await newDelivery.save();
                 return res.json({ 
