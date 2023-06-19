@@ -19,6 +19,7 @@ module.exports = {
             try {
                 const numCurrentDeliveries = await db.deliveries.countDocuments();
                 const handler = await scheduling.assignHandler(pickup);
+                console.log(handler)
                 const newDelivery = new Delivery({
                     receiver,
                     phonenumber,
