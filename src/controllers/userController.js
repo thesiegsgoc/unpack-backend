@@ -71,7 +71,8 @@ module.exports = {
 
     uploadProfilePicture: async (req, res) => {
         const { file } = req;
-        const { userID } = JSON.parse(req.body.userID);
+        //const { userID } = JSON.parse(req.body.userID);
+        console.log(JSON.parse(req.body.userID))
         try {
             if (!file) {
                 return res.json({
@@ -122,7 +123,7 @@ module.exports = {
                 }
             })
         } catch (error) {
-            res.json({ success: false, message: error.message })
+            res.json({ success: false, message: error })
         }
     },
 
