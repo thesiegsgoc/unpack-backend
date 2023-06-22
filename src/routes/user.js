@@ -24,7 +24,7 @@ const uploads = multer({ storage, fileFilter });
 // Implement the user routes:
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.post("/upload-profile", uploads.single('profile'), uploadProfilePicture);
+router.put("/upload-profile", uploads.single('profile'), uploadProfilePicture);
 router.put("/update", updateUserInfo);
 
 module.exports = router;

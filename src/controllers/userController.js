@@ -8,7 +8,7 @@ const cloudinary = require('../util/cloudinary');
 module.exports = {
     registerUser: async (req, res) => {
         const { username, phone, password, confirm, location, expoPushToken, status } = req.body;
-        
+
         if (!username || !phone || !password || !confirm || !status) {
             return res.json({ success: false, message: "Fill empty fields" });
         }
@@ -21,7 +21,7 @@ module.exports = {
                     return res.json({ success: false, message: `${username} is not available.` });
                 } else {
                     //Validation
-                    const userCount = await db.users.countDocuments({ });
+                    const userCount = await db.users.countDocuments({});
                     const newUser = new User({
                         userId: `U-${uuidv4()}-${END_NUMBER + userCount + 1}`,
                         username,
@@ -54,12 +54,12 @@ module.exports = {
             if (!isMatch) {
                 return res.json({ success: false, error: 'Incorrect password.' });
             }
-            const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET_CODE, { expiresIn: '30d'});
-            return res.json({ 
-                success: true, 
-                userID: user._id, 
-                token, 
-                expoPushToken: user.expoPushToken, 
+            const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET_CODE, { expiresIn: '30d' });
+            return res.json({
+                success: true,
+                userID: user._id,
+                token,
+                expoPushToken: user.expoPushToken,
                 profilePhoto: user.profilePhoto,
                 username: user.fullname || user.username,
                 rating: user.rating || 5.0
@@ -70,27 +70,63 @@ module.exports = {
     },
 
     uploadProfilePicture: async (req, res) => {
-        const { userId } = req;
+        const { file, userID } = req;
+        console.log(userID)
         try {
-        const profilePhotObj = await cloudinary.uploader.upload(
-            req.file.path,
-            {
-                public_id: `Rbesha01_profile`,
-                width: 500,
-                height: 500, 
-                crop: 'fill'
+            if (!file) {
+                return res.json({
+                    success: false,
+                    message: 'No profile picture provided.'
+                });
             }
-        )
-        await db.users.updateOne({ username: 'Rbesha01'}, {$set : { profilePhoto: profilePhotObj.secure_url }});
-        res.json({ success: true, message: 'Profile picture successfully updated.', body: {
-            profileUrl: profilePhotObj.secure_url
-        }})
+
+            if (!userID) {
+                return res.json({
+                    success: false,
+                    message: 'Cannot update a profile picture of an unknown user.'
+                });
+            }
+            const user = await User.findById({ _id: userID });
+
+            if (!user) {
+                return res.json({
+                    success: false,
+                    message: 'Cannot update a profile picture of an unregistered user.'
+                });
+            }
+
+            const profilePhotObj = await cloudinary.uploader.upload(
+                file.path,
+                {
+                    public_id: `${user.username}_profile`,
+                    width: 500,
+                    height: 500,
+                    crop: 'fill'
+                }
+            )
+            await User.updateOne(
+                {
+                    _id: userID
+                },
+                {
+                    $set: {
+                        profilePhoto: profilePhotObj.secure_url
+                    }
+                }
+            );
+            res.json({
+                success: true,
+                message: 'Profile picture successfully updated.',
+                body: {
+                    profileUrl: profilePhotObj.secure_url
+                }
+            })
         } catch (error) {
-            res.json({ success: false, message: error.message})
+            res.json({ success: false, message: error.message })
         }
     },
 
-     updateUserInfo: async (req, res) => {
+    updateUserInfo: async (req, res) => {
         const { userId } = req.body;
         try {
             await db.users.updateOne(
