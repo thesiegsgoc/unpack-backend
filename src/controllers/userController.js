@@ -70,8 +70,8 @@ module.exports = {
     },
 
     uploadProfilePicture: async (req, res) => {
-        const { file, userID } = req;
-        console.log(userID)
+        const { file } = req;
+        const { userID } = req.body;
         try {
             if (!file) {
                 return res.json({
