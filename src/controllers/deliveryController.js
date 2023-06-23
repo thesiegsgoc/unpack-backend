@@ -197,13 +197,15 @@ module.exports = {
             }
             let deliveryList = [];
             deliveries.forEach(async (delivery, index) => {
+                console.log(delivery)
                 const {
                     pickup,
                     dropoff,
                     deliveryTime,
                     status,
                     currentHandler
-                } = await db.deliveries.findOne({ deliveryId: delivery });
+                } = await Delivery.findOne({ deliveryId: delivery });
+                console.log({...await Delivery.findOne({ deliveryId: delivery })})
                 // const {
                 //     fullname,
                 //     location,
@@ -213,8 +215,8 @@ module.exports = {
 
                 deliveryList.push({
                     delivery: {
-                        pickup,
-                        dropoff,
+                        //pickup,
+                        //dropoff,
                         deliveryTime,
                         status,
                         deliveryId: delivery
@@ -226,13 +228,16 @@ module.exports = {
                     //     avatar
                     // }
                 });
-            });
-            
-            return await res.json({
+
+                if (index === deliveries.length - 1) {
+                    return await res.json({
                 success: true,
                 body: deliveryList,
                 message: 'User\'s delivery history retrieved successfully.'
             });
+                }
+            });
+            
         } catch (error) {
             return res.json({ success: false, message: error.message });
         }
