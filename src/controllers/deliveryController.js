@@ -215,7 +215,8 @@ module.exports = {
                     delivery: {
                         //pickup,
                         //dropoff,
-                        deliveryTime,
+                        time: deliveryTime.time,
+                        date: deliveryTime.date,
                         status,
                         deliveryId: delivery
                     },
