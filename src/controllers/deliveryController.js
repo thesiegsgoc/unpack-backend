@@ -12,7 +12,6 @@ module.exports = {
             receiver, phonenumber, pickup, dropoff,
             sendorId, size, type, parcel, notes, quantity, deliveryTime
          } = req.body;
-         console.log({...req.body})
         if (!quantity || !dropoff || !pickup) {
             return res.json({ success: false, message: 'Fill out empty fields.' });
         }
@@ -205,12 +204,12 @@ module.exports = {
                     status,
                     currentHandler
                 } = await db.deliveries.findOne({ deliveryId: delivery });
-                const {
-                    fullname,
-                    location,
-                    rating,
-                    avatar
-                } = await db.partners.findOne({ partnerId: currentHandler });
+                // const {
+                //     fullname,
+                //     location,
+                //     rating,
+                //     avatar
+                // } = await db.users.findOne({ _id: currentHandler });
 
                 deliveryList.push({
                     delivery: {
@@ -220,12 +219,12 @@ module.exports = {
                         status,
                         deliveryId: delivery
                     },
-                    partner: {
-                        fullname,
-                        location,
-                        rating,
-                        avatar
-                    }
+                    // partner: {
+                    //     fullname,
+                    //     location,
+                    //     rating,
+                    //     avatar
+                    // }
                 });
             });
             
