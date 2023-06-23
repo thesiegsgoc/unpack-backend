@@ -189,24 +189,20 @@ module.exports = {
         try {
             const { deliveries } = await User.findById({ _id: userId });
             if (!deliveries) {
-                return res.json({ success: false, message: 'Provide a valid user ID.' });
+                return res.json({
+                    success: false,
+                    message: 'Provide a valid user ID.'
+                });
             }
             let deliveryList = [];
             deliveries.forEach(async (delivery, index) => {
                 const {
-                    orderId,
                     pickup,
                     dropoff,
                     deliveryTime,
                     status,
                     currentHandler
                 } = await db.deliveries.findOne({ deliveryId: delivery });
-                const {
-                    name,
-                    parcel,
-                    quantity,
-                    size
-                } = await db.orders.findOne({ orderId });
                 const {
                     fullname,
                     location,
@@ -220,12 +216,7 @@ module.exports = {
                         dropoff,
                         deliveryTime,
                         status,
-                    },
-                    order: {
-                        name,
-                        parcel,
-                        quantity,
-                        size
+                        deliveryId: delivery
                     },
                     partner: {
                         fullname,
