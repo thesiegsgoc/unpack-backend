@@ -12,6 +12,7 @@ module.exports = {
             receiver, phonenumber, pickup, dropoff,
             sendorId, size, type, parcel, notes, quantity, deliveryTime
          } = req.body;
+         console.log({...req.body})
         if (!quantity || !dropoff || !pickup) {
             return res.json({ success: false, message: 'Fill out empty fields.' });
         }
