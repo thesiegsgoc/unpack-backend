@@ -230,7 +230,7 @@ module.exports = {
                 if (index === deliveries.length - 1) {
                     return await res.json({
                 success: true,
-                body: JSON.stringify(deliveryList),
+                body: deliveryList,
                 message: 'User\'s delivery history retrieved successfully.'
             });
                 }
