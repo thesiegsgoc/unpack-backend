@@ -10,12 +10,11 @@ module.exports = {
     addDelivery: async (req, res) => {
         const {
             receiver, phonenumber, pickup, dropoff,
-            vendorId, size, type, parcel, notes, quantity,
+            sendorId, size, type, parcel, notes, quantity,
          } = req.body;
         if (!quantity || !dropoff || !pickup) {
             return res.json({ success: false, message: 'Fill out empty fields.' });
-        } else {
-            
+        }
             try {
                 const numCurrentDeliveries = await db.deliveries.countDocuments();
                 const handler = await scheduling.assignHandler(pickup);
@@ -26,7 +25,7 @@ module.exports = {
                     dropoff,
                     notes,
                     deliveryId: `D00${numCurrentDeliveries + 1}`,
-                    sendorId: vendorId,
+                    sendorId,
                     size,
                     type,
                     parcel,
@@ -34,6 +33,16 @@ module.exports = {
                     scheduledHandler: handler.success && handler.body.handler? handler.body.handler : '6481003e050a57815f7be8f0'
                 });
                 await newDelivery.save();
+                await User.updateOne(
+                    { _id: sendorId },
+                    {
+                       $push: {
+                        deliveries: {
+                            $each: [ `D00${numCurrentDeliveries + 1}` ]
+                        }
+                    }
+                    }
+                );
                 return res.json({ 
                     success: true,
                     message: 'Delivery ordered successfully',
@@ -42,7 +51,6 @@ module.exports = {
             } catch (error) {
                 return res.json({ success: false, message: error.message });
             }
-        }
     },
 
     updateDelivery: async (req, res) => {
