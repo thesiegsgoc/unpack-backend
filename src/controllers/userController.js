@@ -31,7 +31,8 @@ module.exports = {
                         status,
                         deliveries: [],
                         expoPushToken,
-                        rating: 5.0
+                        rating: 5.0,
+                        profilePhoto: 'https://via.placeholder.com/150'
                     });
                     await newUser.save();
                     return res.status(201).send({ success: true, data: newUser });
@@ -72,7 +73,7 @@ module.exports = {
     uploadProfilePicture: async (req, res) => {
         const { file } = req;
         const userID = JSON.parse(req.body.userID).userID;
-        
+
         try {
             if (!file) {
                 return res.json({
@@ -123,7 +124,7 @@ module.exports = {
                 }
             })
         } catch (error) {
-            res.json({ success: false, message: error })
+            res.json({ success: false, message: error.message })
         }
     },
 
