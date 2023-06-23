@@ -10,7 +10,7 @@ module.exports = {
     addDelivery: async (req, res) => {
         const {
             receiver, phonenumber, pickup, dropoff,
-            sendorId, size, type, parcel, notes, quantity,
+            sendorId, size, type, parcel, notes, quantity, deliveryTime
          } = req.body;
         if (!quantity || !dropoff || !pickup) {
             return res.json({ success: false, message: 'Fill out empty fields.' });
@@ -30,7 +30,8 @@ module.exports = {
                     type,
                     parcel,
                     quantity,
-                    scheduledHandler: handler.success && handler.body.handler? handler.body.handler : '6481003e050a57815f7be8f0'
+                    scheduledHandler: handler.success && handler.body.handler? handler.body.handler : '6481003e050a57815f7be8f0',
+                    deliveryTime
                 });
                 await newDelivery.save();
                 await User.updateOne(
