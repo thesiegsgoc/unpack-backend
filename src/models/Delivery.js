@@ -63,7 +63,7 @@ const DeliverySchema = new mongoose.Schema({
     status: {
         type: Object,
         default: {
-            value: 'Processing'
+            value: 'In Process'
         }
     },
     date: {
