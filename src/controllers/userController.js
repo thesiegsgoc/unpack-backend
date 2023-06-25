@@ -136,13 +136,15 @@ module.exports = {
     },
 
     updateUserInfo: async (req, res) => {
-        const { userId } = req.body;
+        const { userId, fullname, phone, email } = req.body;
         try {
-            await db.users.updateOne(
+            await User.updateOne(
                 { _id: userId },
                 {
                     $set: {
-                        ...req.body
+                        fullname: fullname,
+                        phone: phone,
+                        email: email
                     }
                 }
             );
