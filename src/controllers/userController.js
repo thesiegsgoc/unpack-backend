@@ -16,12 +16,18 @@ module.exports = {
             return res.json({ success: false, message: "Password must match" });
         } else {
             try {
-                const user = await User.findOne({ phone: phone });
+                const phone = await User.findOne({ phone: phone });
+                if (phone) {
+                    return res.json({ success: false, message: `Cannot register multiple user with the same phone number ${username} is not available.` });
+                }
+                
+
+                const user = await User.findOne({ username: username });
                 if (user) {
-                    return res.json({ success: false, message: `${username} is not available.` });
-                } else {
-                    //Validation
-                    const userCount = await db.users.countDocuments({});
+                    return res.json({ success: false, message: `${username} is not available. Choose another username.` });
+                }
+
+                const userCount = await db.users.countDocuments({});
                     const newUser = new User({
                         userId: `U-${uuidv4()}-${END_NUMBER + userCount + 1}`,
                         username,
@@ -36,7 +42,6 @@ module.exports = {
                     });
                     await newUser.save();
                     return res.status(201).send({ success: true, data: newUser });
-                }
             } catch (error) {
                 return res.json({ success: false, message: error.message });
             }
@@ -63,7 +68,9 @@ module.exports = {
                 expoPushToken: user.expoPushToken,
                 profilePhoto: user.profilePhoto,
                 username: user.fullname || user.username,
-                rating: user.rating || 5.0
+                rating: user.rating || 5.0,
+                phone: user.phone,
+                email: user.email
             });
         } catch (error) {
             return res.json({ success: false, error: error.message });
