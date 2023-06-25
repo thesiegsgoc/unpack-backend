@@ -16,8 +16,8 @@ module.exports = {
             return res.json({ success: false, message: "Password must match" });
         } else {
             try {
-                const phone = await User.findOne({ phone: phone });
-                if (phone) {
+                const userPhone = await User.findOne({ phone: phone });
+                if (userPhone) {
                     return res.json({ success: false, message: `Cannot register multiple user with the same phone number ${username} is not available.` });
                 }
                 
