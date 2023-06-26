@@ -11,47 +11,47 @@ module.exports = {
         const {
             receiver, phonenumber, pickup, dropoff,
             sendorId, size, type, parcel, notes, quantity, deliveryTime
-         } = req.body;
+        } = req.body;
         if (!quantity || !dropoff || !pickup) {
             return res.json({ success: false, message: 'Fill out empty fields.' });
         }
-            try {
-                const numCurrentDeliveries = await db.deliveries.countDocuments();
-                const handler = await scheduling.assignHandler(pickup);
-                const newDelivery = new Delivery({
-                    receiver,
-                    phonenumber,
-                    pickup,
-                    dropoff,
-                    notes,
-                    deliveryId: `D00${numCurrentDeliveries + 1}`,
-                    sendorId,
-                    size,
-                    type,
-                    parcel,
-                    quantity,
-                    scheduledHandler: handler.success && handler.body.handler? handler.body.handler : '6481003e050a57815f7be8f0',
-                    deliveryTime
-                });
-                await newDelivery.save();
-                await User.updateOne(
-                    { _id: sendorId },
-                    {
-                       $push: {
+        try {
+            const numCurrentDeliveries = await db.deliveries.countDocuments();
+            const handler = await scheduling.assignHandler(pickup);
+            const newDelivery = new Delivery({
+                receiver,
+                phonenumber,
+                pickup,
+                dropoff,
+                notes,
+                deliveryId: `D00${numCurrentDeliveries + 1}`,
+                sendorId,
+                size,
+                type,
+                parcel,
+                quantity,
+                scheduledHandler: handler.success && handler.body.handler ? handler.body.handler : '6481003e050a57815f7be8f0',
+                deliveryTime
+            });
+            await newDelivery.save();
+            await User.updateOne(
+                { _id: sendorId },
+                {
+                    $push: {
                         deliveries: {
-                            $each: [ `D00${numCurrentDeliveries + 1}` ]
+                            $each: [`D00${numCurrentDeliveries + 1}`]
                         }
                     }
-                    }
-                );
-                return res.json({ 
-                    success: true,
-                    message: 'Delivery ordered successfully',
-                    trackingNumber: `D00${numCurrentDeliveries + 1}`
-                });
-            } catch (error) {
-                return res.json({ success: false, message: error.message });
-            }
+                }
+            );
+            return res.json({
+                success: true,
+                message: 'Delivery ordered successfully',
+                trackingNumber: `D00${numCurrentDeliveries + 1}`
+            });
+        } catch (error) {
+            return res.json({ success: false, message: error.message });
+        }
     },
 
     updateDelivery: async (req, res) => {
@@ -231,13 +231,13 @@ module.exports = {
 
                 if (index === deliveries.length - 1) {
                     return await res.json({
-                success: true,
-                body: deliveryList,
-                message: 'User\'s delivery history retrieved successfully.'
-            });
+                        success: true,
+                        body: deliveryList,
+                        message: 'User\'s delivery history retrieved successfully.'
+                    });
                 }
             });
-            
+
         } catch (error) {
             return res.json({ success: false, message: error.message });
         }
@@ -310,43 +310,43 @@ module.exports = {
 
     getDeliveryIds: async (req, res) => {
         const { userID } = req.body;
-       try {
+        try {
             if (!userID) {
-            return res.json({ success: false, message: 'Provide user ID.' })
-        }
-        const { status } = await User.findById({ _id: userID });
-        let deliveries;
-        if (status === 'vendor' || status === 'consumer') {
-            deliveries =  await Delivery.find(
-                { "sendorId" : userID }
-            ).exec();
-        }
-        // else if (status === 'driver' || status === 'cpp') {
-        //     deliveries =  await Delivery.find(
-        //         { scheduledHandler : { userID } }
-        //     )
-        // }
+                return res.json({ success: false, message: 'Provide user ID.' })
+            }
+            const { status } = await User.findById({ _id: userID });
+            let deliveries;
+            if (status === 'vendor' || status === 'consumer') {
+                deliveries = await Delivery.find(
+                    { "sendorId": userID }
+                ).exec();
+            }
+            // else if (status === 'driver' || status === 'cpp') {
+            //     deliveries =  await Delivery.find(
+            //         { scheduledHandler : { userID } }
+            //     )
+            // }
 
 
-        if (!deliveries) {
-            return res.json({ success: false, message: 'No deliveries from the user.' })
+            if (!deliveries) {
+                return res.json({ success: false, message: 'No deliveries from the user.' })
+            }
+            let deliveryIds = [];
+            deliveries.forEach((delivery) => {
+                deliveryIds.push(delivery.deliveryId)
+            })
+            const encryptedDeliveries = cryptr.encrypt(JSON.stringify({
+                deliveryIds,
+                access: [userID, 'admin']
+            }));
+            return res.json({
+                success: true,
+                body: encryptedDeliveries,
+                message: 'Delivery details has been encrypted successfully.'
+            });
+        } catch (error) {
+            return res.json({ success: false, message: error.message });
         }
-        let deliveryIds = [];
-        deliveries.forEach((delivery) => {
-            deliveryIds.push(delivery.deliveryId)
-        })
-        const encryptedDeliveries = cryptr.encrypt(JSON.stringify({
-            deliveryIds,
-            access: [userID, 'admin']
-        }));
-        return res.json({
-            success: true,
-            body: encryptedDeliveries,
-            message: 'Delivery details has been encrypted successfully.'
-        });
-       } catch (error) {
-           return res.json({ success: false, message: error.message });
-       }
 
     },
 
@@ -366,40 +366,40 @@ module.exports = {
         }
         const decryptedData = cryptr.decrypt(encryptedData);
         const deliveryData = JSON.parse(decryptedData);
-    
+
         let deliveryIds = [];
         try {
             deliveryData?.deliveryIds.forEach(async (deliveryId, index) => {
-            const delivery = await Delivery.findOne({ deliveryId });
-            
-            if (delivery.scheduledHandler === partnerId) {
-                await db.deliveries.updateOne(
-                    { deliveryId },
-                    {
-                        $set: {
-                            currentHandler: { id: partnerId, time: `${(new Date(Date.now())).toString()}`},
-                            //scheduledHandler: undefined,
-                        },
-                        $push: {
-                        pickedUpFrom: {
-                            $each: [ {id: deliveryData.access[0], time: `${(new Date(Date.now())).toString()}`} ]
-                        }
-                    }
-                    }
-                );
-                deliveryIds.push(deliveryId); 
-                if (index === deliveryIds.length - 1) {
-                    return res.json({
-                        success: true,
-                        message: 'Package pickup process finished successfully.'
-                    });
-                }
-            }
+                const delivery = await Delivery.findOne({ deliveryId });
 
-        });
-        // if (deliveryIds.length === 0) {
-        //     return res.json({ success: false, message: 'You do not have any assigned packages to pick.' });
-        // } 
+                if (delivery.scheduledHandler === partnerId) {
+                    await db.deliveries.updateOne(
+                        { deliveryId },
+                        {
+                            $set: {
+                                currentHandler: { id: partnerId, time: `${(new Date(Date.now())).toString()}` },
+                                //scheduledHandler: undefined,
+                            },
+                            $push: {
+                                pickedUpFrom: {
+                                    $each: [{ id: deliveryData.access[0], time: `${(new Date(Date.now())).toString()}` }]
+                                }
+                            }
+                        }
+                    );
+                    deliveryIds.push(deliveryId);
+                    if (index === deliveryIds.length - 1) {
+                        return res.json({
+                            success: true,
+                            message: 'Package pickup process finished successfully.'
+                        });
+                    }
+                }
+
+            });
+            // if (deliveryIds.length === 0) {
+            //     return res.json({ success: false, message: 'You do not have any assigned packages to pick.' });
+            // } 
         } catch (error) {
             return res.json({ success: false, message: error.message });
         }
