@@ -201,6 +201,7 @@ module.exports = {
                     pickup,
                     dropoff,
                     deliveryTime,
+                    deliveryDate,
                     status,
                     currentHandler
                 } = await Delivery.findOne({ deliveryId: delivery });
@@ -215,8 +216,8 @@ module.exports = {
                     delivery: {
                         //pickup,
                         //dropoff,
-                        time: deliveryTime.time,
-                        date: deliveryTime.date,
+                        time: deliveryTime,
+                        date: deliveryDate,
                         status,
                         deliveryId: delivery
                     },

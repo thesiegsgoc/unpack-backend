@@ -58,7 +58,10 @@ const DeliverySchema = new mongoose.Schema({
         type: String || undefined
     },
     deliveryTime: {
-        type: Object
+        type: String
+    },
+    deliveryDate: {
+        type: String
     },
     status: {
         type: Object,
