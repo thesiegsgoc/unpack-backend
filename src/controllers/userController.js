@@ -173,7 +173,6 @@ module.exports = {
             }
 
             if (user.securityCode !== securityCode || user.securityAnswer !== securityAnswer) {
-                console.log(user, user.securityCode, securityCode, user.securityAnswer, securityAnswer )
                 return res.json({ success: false, message: "Incorrect security code and answer given." });
             }
 
