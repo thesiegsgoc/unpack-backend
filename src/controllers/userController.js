@@ -4,6 +4,7 @@ const db = require('../util/db');
 const { v4: uuidv4 } = require('uuid');
 const END_NUMBER = 1000000;
 const cloudinary = require('../util/cloudinary');
+const argon2 = require('argon2');
 
 module.exports = {
     registerUser: async (req, res) => {
@@ -149,6 +150,47 @@ module.exports = {
                 }
             );
             return res.json({ success: true, message: 'Partner info has updated successfully.' });
+        } catch (error) {
+            return res.json({ success: false, message: error.message });
+        }
+    },
+
+    resetUserPassword: async (req, res) => {
+        const { phone, password, confirm, securityCode, securityAnswer } = req.body;
+        
+        if (!securityCode || !phone || !password || !confirm || !securityAnswer ) {
+            return res.json({ success: false, message: "Fill empty fields" });
+        }
+
+        if (password !== confirm) {
+            return res.json({ success: false, message: "Passwords must match" });
+        }
+
+        try {
+            const user = await User.findOne({ phone: phone });
+            if (!user) {
+                 return res.json({ success: false, message: "No user with the entered phone number found." });
+            }
+
+            if (user.securityCode !== securityCode || user.securityAnswer !== securityAnswer) {
+                console.log(user, user.securityCode, securityCode, user.securityAnswer, securityAnswer )
+                return res.json({ success: false, message: "Incorrect security code and answer given." });
+            }
+
+            const hashedPassword = await argon2.hash(password);
+            await User.updateOne({ phone: phone }, {
+                $set: {
+                    password: hashedPassword
+                }
+            });
+            return res.json({ 
+                success: true,
+                body: {
+                    username: user.username
+                },
+                message: "Password reset successfully."
+            });
+
         } catch (error) {
             return res.json({ success: false, message: error.message });
         }

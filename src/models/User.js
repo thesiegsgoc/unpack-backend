@@ -48,6 +48,12 @@ const UserSchema = new mongoose.Schema({
     rating: {
         type: Number
     },
+    securityCode: {
+        type: String
+    },
+    securityAnswer: {
+        type: String
+    },
     date: {
         type: Date,
         default: Date.now,
