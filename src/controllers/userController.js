@@ -8,7 +8,7 @@ const argon2 = require('argon2');
 
 module.exports = {
     registerUser: async (req, res) => {
-        const { username, phone, password, confirm, location, expoPushToken, status } = req.body;
+        const { username, phone, password, confirm, location, expoPushToken, status, securityCode, securityAnswer } = req.body;
 
         if (!username || !phone || !password || !confirm || !status) {
             return res.json({ success: false, message: "Fill empty fields" });
@@ -39,7 +39,9 @@ module.exports = {
                         deliveries: [],
                         expoPushToken,
                         rating: 5.0,
-                        profilePhoto: 'https://via.placeholder.com/150'
+                        profilePhoto: 'https://via.placeholder.com/150',
+                        securityAnswer,
+                        securityCode
                     });
                     await newUser.save();
                     return res.status(201).send({ success: true, data: newUser });
