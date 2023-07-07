@@ -204,7 +204,9 @@ module.exports = {
                     deliveryTime,
                     deliveryDate,
                     status,
-                    currentHandler
+                    currentHandler,
+                    type,
+                    receiver
                 } = await Delivery.findOne({ deliveryId: delivery });
                 // const {
                 //     fullname,
@@ -215,12 +217,14 @@ module.exports = {
 
                 deliveryList.push({
                     delivery: {
-                        //pickup,
-                        //dropoff,
+                        pickup,
+                        dropoff,
                         time: deliveryTime,
                         date: deliveryDate,
                         status,
-                        deliveryId: delivery
+                        deliveryId: delivery,
+                        type,
+                        receiver
                     },
                     // partner: {
                     //     fullname,
