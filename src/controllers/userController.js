@@ -73,7 +73,8 @@ module.exports = {
                 username: user.fullname || user.username,
                 rating: user.rating || 5.0,
                 phone: user.phone,
-                email: user.email
+                email: user.email,
+                status: user.status
             });
         } catch (error) {
             return res.json({ success: false, error: error.message });
