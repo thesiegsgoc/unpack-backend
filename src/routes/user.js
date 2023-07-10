@@ -9,7 +9,8 @@ const {
     loginUser,
     updateUserInfo,
     resetUserPassword,
-    uploadProfilePicture
+    uploadProfilePicture,
+    updateUserLocation
 } = require("../controllers/userController");
 
 const storage = multer.diskStorage({});
@@ -27,6 +28,7 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.put("/upload-profile", uploads.single('profile'), uploadProfilePicture);
 router.put("/update", updateUserInfo);
+router.put("/update-location", updateUserLocation);
 router.put("/reset-password", resetUserPassword)
 
 module.exports = router;

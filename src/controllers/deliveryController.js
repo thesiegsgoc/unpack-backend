@@ -159,7 +159,7 @@ module.exports = {
             }
 
             const { scheduledHandler, status, pickup, dropoff } = delivery;
-            const { fullname, username, rating, profilePhoto } = await User.findById(scheduledHandler);
+            const { fullname, username, rating, profilePhoto, location } = await User.findById(scheduledHandler);
             if (status.value === 'cancelled') {
                 return res.json({
                     success: false,
@@ -178,7 +178,7 @@ module.exports = {
 
             return res.json({
                 success: true,
-                body: { pickup, dropoff, fullname: fullname || username, rating, profilePhoto },
+                body: { pickup, dropoff, fullname: fullname || username, rating, profilePhoto, handlerLocation: location },
                 message: 'Tracking details retrieved successfully.'
             });
         } catch (error) {

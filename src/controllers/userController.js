@@ -158,6 +158,23 @@ module.exports = {
         }
     },
 
+    updateUserLocation: async (req, res) => {
+        const { userId, location } = req.body;
+        try {
+            await User.updateOne(
+                { _id: userId },
+                {
+                    $set: {
+                        location: location
+                    }
+                }
+            );
+            return res.json({ success: true, message: 'Partner info has updated successfully.' });
+        } catch (error) {
+            return res.json({ success: false, message: error.message });
+        }
+    },
+
     resetUserPassword: async (req, res) => {
         const { phone, password, confirm, securityCode, securityAnswer } = req.body;
         
