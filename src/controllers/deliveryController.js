@@ -209,12 +209,7 @@ module.exports = {
                     receiver,
                     sendorId
                 } = await Delivery.findOne({ deliveryId: delivery });
-                
-                
-                    const {
-                    fullname,
-                    expoPushToken
-                } = await db.users.findOne({ _id: sendorId });
+                    const user = await User.findById({ _id: sendorId });
 
                 deliveryList.push({
                     delivery: {
@@ -226,8 +221,8 @@ module.exports = {
                         deliveryId: delivery,
                         type,
                         receiver,
-                        sendor: fullname,
-                        expoPushToken
+                        sendor: user.fullname,
+                        expoPushToken: user.expoPushToken
                     },
                     // partner: {
                     //     fullname,
