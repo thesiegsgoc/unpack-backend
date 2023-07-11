@@ -206,14 +206,15 @@ module.exports = {
                     status,
                     currentHandler,
                     type,
-                    receiver
+                    receiver,
+                    sendorId
                 } = await Delivery.findOne({ deliveryId: delivery });
-                // const {
-                //     fullname,
-                //     location,
-                //     rating,
-                //     avatar
-                // } = await db.users.findOne({ _id: currentHandler });
+                
+                
+                    const {
+                    fullname,
+                    expoPushToken
+                } = await db.users.findOne({ _id: sendorId });
 
                 deliveryList.push({
                     delivery: {
@@ -224,7 +225,9 @@ module.exports = {
                         status,
                         deliveryId: delivery,
                         type,
-                        receiver
+                        receiver,
+                        sendor: fullname,
+                        expoPushToken
                     },
                     // partner: {
                     //     fullname,
