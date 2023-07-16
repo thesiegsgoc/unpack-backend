@@ -3,6 +3,15 @@ const db = require('../util/db');
 const { distanceTo } = require('geolocation-utils');
 const util = require('../util/scheduling');
 
+const ZONE_TO_ZONE_COST = {
+    'Temeke-Ilala': 2000,
+    'Temeke-Bunju': 5000,
+    'Bunju-Ilala': 8000,
+    'Ilala-Temeke': 2000,
+    'Bunju-Temeke': 5000,
+    'Ilala-Bunju': 8000
+}
+
 module.exports = {
     registerZone: async (req, res) => {
         const { zoneName, rate, centralLocation } = req.body;
@@ -264,7 +273,7 @@ module.exports = {
         if (!location) {
             return res.json({
                 success: false,
-                message: `Can't pick-up nor drop a package at an unkonwon location.`
+                message: `Can't pick-up nor drop a package at an unknown location.`
             })
         }
 
@@ -338,6 +347,33 @@ module.exports = {
             success: true,
             body: {
                 handlerId: handlerId ? handlerId : undefined
+            },
+            message: `Handler successfully scheduled to pick up a package.`
+        });
+    },
+
+    deliveryCost: async (req, res) => {
+        const { pickUpLocation, dropOffLocation, deliveryType } = req.body;
+
+        if (!pickUpLocation || !dropOffLocation || !deliveryType) {
+            return res.json({
+                success: false,
+                message: `Can't pick-up nor drop a package at an unknown location.`
+            })
+        }
+
+        const zones = await Zone.find({});
+        
+        const pickUpCost = util.getDeliveryCostDetails(zones, pickUpLocation);
+        const dropOffCost = util.getDeliveryCostDetails(zones, dropOffLocation);
+        const totalCost = pickUpCost.cost + dropOffCost.cost + 3000; //+ ZONE_TO_ZONE_COST[`${pickUpCost.zoneName}-${dropOffCost.zoneName}`];
+        return res.json({
+            success: true,
+            body: {
+                pickUpCost,
+                dropOffCost,
+                totalCost
+
             },
             message: `Handler successfully scheduled to pick up a package.`
         });

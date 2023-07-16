@@ -10,7 +10,8 @@ const {
     updateZoneInfo,
     deleteZoneHandler,
     updateZoneHandlerAvailability,
-    assignHandler
+    assignHandler,
+    deliveryCost
 } = require('../controllers/zoneController');
 
 // Implement the user routes:
@@ -21,4 +22,5 @@ router.put('/zone/update-handler-availability', updateZoneHandlerAvailability);
 router.put('/zone/update-zone-info', updateZoneInfo);
 router.delete('/zone/delete', deleteZone);
 router.put('/zone/assign-package-handler', assignHandler);
+router.post('/zone/deliveryCost', deliveryCost);
 module.exports = router;

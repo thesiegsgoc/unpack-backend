@@ -5,6 +5,7 @@ const User = require("../models/User");
 const Delivery = require("../models/Delivery");
 const Zone = require('../models/Zone');
 const db = require('./db');
+const { distanceTo } = require('geolocation-utils');
 
 /* 
     For this issue--scheduling of handlers--the order of operation should be:
@@ -22,7 +23,7 @@ module.exports = {
         const latitude = location.latitude || location.lat;
         const longitude = location.longitude || location.lng;
         zones.forEach(zone => {
-            if (isGeoPointInPolygon([ longitude, latitude  ], zone.coordinates)) {
+            if (isGeoPointInPolygon([longitude, latitude], zone.coordinates)) {
                 return zone.name;
             }
         });
@@ -50,8 +51,8 @@ module.exports = {
                 return handler;
             }
         })
-        
-        return 'admin';   
+
+        return 'admin';
     },
 
     assignHandler: async (location) => {
@@ -131,7 +132,7 @@ module.exports = {
         } catch (error) {
             return { success: false, message: error.message };
         }
-        
+
         return {
             success: true,
             body: {
@@ -139,6 +140,40 @@ module.exports = {
             },
             message: `Handler successfully scheduled to pick up a package.`
         };
+    },
+
+    getDeliveryCostDetails: (zones, location) => {
+        let distanceToLocationFromZoneCenter;
+        let prevDistance;
+        let zoneHandlers;
+        let zoneName;
+        let cost;
+        zones.forEach((zone) => {
+            distanceToLocationFromZoneCenter = distanceTo(
+                {
+                    lat: zone.centralLocation.latitude,
+                    lon: zone.centralLocation.longitude
+                },
+                {
+                    lat: location.latitude,
+                    lon: location.longitude
+                }
+            );
+            if (prevDistance === undefined) {
+                prevDistance = distanceToLocationFromZoneCenter;
+            }
+
+            if (distanceToLocationFromZoneCenter <= prevDistance) {
+                prevDistance = distanceToLocationFromZoneCenter;
+                zoneName = zone.zoneName;
+                zoneHandlers = zone.zoneHandlers;
+                cost = zone.rate * distanceToLocationFromZoneCenter * .001;
+            }
+        });
+        return {
+            zoneName,
+            cost
+        }
     }
 
 }
