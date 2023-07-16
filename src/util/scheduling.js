@@ -167,7 +167,8 @@ module.exports = {
                 prevDistance = distanceToLocationFromZoneCenter;
                 zoneName = zone.zoneName;
                 zoneHandlers = zone.zoneHandlers;
-                cost = zone.rate * distanceToLocationFromZoneCenter * .001;
+                //Round to the nearest thousandths:
+                cost = Math.round((zone.rate * distanceToLocationFromZoneCenter) / 1000) * 1000;
             }
         });
         return {
