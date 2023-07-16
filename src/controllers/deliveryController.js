@@ -209,7 +209,7 @@ module.exports = {
                     receiver,
                     sendorId
                 } = await Delivery.findOne({ deliveryId: delivery });
-                    const user = await User.findById({ _id: sendorId });
+                const user = await User.findById({ _id: sendorId });
 
                 deliveryList.push({
                     delivery: {
@@ -456,5 +456,27 @@ module.exports = {
         //     return res.json({ success: false, message: error.message });
         // }
 
+    },
+
+    getHandlersLocation: async (req, res) => {
+        const { scheduledHandler } = req.body;
+
+        try {
+            if (!scheduledHandler) {
+                return res.json({ success: false, message: 'Provide valid handler id.' });
+            }
+            const handler = await User.findById(scheduledHandler);
+            if (handler) {
+                return res.json({
+                    success: true,
+                    body: { handlerLocation: handler.location },
+                    message: 'Handlers location retrieved successfully.'
+                });
+            } else {
+                return res.json({ success: false, message: 'Handler does not exist.' });
+            }
+        } catch (error) {
+            return res.json({ success: false, message: error.message });
+        }
     }
 };

@@ -12,7 +12,8 @@ const {
     decryptDeliveryDetails,
     getPartnerDeliveryHistory,
     getDeliveryIds,
-    pickupDelivery
+    pickupDelivery,
+    getHandlersLocation
 } = require("../controllers/deliveryController");
 
 // Implement the user routes:
@@ -27,6 +28,7 @@ router.get('/deliveries/:trackingId/track', trackDelivery);
 router.put('/deliveries/:deliverId/update', updateDelivery);
 router.post('/deliveries/history/user', getUserDeliveryHistory);
 router.put('/deliveries/history/partner', getPartnerDeliveryHistory);
+router.post('/deliveries/handler/location', getHandlersLocation);
 
 
 module.exports = router;
