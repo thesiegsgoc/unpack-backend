@@ -200,12 +200,19 @@ module.exports = {
                     message: 'Provide a valid user ID.'
                 });
             }
+            
             let deliveryList = [];
+            if (deliveries.length === 0) {
+                return await res.json({
+                        success: true,
+                        body: deliveryList,
+                        message: 'User\'s delivery history retrieved successfully.'
+                    });
+            }
             deliveries.forEach(async (delivery, index) => {
                 // it is better to use delivery and check if it is present before proceeding
                 const deliveryItem = await Delivery.findOne({ deliveryId: delivery });
                 const user = await User.findById({ _id: sendorId });
-
                if (deliveryItem) {
                     deliveryList.push({
                     delivery: {
