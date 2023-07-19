@@ -63,6 +63,15 @@ const DeliverySchema = new mongoose.Schema({
     deliveryDate: {
         type: String
     },
+    dropOffCost: {
+        type: Number
+    },
+    pickUpCost: {
+        type: Number
+    },
+    deliveryCost: {
+        type: Number
+    },
     status: {
         type: Object,
         default: {
