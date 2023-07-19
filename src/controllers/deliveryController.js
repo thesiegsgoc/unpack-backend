@@ -208,7 +208,6 @@ module.exports = {
                     deliveryTime,
                     deliveryDate,
                     status,
-                    currentHandler,
                     type,
                     receiver,
                     sendorId
