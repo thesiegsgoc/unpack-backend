@@ -212,7 +212,7 @@ module.exports = {
             deliveries.forEach(async (delivery, index) => {
                 // it is better to use delivery and check if it is present before proceeding
                 const deliveryItem = await Delivery.findOne({ deliveryId: delivery });
-                const user = await User.findById({ _id: sendorId });
+                const user = await User.findById({ _id: deliveryItem.sendorId });
                if (deliveryItem) {
                     deliveryList.push({
                     delivery: {
@@ -225,7 +225,10 @@ module.exports = {
                         type: deliveryItem.type,
                         receiver: deliveryItem.receiver,
                         sendor: user.fullname,
-                        expoPushToken: user.expoPushToken
+                        expoPushToken: user.expoPushToken,
+                        dropOffCost: deliveryItem.dropOffCost,
+                        pickUpCost: deliveryItem.pickUpCost,
+                        deliveryCost: deliveryItem.deliveryCost
                     },
                     // partner: {
                     //     fullname,
