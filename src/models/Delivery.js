@@ -67,10 +67,10 @@ const DeliverySchema = new mongoose.Schema({
         type: Number
     },
     pickUpCost: {
-        type: Number
+        type: Object
     },
     deliveryCost: {
-        type: Number
+        type: Object
     },
     status: {
         type: Object,
