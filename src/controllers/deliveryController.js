@@ -202,28 +202,21 @@ module.exports = {
             }
             let deliveryList = [];
             deliveries.forEach(async (delivery, index) => {
-                const {
-                    pickup,
-                    dropoff,
-                    deliveryTime,
-                    deliveryDate,
-                    status,
-                    type,
-                    receiver,
-                    sendorId
-                } = await Delivery.findOne({ deliveryId: delivery });
+                // it is better to use delivery and check if it is present before proceeding
+                const deliveryItem = await Delivery.findOne({ deliveryId: delivery });
                 const user = await User.findById({ _id: sendorId });
 
-                deliveryList.push({
+               if (deliveryItem) {
+                    deliveryList.push({
                     delivery: {
-                        pickup,
-                        dropoff,
-                        time: deliveryTime,
-                        date: deliveryDate,
-                        status,
+                        pickup: deliveryItem.pickup,
+                        dropoff: deliveryItem.dropoff,
+                        time: deliveryItem.deliveryTime,
+                        date: deliveryItem.deliveryDate,
+                        status: deliveryItem.status,
                         deliveryId: delivery,
-                        type,
-                        receiver,
+                        type: deliveryItem.type,
+                        receiver: deliveryItem.receiver,
                         sendor: user.fullname,
                         expoPushToken: user.expoPushToken
                     },
@@ -234,6 +227,7 @@ module.exports = {
                     //     avatar
                     // }
                 });
+               }
 
                 if (index === deliveries.length - 1) {
                     return await res.json({
