@@ -222,8 +222,9 @@ module.exports = {
             deliveries.forEach(async (delivery, index) => {
                 // it is better to use delivery and check if it is present before proceeding
                 const deliveryItem = await Delivery.findOne({ deliveryId: delivery });
-                const user = await User.findById({ _id: deliveryItem.sendorId });
                if (deliveryItem) {
+
+                const user = await User.findById({ _id: deliveryItem.sendorId });
                     deliveryList.push({
                     delivery: {
                         pickup: deliveryItem.pickup,
