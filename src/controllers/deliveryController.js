@@ -49,6 +49,16 @@ module.exports = {
                     }
                 }
             );
+            await User.updateOne(
+                { _id: handler.success && handler.body.handler ? handler.body.handler : '6481003e050a57815f7be8f0' },
+                {
+                    $push: {
+                        deliveries: {
+                            $each: [`D00${numCurrentDeliveries + 1}`]
+                        }
+                    }
+                }
+            );
             return res.json({
                 success: true,
                 message: 'Delivery ordered successfully',
