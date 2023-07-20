@@ -235,7 +235,7 @@ module.exports = {
                         deliveryId: delivery,
                         type: deliveryItem.type,
                         receiver: deliveryItem.receiver,
-                        sendor: user.fullname,
+                        sendor: user.fullname || user,
                         expoPushToken: user.expoPushToken,
                         dropOffCost: deliveryItem.dropOffCost,
                         pickUpCost: deliveryItem.pickUpCost,
@@ -389,6 +389,12 @@ module.exports = {
         const deliveryData = JSON.parse(decryptedData);
 
         let deliveryIds = [];
+        if (deliveryData.length === 0) {
+            return res.json({
+                            success: true,
+                            message: 'No package to pick up.'
+                        });
+        }
         try {
             deliveryData?.deliveryIds.forEach(async (deliveryId, index) => {
                 const delivery = await Delivery.findOne({ deliveryId });
