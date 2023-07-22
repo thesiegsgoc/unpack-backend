@@ -405,7 +405,6 @@ module.exports = {
                         {
                             $set: {
                                 currentHandler: { id: partnerId, time: `${(new Date(Date.now())).toString()}` },
-                                //scheduledHandler: undefined,
                             },
                             $push: {
                                 pickedUpFrom: {
