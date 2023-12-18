@@ -7,7 +7,7 @@ const scheduling = require('../util/scheduling');
 const User = require('../models/User');
 
 module.exports = {
-    addDelivery: async (req, res) => {
+    addDelivery: async (req: Request, res: Response) => {
         const {
             receiver, phonenumber, pickup, dropoff,
             sendorId, size, type, parcel, notes, quantity, deliveryTime, deliveryDate,

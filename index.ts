@@ -1,6 +1,6 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const dotenv = require("dotenv");
+import express from 'express';
+import mongoose from 'mongoose';
+import dotenv from "dotenv"
 const app = express();
 dotenv.config();
 
@@ -17,7 +17,7 @@ mongoose.connect(database, {
     useNewUrlParser: true 
 })
 .then(() => console.log('Database connected successfully...'))
-.catch(err => console.log(err));
+.catch((err:any) => console.log(err));
 
 // Implement the routes here:
 app.use(express.json());
