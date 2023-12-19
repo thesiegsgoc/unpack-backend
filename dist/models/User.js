@@ -1,10 +1,11 @@
-const mongoose = require("mongoose");
-const argon2 = require('argon2');
-
-/**
- * The user schema
- */
-const UserSchema = new mongoose.Schema({
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = __importDefault(require("mongoose"));
+const argon2_1 = __importDefault(require("argon2"));
+const UserSchema = new mongoose_1.default.Schema({
     userId: {
         type: String,
         required: true,
@@ -63,42 +64,49 @@ const UserSchema = new mongoose.Schema({
         default: Date.now,
     },
 });
-
-/**
- * Call the pre api to implement the password hashing.
- */
-UserSchema.pre('save', async function(next) {
-    if (this.isModified('password')) {
-        try {
-            const hash = await argon2.hash(this.password);
-            this.password = hash;
-            next();
-        } catch (err) {
-            return res.json({ success: false, message: err.message});
-        }
-    } else {
-        next();
-    }
-})
-
 /**
  * Assign the method comparePassword to the schema.
  * The method compares the provided password with
  * the hashed one stored in the database.
- * 
+ *
+ * @param { String } password the password value from the user
+ * @returns { Boolean} true if the password is correct, otherwise false
+ */
+//Pre-save hook for password hashing
+UserSchema.pre('save', async function (next) {
+    if (this.isModified('password')) {
+        try {
+            const hash = await argon2_1.default.hash(this.password);
+            this.password = hash;
+            next();
+        }
+        catch (err) {
+            next(err);
+        }
+    }
+    else {
+        next();
+    }
+});
+/**
+ * Assign the method comparePassword to the schema.
+ * The method compares the provided password with
+ * the hashed one stored in the database.
+ *
  * @param { String } password the password value from the user
  * @returns { Boolean} true if the password is correct, otherwise false
  */
 UserSchema.methods.comparePassword = async function (password) {
     if (!password) {
-        return res.json({ success: false, error: 'Password is missing, provide one and try again.'});
+        throw new Error('Password is missing, provide one and try again.');
     }
     try {
-        const result = await argon2.verify(this.password, password);
+        const result = await argon2_1.default.verify(this.password, password);
         return result;
-    } catch (error) {
-        return res.json({ success: false, message: error.message});
     }
-}
-
-module.exports = mongoose.model("User", UserSchema);
+    catch (error) {
+        throw new Error(error.message);
+    }
+};
+const UserModel = mongoose_1.default.model('User', UserSchema);
+exports.default = UserModel;

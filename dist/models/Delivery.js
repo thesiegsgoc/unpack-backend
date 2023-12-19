@@ -1,9 +1,13 @@
-const mongoose = require("mongoose");
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = __importDefault(require("mongoose"));
 // For now, it should be find to treat oderId as a
 // tracking number as well. So, it should also be used
 // in the DeliverySchema.
-const DeliverySchema = new mongoose.Schema({
+const DeliverySchema = new mongoose_1.default.Schema({
     deliveryId: {
         type: String,
     },
@@ -24,7 +28,7 @@ const DeliverySchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    phonenumber: {
+    phoneNumber: {
         type: String
     },
     size: {
@@ -78,12 +82,16 @@ const DeliverySchema = new mongoose.Schema({
             value: 'In Process'
         }
     },
+    orderId: {
+        type: String
+    },
+    vendorId: {
+        type: String
+    },
     date: {
         type: Date,
         default: Date.now,
     },
 });
-
-module.exports = mongoose.model("Delivery", DeliverySchema);
-
-
+const DeliveryModel = mongoose_1.default.model("Delivery", DeliverySchema);
+exports.default = DeliveryModel;

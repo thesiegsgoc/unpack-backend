@@ -1,9 +1,9 @@
-/* 3rd Party Modules */
-const express = require('express');
+// Importing express and its types
+import express, { Request, Response } from 'express';
 const router = express.Router();
 
-/* Unpack Modules */
-const {
+// Importing controller functions
+import {
     deleteZone,
     registerZone,
     addZoneHandler,
@@ -12,7 +12,7 @@ const {
     updateZoneHandlerAvailability,
     assignHandler,
     deliveryCost
-} = require('../controllers/zoneController');
+} from '../controllers/zoneController';
 
 // Implement the user routes:
 router.post('/zone/register', registerZone);
@@ -23,4 +23,5 @@ router.put('/zone/update-zone-info', updateZoneInfo);
 router.delete('/zone/delete', deleteZone);
 router.put('/zone/assign-package-handler', assignHandler);
 router.post('/zone/deliveryCost', deliveryCost);
-module.exports = router;
+
+export default router;
