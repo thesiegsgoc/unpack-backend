@@ -1,6 +1,7 @@
-import Order from "../models/Order"; // Ensure this is a TypeScript compatible model
-import db from '../util/db'; // Adjust the import if necessary
+// orderController.ts
+
 import { Request, Response } from 'express';
+import * as OrderService from '../services/orderServices'; // Adjust the import path as needed
 
 export const addOrder = async (req: Request, res: Response): Promise<Response> => {
     const { name, parcel, quantity, size, orderId } = req.body;
@@ -9,14 +10,7 @@ export const addOrder = async (req: Request, res: Response): Promise<Response> =
         return res.json({ success: false, message: 'Fill out empty fields.' });
     } else {
         try {
-            const newOrder = new Order({
-                name,
-                parcel,
-                quantity,
-                size,
-                orderId
-            });
-            await newOrder.save();
+            const newOrder = await OrderService.createOrder({ name, parcel, quantity, size, orderId });
             return res.json({ status: 'OK', data: newOrder });
         } catch (error: any) {
             return res.json({ success: false, message: error.message });
@@ -28,10 +22,7 @@ export const updateOrderInfo = async (req: Request, res: Response): Promise<Resp
     const { orderId } = req.body;
 
     try {
-        await db.orders.updateOne(
-            { orderId },
-            { $set: { ...req.body } }
-        );
+        await OrderService.updateOrder(orderId, req.body);
         return res.json({ success: true, message: 'Order info has updated successfully.' });
     } catch (error: any) {
         return res.json({ success: false, message: error.message });

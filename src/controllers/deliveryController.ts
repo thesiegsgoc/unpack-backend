@@ -6,15 +6,7 @@ import scheduling from '../util/scheduling';
 import db from '../util/db';
 import PartnerModel from '../models/Partner';
 import OrderModel from '../models/Order';
-import { addDeliveryService, 
-  encryptDeliveryDetailsService, 
-  trackDeliveryService, 
-  getUserDeliveryHistoryService,
-  getPartnerDeliveryHistoryService,
-  getDeliveryIdsService,
-  pickupDeliveryService,
-  getHandlersLocationService
-} from '../services/deliveryService'; //TODO: improve export and import of files
+import * as DeliveryServices from '../services/deliveryService'; //TODO: improve export and import of files
 
 const cryptr = new Cryptr('myTotallySecretKey');
 // Define types and interfaces
@@ -97,7 +89,7 @@ type GetDeliveryIdsRequestBody = /*unresolved*/ any
 export const addDeliveryController = async (req: Request<{}, {}, AddDeliveryRequestBody>, res: Response) => {
   try {
       const deliveryData = req.body;
-      const result = await addDeliveryService(deliveryData);
+      const result = await DeliveryServices.addDeliveryService(deliveryData);
       return res.json({
           success: true,
           message: 'Delivery ordered successfully',
@@ -112,7 +104,7 @@ export const addDeliveryController = async (req: Request<{}, {}, AddDeliveryRequ
 export const encryptDeliveryDetailsController = async (req: Request<{ deliveryIds: string[] }>, res: Response) => {
   try {
       const { deliveryIds } = req.body;
-      const encryptedDetails = await encryptDeliveryDetailsService(deliveryIds);
+      const encryptedDetails = await DeliveryServices.encryptDeliveryDetailsService(deliveryIds);
       return res.json({
           success: true,
           body: encryptedDetails,
@@ -127,7 +119,7 @@ export const encryptDeliveryDetailsController = async (req: Request<{ deliveryId
 export const trackDeliveryController = async (req: Request, res: Response) => {
   try {
       const { trackingId } = req.params;
-      const trackingDetails = await trackDeliveryService(trackingId);
+      const trackingDetails = await DeliveryServices.trackDeliveryService(trackingId);
 
       return res.json({
           success: true,
@@ -144,7 +136,7 @@ export const trackDeliveryController = async (req: Request, res: Response) => {
 export const getUserDeliveryHistoryController = async (req: Request<{ userId: string }>, res: Response) => {
   try {
       const { userId } = req.body;
-      const deliveryHistory = await getUserDeliveryHistoryService(userId);
+      const deliveryHistory = await DeliveryServices.getUserDeliveryHistoryService(userId);
 
       return res.json({
           success: true,
@@ -160,7 +152,7 @@ export const getUserDeliveryHistoryController = async (req: Request<{ userId: st
 export const getPartnerDeliveryHistoryController = async (req: Request<{ partnerId: string }>, res: Response) => {
   try {
       const { partnerId } = req.body;
-      const deliveryHistory = await getPartnerDeliveryHistoryService(partnerId);
+      const deliveryHistory = await DeliveryServices.getPartnerDeliveryHistoryService(partnerId);
 
       return res.json({
           success: true,
@@ -175,7 +167,7 @@ export const getPartnerDeliveryHistoryController = async (req: Request<{ partner
 export const getDeliveryIdsController = async (req: Request<{}, {}, GetDeliveryIdsRequestBody>, res: Response) => {
   try {
       const { userID } = req.body;
-      const encryptedDeliveryIds = await getDeliveryIdsService(userID);
+      const encryptedDeliveryIds = await DeliveryServices.getDeliveryIdsService(userID);
 
       return res.json({
           success: true,
@@ -191,7 +183,7 @@ export const getDeliveryIdsController = async (req: Request<{}, {}, GetDeliveryI
 export const pickupDeliveryController = async (req: Request, res: Response) => {
   try {
       const { encryptedData, partnerId } = req.body;
-      const result = await pickupDeliveryService(encryptedData, partnerId);
+      const result = await DeliveryServices.pickupDeliveryService(encryptedData, partnerId);
 
       return res.json(result);
   } catch (error: any) {
@@ -203,7 +195,7 @@ export const pickupDeliveryController = async (req: Request, res: Response) => {
 export const getHandlersLocationController = async (req: Request, res: Response) => {
   try {
       const { scheduledHandler } = req.body;
-      const handlerLocation = await getHandlersLocationService(scheduledHandler);
+      const handlerLocation = await DeliveryServices.getHandlersLocationService(scheduledHandler);
 
       return res.json({
           success: true,
