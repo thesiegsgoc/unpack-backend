@@ -1,6 +1,10 @@
 "use strict";
-const mongoose = require("mongoose");
-const ZonesSchema = new mongoose.Schema({
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = __importDefault(require("mongoose"));
+const ZonesSchema = new mongoose_1.default.Schema({
     zoneName: {
         type: String,
         required: true,
@@ -22,4 +26,5 @@ const ZonesSchema = new mongoose.Schema({
         default: Date.now
     },
 });
-module.exports = mongoose.model("Zones", ZonesSchema);
+const Zones = mongoose_1.default.model("Zones", ZonesSchema);
+exports.default = Zones;

@@ -8,7 +8,6 @@ import User from "../models/User"; // Make sure this model is compatible with Ty
 export const loginCheck = (passport: passport.PassportStatic): void => {
     passport.use(
         new LocalStrategy({ usernameField: "phone" }, (phone, password, done) => {
-            // Check customer
             User.findOne({ phone: phone })
                 .then((user: any) => { // Replace 'any' with the actual type of your User model
                     if (!user) {
@@ -33,7 +32,7 @@ export const loginCheck = (passport: passport.PassportStatic): void => {
     });
 
     passport.deserializeUser((id, done) => {
-        User.findById(id, (error, user: any) => { // Replace 'any' with the actual type of your User model
+        User.findById(id, (error: Error, user: any) => { // Replace 'any' with the actual type of your User model
             done(error, user);
         });
     });

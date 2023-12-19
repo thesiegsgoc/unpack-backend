@@ -4,8 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const app = (0, express_1.default)();
-app.get('/api/users', (req, res, next) => {
+const router = express_1.default.Router();
+router.get('/api/users', (req, res, next) => {
     // Simulated asynchronous operation that might produce an error
     someAsyncFunction()
         .then((result) => {
@@ -18,7 +18,7 @@ app.get('/api/users', (req, res, next) => {
     });
 });
 // Error handler middleware
-app.use((err, req, res, next) => {
+router.use((err, req, res, next) => {
     // Handle the error, e.g., send an error response
     res.status(500).json({ error: err.message });
 });
@@ -30,6 +30,4 @@ function someAsyncFunction() {
         }, 1000);
     });
 }
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
-});
+exports.default = router;

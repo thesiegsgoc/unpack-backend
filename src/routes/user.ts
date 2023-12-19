@@ -1,8 +1,7 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response, Router, NextFunction } from 'express';
+const router: Router = express.Router();
 
-const app = express();
-
-app.get('/api/users', (req: Request, res: Response, next: NextFunction) => {
+router.get('/api/users', (req: Request, res: Response, next: NextFunction) => {
   // Simulated asynchronous operation that might produce an error
   someAsyncFunction()
     .then((result) => {
@@ -16,7 +15,7 @@ app.get('/api/users', (req: Request, res: Response, next: NextFunction) => {
 });
 
 // Error handler middleware
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   // Handle the error, e.g., send an error response
   res.status(500).json({ error: err.message });
 });
@@ -30,6 +29,4 @@ function someAsyncFunction() {
   });
 }
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
-});
+export default router;

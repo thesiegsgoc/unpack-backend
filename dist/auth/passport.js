@@ -10,7 +10,6 @@ const User_1 = __importDefault(require("../models/User")); // Make sure this mod
 // Assuming User has a specific type or interface, you might need to import that as well
 const loginCheck = (passport) => {
     passport.use(new passport_local_1.Strategy({ usernameField: "phone" }, (phone, password, done) => {
-        // Check customer
         User_1.default.findOne({ phone: phone })
             .then((user) => {
             if (!user) {

@@ -1,505 +1,217 @@
+import Cryptr from 'cryptr';
+import DeliveryModel from "../models/Delivery"; 
+import UserModel from '../models/User';
+import { Request, Response } from 'express';
+import scheduling from '../util/scheduling';
+import db from '../util/db';
+import PartnerModel from '../models/Partner';
+import OrderModel from '../models/Order';
+import { addDeliveryService, 
+  encryptDeliveryDetailsService, 
+  trackDeliveryService, 
+  getUserDeliveryHistoryService,
+  getPartnerDeliveryHistoryService,
+  getDeliveryIdsService,
+  pickupDeliveryService,
+  getHandlersLocationService
+} from '../services/deliveryService'; //TODO: improve export and import of files
 
-const Cryptr = require('cryptr');
-const Delivery = require("../models/Delivery");
 const cryptr = new Cryptr('myTotallySecretKey');
-const db = require('../util/db');
-const scheduling = require('../util/scheduling');
-const User = require('../models/User');
+// Define types and interfaces
+interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
 
-module.exports = {
-    addDelivery: async (req: Request, res: Response) => {
-        const {
-            receiver, phonenumber, pickup, dropoff,
-            sendorId, size, type, parcel, notes, quantity, deliveryTime, deliveryDate,
-            dropOffCost, pickUpCost, deliveryCost
-        } = req.body;
-        if (!quantity || !dropoff || !pickup) {
-            return res.json({ success: false, message: 'Fill out empty fields.' });
-        }
-        try {
-            const numCurrentDeliveries = await db.deliveries.countDocuments();
-            const handler = await scheduling.assignHandler(pickup);
-            const newDelivery = new Delivery({
-                receiver,
-                phonenumber,
-                pickup,
-                dropoff,
-                notes,
-                deliveryId: `D00${numCurrentDeliveries + 1}`,
-                sendorId,
-                size,
-                type,
-                parcel,
-                quantity,
-                scheduledHandler: handler.success && handler.body.handler ? handler.body.handler : '6481003e050a57815f7be8f0',
-                deliveryTime,
-                deliveryDate,
-                dropOffCost,
-                pickUpCost,
-                deliveryCost
-            });
-            await newDelivery.save();
-            await User.updateOne(
-                { _id: sendorId },
-                {
-                    $push: {
-                        deliveries: {
-                            $each: [`D00${numCurrentDeliveries + 1}`]
-                        }
-                    }
-                }
-            );
-            await User.updateOne(
-                { _id: handler.success && handler.body.handler ? handler.body.handler : '6481003e050a57815f7be8f0' },
-                {
-                    $push: {
-                        deliveries: {
-                            $each: [`D00${numCurrentDeliveries + 1}`]
-                        }
-                    }
-                }
-            );
-            return res.json({
-                success: true,
-                message: 'Delivery ordered successfully',
-                trackingNumber: `D00${numCurrentDeliveries + 1}`
-            });
-        } catch (error) {
-            return res.json({ success: false, message: error.message });
-        }
-    },
+interface AddDeliveryRequestBody {
+  receiver: string;
+  phoneNumber: string;
+  pickup: Coordinates;
+  dropoff: string;
+  sendorId: string;
+  size: string;
+  type: string;
+  parcel: string;
+  notes?: string; // Optional
+  quantity: number;
+  deliveryTime: string;
+  deliveryDate: string;
+  dropOffCost: number;
+  pickUpCost: number;
+  deliveryCost: number;
+}
 
-    updateDelivery: async (req, res) => {
-        const { deliveryId } = req.params;
-        try {
-            await db.deliveries.updateOne(
-                { deliveryId },
-                {
-                    $set: {
-                        ...req.body
-                    }
-                }
-            );
-            return res.json({ success: true, message: 'Delivery info has updated successfully.' });
-        } catch (error) {
-            return res.json({ success: false, message: error.message });
-        }
-    },
-
-    encryptDeliveryDetails: async (req, res) => {
-        const { deliveryIds } = req.body;
-        try {
-            if (!deliveryIds) {
-
-            }
-            let deliveryDetail = [];
-            deliveryIds.forEach(async (deliveryId, index) => {
-                const {
-                    vendorId,
-                    pickup,
-                    dropoff,
-                    receiver,
-                    notes,
-                    phonenumber,
-                    currentHandler
-                } = await db.deliveries.findOne({ deliveryId });
-                const {
-                    fullname,
-                    phone,
-                    email
-                } = await db.users.findOne({ userId: vendorId });
-
-                deliveryDetail.push({
-                    from: {
-                        fullname,
-                        phone,
-                        email,
-                        pickup,
-                    },
-                    to: {
-                        receiver,
-                        phonenumber,
-                        dropoff
-                    },
-                    shipper: currentHandler,
-                    notes
-                });
-                if (index === deliveryIds.length - 1) {
-                    const encryptedDetails = cryptr.encrypt(JSON.stringify({
-                        deliveryDetail,
-                        access: [vendorId, currentHandler, 'admin']
-                    }));
-                    return res.json({
-                        success: true,
-                        body: encryptedDetails,
-                        message: 'Delivery details has been encrypted successfully.'
-                    });
-                }
-            })
-        } catch (error) {
-            return res.json({ success: false, message: error.message });
-        }
-    },
-
-    decryptDeliveryDetails: (req, res) => {
-        const { encryptedDetails, user } = req.body;
-        if (!encryptedDetails) {
-            return res.json({ success: false, message: 'There are no any packages to be picked.' });
-        }
-
-        const decryptedDetails = cryptr.decrypt(encryptedDetails);
-        const deliveryDetails = JSON.parse(decryptedDetails);
-        if (deliveryDetails && deliveryDetails.access && deliveryDetails.access.includes(user)) {
-            return res.json({
-                success: true,
-                body: deliveryDetails,
-                message: 'Delivery details decrypted successfully.'
-            });
-        } else {
-            return res.json({ success: false, message: 'You do not have access to this data. Contact admin through 0713444777.' });
-        }
-
-    },
-
-    trackDelivery: async (req, res) => {
-        const { trackingId } = req.params;
-        try {
-            // The findOne method is used here because, by definition,
-            // an order, with a unique ID, is executed by one and only one
-            // delivery request.
-            const delivery = await db.deliveries.findOne({ deliveryId: trackingId });
-            if (!delivery) {
-                return res.json({ success: false, message: 'Provide a valid order ID.' });
-            }
-
-            const { scheduledHandler, status, pickup, dropoff } = delivery;
-            const { fullname, username, rating, profilePhoto } = await User.findById(scheduledHandler);
-            if (status.value === 'cancelled') {
-                return res.json({
-                    success: false,
-                    body: { status },
-                    message: 'This order was cancelled. Cannot track it.'
-                })
-            }
-
-            if (status.value === 'delivered') {
-                return res.json({
-                    success: false,
-                    body: { status },
-                    message: 'This order is already delivered. Cannot track it. Check your order history for more info.'
-                })
-            }
-
-            return res.json({
-                success: true,
-                body: { pickup, dropoff, fullname: fullname || username, rating, profilePhoto, scheduledHandler },
-                message: 'Tracking details retrieved successfully.'
-            });
-        } catch (error) {
-            return res.json({ success: false, message: error.message });
-        }
-    },
-
-    getUserDeliveryHistory: async (req, res) => {
-        const { userId } = req.body;
-        try {
-            const { deliveries } = await User.findById({ _id: userId });
-            if (!deliveries) {
-                return res.json({
-                    success: false,
-                    message: 'Provide a valid user ID.'
-                });
-            }
-            
-            let deliveryList = [];
-            if (deliveries.length === 0) {
-                return await res.json({
-                        success: true,
-                        body: deliveryList,
-                        message: 'User\'s delivery history retrieved successfully.'
-                    });
-            }
-            deliveries.forEach(async (delivery, index) => {
-                // it is better to use delivery and check if it is present before proceeding
-                const deliveryItem = await Delivery.findOne({ deliveryId: delivery });
-               if (deliveryItem) {
-
-                const user = await User.findById({ _id: deliveryItem.sendorId });
-                    deliveryList.push({
-                    delivery: {
-                        pickup: deliveryItem.pickup,
-                        dropoff: deliveryItem.dropoff,
-                        time: deliveryItem.deliveryTime,
-                        date: deliveryItem.deliveryDate,
-                        status: deliveryItem.status,
-                        deliveryId: delivery,
-                        type: deliveryItem.type,
-                        receiver: deliveryItem.receiver,
-                        sendor: user.fullname || user,
-                        expoPushToken: user.expoPushToken,
-                        dropOffCost: deliveryItem.dropOffCost,
-                        pickUpCost: deliveryItem.pickUpCost,
-                        deliveryCost: deliveryItem.deliveryCost
-                    },
-                    // partner: {
-                    //     fullname,
-                    //     location,
-                    //     rating,
-                    //     avatar
-                    // }
-                });
-               }
-
-                if (index === deliveries.length - 1) {
-                    return await res.json({
-                        success: true,
-                        body: deliveryList,
-                        message: 'User\'s delivery history retrieved successfully.'
-                    });
-                }
-            });
-
-        } catch (error) {
-            return res.json({ success: false, message: error.message });
-        }
-    },
-
-    getPartnerDeliveryHistory: async (req, res) => {
-        const { partnerId } = req.body;
-        try {
-            const { deliveries } = await db.partners.findOne({ partnerId });
-            if (!deliveries) {
-                return res.json({ success: false, message: 'Provide a valid user ID.' });
-            }
-
-            let deliveryList = [];
-            deliveryIds.forEach(async (deliveryId) => {
-                const {
-                    orderId,
-                    pickup,
-                    dropoff,
-                    deliveryTime,
-                    status,
-                    vendorId
-                } = await db.deliveries.findOne({ deliveryId });
-                const {
-                    name,
-                    parcel,
-                    quantity,
-                    size
-                } = await db.orders.findOne({ orderId });
-                const {
-                    fullname,
-                    avatar
-                } = await db.users.findOne({ userId: vendorId });
-
-                deliveryList.push({
-                    delivery: {
-                        pickup,
-                        dropoff,
-                        deliveryTime,
-                        status,
-                    },
-                    order: {
-                        name,
-                        parcel,
-                        quantity,
-                        size
-                    },
-                    vendor: {
-                        fullname,
-                        avatar
-                    }
-                });
-                if (index === deliveries.length - 1) {
-                    return res.json({
-                        success: true,
-                        body: deliveryList,
-                        message: 'Delivery history retrieved successfully.'
-                    });
-                }
-            });
-            return res.json({
-                success: true,
-                body: { deliveryList },
-                message: 'Delivery history retrieved successfully.'
-            });
-        } catch (error) {
-            return res.json({ success: false, message: error.message });
-        }
-    },
-
-    getDeliveryIds: async (req, res) => {
-        const { userID } = req.body;
-        try {
-            if (!userID) {
-                return res.json({ success: false, message: 'Provide user ID.' })
-            }
-            const { status } = await User.findById({ _id: userID });
-            let deliveries;
-            if (status === 'vendor' || status === 'consumer') {
-                deliveries = await Delivery.find(
-                    { "sendorId": userID }
-                ).exec();
-            }
-            // else if (status === 'driver' || status === 'cpp') {
-            //     deliveries =  await Delivery.find(
-            //         { scheduledHandler : { userID } }
-            //     )
-            // }
+interface DeliveryItemDetails {
+  pickup: string;
+  dropoff: string;
+  time: string;
+  date: string;
+  status: string;
+  deliveryId: string;
+  type: string;
+  receiver: string;
+  sendor: string;
+  expoPushToken?: string | number;
+  dropOffCost: number;
+  pickUpCost: number;
+  deliveryCost: number;
+  deliveryTime: string; // Adding this property
+}
 
 
-            if (!deliveries) {
-                return res.json({ success: false, message: 'No deliveries from the user.' })
-            }
-            let deliveryIds = [];
-            deliveries.forEach((delivery) => {
-                deliveryIds.push(delivery.deliveryId)
-            })
-            const encryptedDeliveries = cryptr.encrypt(JSON.stringify({
-                deliveryIds,
-                access: [userID, 'admin']
-            }));
-            return res.json({
-                success: true,
-                body: encryptedDeliveries,
-                message: 'Delivery details has been encrypted successfully.'
-            });
-        } catch (error) {
-            return res.json({ success: false, message: error.message });
-        }
+interface DeliveryDetailsFrom {
+  fullname: string;
+  phone: string;
+  email: string;
+  pickup: string;
+}
 
-    },
+interface DeliveryDetailsTo {
+  receiver: string;
+  phonenumber: string;
+  dropoff: string;
+}
 
-    pickupDelivery: async (req, res) => {
-        const { encryptedData, partnerId } = req.body;
-        if (!partnerId) {
-            return res.json({ success: false, message: 'Cannot be picked-up without a partner.' });
-        }
+interface OrderItem {
+  name: string;
+  parcel: string;
+  quantity: number;
+  size: string;
+}
 
-        if (!encryptedData) {
-            return res.json({ success: false, message: 'Cannot decrypt undefined data.' });
-        }
-        const partner = await User.findById({ _id: partnerId });
+interface VendorItem {
+  fullname?: string;
+  avatar?: string;
+}
 
-        if (!partner) {
-            return res.json({ success: false, message: 'You do not have authorization to read this data.' });
-        }
-        const decryptedData = cryptr.decrypt(encryptedData);
-        const deliveryData = JSON.parse(decryptedData);
+interface PartnerDeliveryItem {
+  delivery: DeliveryItemDetails;
+  order: OrderItem;
+  vendor: VendorItem;
+}
 
-        let deliveryIds = [];
-        if (deliveryData.length === 0) {
-            return res.json({
-                            success: true,
-                            message: 'No package to pick up.'
-                        });
-        }
-        try {
-            deliveryData?.deliveryIds.forEach(async (deliveryId, index) => {
-                const delivery = await Delivery.findOne({ deliveryId });
+type DeliveryItem = /*unresolved*/ any // TODO: Replace with actual type
+type GetDeliveryIdsRequestBody = /*unresolved*/ any
 
-                if (delivery.scheduledHandler === partnerId) {
-                    await db.deliveries.updateOne(
-                        { deliveryId },
-                        {
-                            $set: {
-                                currentHandler: { id: partnerId, time: `${(new Date(Date.now())).toString()}` },
-                            },
-                            $push: {
-                                pickedUpFrom: {
-                                    $each: [{ id: deliveryData.access[0], time: `${(new Date(Date.now())).toString()}` }]
-                                }
-                            }
-                        }
-                    );
-                    deliveryIds.push(deliveryId);
-                    if (index === deliveryIds.length - 1) {
-                        return res.json({
-                            success: true,
-                            message: 'Package pickup process finished successfully.'
-                        });
-                    }
-                }
 
-            });
-            // if (deliveryIds.length === 0) {
-            //     return res.json({ success: false, message: 'You do not have any assigned packages to pick.' });
-            // } 
-        } catch (error) {
-            return res.json({ success: false, message: error.message });
-        }
-
-        // try {
-        //     const userPartner = await Partner.findById({ _id: deliveryData.access[0] });
-        //     if (userPartner) {
-        //         await db.users.updateOne(
-        //         { _id: deliveryData.access[0] },
-        //         {
-        //             $pull: {
-        //                 deliveries: {
-        //                     $each: deliveryIds
-        //                 }
-        //             }
-        //         }
-        //     );
-        //     }
-        //     await db.partners.updateOne(
-        //         { _id: partnerId },
-        //         {
-        //             $push: {
-        //                 deliveries: {
-        //                     $each: deliveryIds
-        //                 }
-        //             }
-        //         }
-        //     );
-        //     deliveryIds.forEach(async (deliveryId, index) => {
-        //         await db.deliveries.updateOne(
-        //             { deliveryId },
-        //             {
-        //                 $set: {
-        //                     currentHandler: partnerId
-        //                 },
-        //                 $push: {
-        //                 previousHandlers: {
-        //                     $each: [ deliveryData.access[0] ]
-        //                 }
-        //             }
-        //             }
-        //         );
-        //         if (index === deliveryIds.length - 1) {
-        //             return await res.json({
-        //                 success: true,
-        //                 message: 'Package pickup process finished successfully.'
-        //             });
-        //         }
-        //     });
-        // } catch (error) {
-        //     return res.json({ success: false, message: error.message });
-        // }
-
-    },
-
-    getHandlersLocation: async (req, res) => {
-        const { scheduledHandler } = req.body;
-
-        try {
-            if (!scheduledHandler) {
-                return res.json({ success: false, message: 'Provide valid handler id.' });
-            }
-            const handler = await User.findById(scheduledHandler);
-            if (handler) {
-                return res.json({
-                    success: true,
-                    body: { handlerLocation: handler.location },
-                    message: 'Handlers location retrieved successfully.'
-                });
-            } else {
-                return res.json({ success: false, message: 'Handler does not exist.' });
-            }
-        } catch (error) {
-            return res.json({ success: false, message: error.message });
-        }
-    }
+export const addDeliveryController = async (req: Request<{}, {}, AddDeliveryRequestBody>, res: Response) => {
+  try {
+      const deliveryData = req.body;
+      const result = await addDeliveryService(deliveryData);
+      return res.json({
+          success: true,
+          message: 'Delivery ordered successfully',
+          trackingNumber: result.trackingNumber,
+      });
+  } catch (error: any) {
+      return res.json({ success: false, message: error.message });
+  }
 };
+
+
+export const encryptDeliveryDetailsController = async (req: Request<{ deliveryIds: string[] }>, res: Response) => {
+  try {
+      const { deliveryIds } = req.body;
+      const encryptedDetails = await encryptDeliveryDetailsService(deliveryIds);
+      return res.json({
+          success: true,
+          body: encryptedDetails,
+          message: 'Delivery details have been encrypted successfully.',
+      });
+  } catch (error: any) {
+      return res.json({ success: false, message: error.message });
+  }
+};
+
+ 
+export const trackDeliveryController = async (req: Request, res: Response) => {
+  try {
+      const { trackingId } = req.params;
+      const trackingDetails = await trackDeliveryService(trackingId);
+
+      return res.json({
+          success: true,
+          body: trackingDetails,
+          message: 'Tracking details retrieved successfully.'
+      });
+  } catch (error: any) {
+      return res.json({ success: false, message: error.message });
+  }
+};
+
+
+
+export const getUserDeliveryHistoryController = async (req: Request<{ userId: string }>, res: Response) => {
+  try {
+      const { userId } = req.body;
+      const deliveryHistory = await getUserDeliveryHistoryService(userId);
+
+      return res.json({
+          success: true,
+          body: deliveryHistory,
+          message: 'User\'s delivery history retrieved successfully.'
+      });
+  } catch (error: any) {
+      return res.json({ success: false, message: error.message });
+  }
+};
+
+
+export const getPartnerDeliveryHistoryController = async (req: Request<{ partnerId: string }>, res: Response) => {
+  try {
+      const { partnerId } = req.body;
+      const deliveryHistory = await getPartnerDeliveryHistoryService(partnerId);
+
+      return res.json({
+          success: true,
+          body: deliveryHistory,
+          message: 'Delivery history retrieved successfully.'
+      });
+  } catch (error: any) {
+      return res.json({ success: false, message: error.message });
+  }
+};
+
+export const getDeliveryIdsController = async (req: Request<{}, {}, GetDeliveryIdsRequestBody>, res: Response) => {
+  try {
+      const { userID } = req.body;
+      const encryptedDeliveryIds = await getDeliveryIdsService(userID);
+
+      return res.json({
+          success: true,
+          body: encryptedDeliveryIds,
+          message: 'Delivery details have been encrypted successfully.'
+      });
+  } catch (error: any) {
+      return res.json({ success: false, message: error.message });
+  }
+};
+
+
+export const pickupDeliveryController = async (req: Request, res: Response) => {
+  try {
+      const { encryptedData, partnerId } = req.body;
+      const result = await pickupDeliveryService(encryptedData, partnerId);
+
+      return res.json(result);
+  } catch (error: any) {
+      return res.json({ success: false, message: error.message });
+  }
+};
+
+
+export const getHandlersLocationController = async (req: Request, res: Response) => {
+  try {
+      const { scheduledHandler } = req.body;
+      const handlerLocation = await getHandlersLocationService(scheduledHandler);
+
+      return res.json({
+          success: true,
+          body: { handlerLocation },
+          message: 'Handlers location retrieved successfully.'
+      });
+  } catch (error: any) {
+      return res.json({ success: false, message: error.message });
+  }
+};
+

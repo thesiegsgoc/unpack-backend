@@ -1,21 +1,22 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from "dotenv"
-const app = express();
+import config from './src/config'
+import userRouter from "./src/routes/user";
+import orderRouter from "./src/routes/order";
+import zoneRouter from "./src/routes/zone";
+import deliveryRouter from "./src/routes/delivery";
+//Initializing Environment Variables for the whole codebase:
 dotenv.config();
 
-const PORT = process.env.PORT || 4111;
-const database = process.env.MONGODB_URL;
-const userRouter  = require("./src/routes/user");
-const orderRouter = require('./src/routes/order');
-const zoneRouter  = require("./src/routes/zone");
-const deliveryRouter = require('./src/routes/delivery');
+// Initializing express
+const app = express();
+
+// Destructuring the config object
+const { MONGODB_URL, PORT } = config
 
 // MongoDB connection:
-mongoose.connect(database, {
-    useUnifiedTopology: true,
-    useNewUrlParser: true 
-})
+mongoose.connect(MONGODB_URL)
 .then(() => console.log('Database connected successfully...'))
 .catch((err:any) => console.log(err));
 
@@ -27,4 +28,4 @@ app.use(orderRouter);
 app.use(deliveryRouter);
 
 // Serving port details:
-app.listen(PORT, console.log("Server has started at port " + PORT));
+app.listen(PORT, ()=> console.log(`Server is running on port ${PORT}`));

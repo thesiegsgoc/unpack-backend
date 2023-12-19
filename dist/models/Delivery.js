@@ -28,7 +28,7 @@ const DeliverySchema = new mongoose_1.default.Schema({
         type: Number,
         required: true
     },
-    phonenumber: {
+    phoneNumber: {
         type: String
     },
     size: {
@@ -82,9 +82,16 @@ const DeliverySchema = new mongoose_1.default.Schema({
             value: 'In Process'
         }
     },
+    orderId: {
+        type: String
+    },
+    vendorId: {
+        type: String
+    },
     date: {
         type: Date,
         default: Date.now,
     },
 });
-module.exports = mongoose_1.default.model("Delivery", DeliverySchema);
+const DeliveryModel = mongoose_1.default.model("Delivery", DeliverySchema);
+exports.default = DeliveryModel;

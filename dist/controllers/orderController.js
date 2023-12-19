@@ -40,3 +40,5 @@ const updateOrderInfo = async (req, res) => {
     }
 };
 exports.updateOrderInfo = updateOrderInfo;
+const orderController = { updateOrderInfo: exports.updateOrderInfo, addOrder: exports.addOrder };
+exports.default = orderController;

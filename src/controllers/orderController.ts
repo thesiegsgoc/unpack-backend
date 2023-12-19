@@ -18,7 +18,7 @@ export const addOrder = async (req: Request, res: Response): Promise<Response> =
             });
             await newOrder.save();
             return res.json({ status: 'OK', data: newOrder });
-        } catch (error) {
+        } catch (error: any) {
             return res.json({ success: false, message: error.message });
         }
     }
@@ -33,7 +33,10 @@ export const updateOrderInfo = async (req: Request, res: Response): Promise<Resp
             { $set: { ...req.body } }
         );
         return res.json({ success: true, message: 'Order info has updated successfully.' });
-    } catch (error) {
+    } catch (error: any) {
         return res.json({ success: false, message: error.message });
     }
 };
+
+const orderController = { updateOrderInfo, addOrder };
+export default orderController;

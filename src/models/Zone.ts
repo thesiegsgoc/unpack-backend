@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const ZonesSchema = new mongoose.Schema({
     zoneName: {
@@ -23,4 +23,5 @@ const ZonesSchema = new mongoose.Schema({
     },
 });
 
-module.exports = mongoose.model("Zones", ZonesSchema);
+const Zones = mongoose.model("Zones", ZonesSchema);
+export default Zones

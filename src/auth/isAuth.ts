@@ -1,23 +1,44 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import User from "../models/User";
+import jwt, {JwtPayload} from 'jsonwebtoken';
+import UserModel from '../models/User';
+import { IUser } from "../types/user";
 
-interface DecodedToken {
-    userId: string;
-    // ... other fields if your token has more
+// Extend the Express Request type to include the user field
+interface RequestWithUser extends Request {
+    user?: IUser;
 }
 
-export const isUserAuth = async (req: Request, res: Response, next: NextFunction) => {
+interface DecodedToken extends JwtPayload {
+    userId: string;
+}
+
+/**
+ * Middleware function to check if the user is authenticated
+ * 
+ * @param { RequestWithUser } req the request object
+ * @param { Response } res the response object
+ * @param { NextFunction } next the next middleware function
+ * @returns { Promise<void> } void
+ */
+export const isUserAuth = async (req: RequestWithUser, res: Response, next: NextFunction) => {
     if (req.headers && req.headers.authorization) {
         const token = req.headers.authorization.split(' ')[1];
-        const decode = jwt.verify(token, process.env.JWT_SECRET_CODE) as DecodedToken;
-        const user = await User.findById({ _id: decode.userId });
-        if (!user) {
-            return res.json({ success: false, message: 'User not authorized.'});
+
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET_CODE!) as DecodedToken;
+            const user = await UserModel.findById(decoded.userId);
+
+            if (!user) {
+                return res.status(401).json({ success: false, message: 'User not authorized.' });
+            }
+
+            req.user = user;
+            next();
+        } catch (error: any) {
+            // Handle potential errors like expired token, invalid token etc.
+            return res.status(401).json({ success: false, message: 'User not authorized.', error: error.message });
         }
-        req.user = user;
-        next();
     } else {
-        return res.json({ success: false, message: 'User not authorized.'});
+        return res.status(401).json({ success: false, message: 'Authorization token not found.' });
     }
 };
