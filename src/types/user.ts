@@ -17,7 +17,7 @@ interface IUser {
     securityAnswer?: string;
     location?: Record<string, unknown>;
     date?: Date;
-
+    canDeliver?: string;
     comparePassword(password: string): Promise<boolean>;
 }
 

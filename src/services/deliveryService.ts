@@ -47,13 +47,13 @@ export const addDeliveryService = async (deliveryData: AddDeliveryRequestBody) =
 
     await newDelivery.save();
     
-    await User.updateOne(
+    await UserModel.updateOne(
         { _id: sendorId },
         { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } },
     );
 
     if (handler.success && handler.body.handler) {
-        await User.updateOne(
+        await UserModel.updateOne(
             { _id: handler.body.handler },
             { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } },
         );
@@ -111,7 +111,7 @@ export const trackDeliveryService = async (trackingId: string) => {
     }
 
     const { scheduledHandler, status, pickup, dropoff } = delivery;
-    const handlerDetails = await User.findById(scheduledHandler);
+    const handlerDetails = await UserModel.findById(scheduledHandler);
 
     if (!handlerDetails) {
         throw new Error('Handler details not found.');
@@ -270,7 +270,7 @@ export const pickupDeliveryService = async (encryptedData: string, partnerId: st
         throw new Error('Cannot decrypt undefined data.');
     }
 
-    const partner = await User.findById({ _id: partnerId });
+    const partner = await UserModel.findById({ _id: partnerId });
 
     if (!partner) {
         throw new Error('You do not have authorization to read this data.');
@@ -313,7 +313,7 @@ export const getHandlersLocationService = async (scheduledHandler: string) => {
         throw new Error('Provide valid handler id.');
     }
 
-    const handler = await User.findById(scheduledHandler);
+    const handler = await UserModel.findById(scheduledHandler);
     
     if (!handler) {
         throw new Error('Handler does not exist.');
