@@ -1,11 +1,11 @@
 import Cryptr from 'cryptr';
-import DeliveryModel from "../models/Delivery"; 
-import UserModel from '../models/User';
+import DeliveryModel from "../models/delivery"; 
+import UserModel from '../models/users/user';
 import { Request, Response } from 'express';
 import scheduling from '../util/scheduling';
 import db from '../util/db';
-import PartnerModel from '../models/Partner';
-import OrderModel from '../models/Order';
+import PartnerModel from '../models/partner';
+import OrderModel from '../models/order';
 import * as DeliveryServices from '../services/deliveryService'; //TODO: improve export and import of files
 const cryptr = new Cryptr('myTotallySecretKey');
 import { IUser } from "../types/user";

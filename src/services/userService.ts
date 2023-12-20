@@ -1,7 +1,7 @@
 import db from '../util/db';
 import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
-import UserModel from "../models/User";
+import UserModel from "../models/users/user";
 import cloudinary from '../util/cloudinary';
 import config from "../config";
 import argon2 from 'argon2';
@@ -9,8 +9,6 @@ import argon2 from 'argon2';
 const {JWT_SECRET_CODE} = config;
 
 const END_NUMBER = 1000000;
-
-
 
 export const userRegisterService = async (userData: { username: string, phone: string, password: string, location: any, expoPushToken: string, status: string, securityAnswer: string, securityCode: string }) => {
     const { username, phone, password, location, expoPushToken, status, securityAnswer, securityCode } = userData;
@@ -68,11 +66,9 @@ export const loginUserService = async (username: string, password: string) => {
 
 export const uploadProfilePictureService = async (userID: string, filePath: string) => {
     const user = await UserModel.findById(userID);
-
     if (!user) {
         throw new Error('Cannot update a profile picture of an unregistered user.');
     }
-
     const profilePhotObj = await cloudinary.uploader.upload(
         filePath,
         {
@@ -82,7 +78,6 @@ export const uploadProfilePictureService = async (userID: string, filePath: stri
             crop: 'fill'
         }
     );
-
     await UserModel.updateOne(
         { _id: userID },
         { $set: { profilePhoto: profilePhotObj.secure_url } }
@@ -134,4 +129,25 @@ export const resetUserPasswordService = async (phone: string, password: string, 
 
     return user.username;
 };
+
+export const deleteUserService = async (userId: string) => {
+    const user = await UserModel.findById(userId);
+    if(!user){
+        throw new Error("No user found.");
+    }
+    await UserModel.deleteOne({ _id: userId });
+};
+
+export const getAllUsersService = async () => {
+    const users = await UserModel.find();
+    if(!users) {throw new Error("No users found.")}
+    return users;
+};
+
+export const getUserByIdService = async (userId: string) => {
+    const user = await UserModel.findOne({userId});
+    if(!user) {throw new Error("No user found.")}
+    return user;
+};
+
 

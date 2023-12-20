@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deliveryCostService = exports.assignHandlerService = exports.updateZoneHandlerAvailabilityService = exports.deleteZoneHandlerService = exports.addZoneHandlerService = exports.deleteZoneService = exports.updateZoneInfoService = exports.registerZoneService = void 0;
-const Zone_1 = __importDefault(require("../models/Zone"));
+const zone_1 = __importDefault(require("../models/zone"));
 const db_1 = __importDefault(require("../util/db"));
 const geolocation_utils_1 = require("geolocation-utils");
 const scheduling_1 = require("../util/scheduling");
@@ -22,7 +22,7 @@ const registerZoneService = async (zoneName, rate, centralLocation) => {
     if (existingZone) {
         throw new Error(`Zone ${zoneName} already exists.`);
     }
-    const zone = new Zone_1.default({
+    const zone = new zone_1.default({
         zoneName,
         rate,
         zoneHandlers: [],
@@ -33,7 +33,7 @@ const registerZoneService = async (zoneName, rate, centralLocation) => {
 };
 exports.registerZoneService = registerZoneService;
 const updateZoneInfoService = async (zoneName, rate) => {
-    const zone = await Zone_1.default.findOne({ zoneName });
+    const zone = await zone_1.default.findOne({ zoneName });
     if (!zone) {
         throw new Error(`Invalid zone name: No zone is named ${zoneName}.`);
     }
@@ -93,7 +93,7 @@ const assignHandlerService = async (location) => {
     if (!location) {
         throw new Error(`Can't pick-up nor drop a package at an unknown location.`);
     }
-    const zones = await Zone_1.default.find({});
+    const zones = await zone_1.default.find({});
     let closestZone = null; //TODO: Fix this type
     let minimumDistance = Number.MAX_VALUE;
     zones.forEach((zone) => {
@@ -121,7 +121,7 @@ const assignHandlerService = async (location) => {
 };
 exports.assignHandlerService = assignHandlerService;
 const deliveryCostService = async (pickUpLocation, dropOffLocation, deliveryType) => {
-    const zones = await Zone_1.default.find({});
+    const zones = await zone_1.default.find({});
     const pickUpCostDetails = (0, scheduling_1.getDeliveryCostDetails)(zones, pickUpLocation);
     const dropOffCostDetails = (0, scheduling_1.getDeliveryCostDetails)(zones, dropOffLocation);
     //@ts-ignore

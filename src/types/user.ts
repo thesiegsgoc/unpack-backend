@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 interface IUser {
     userId: string;
     username: string;
-    fullname?: string;
+    name?: string;
     phone: string;
     email?: string;
     password: string;
@@ -18,8 +18,16 @@ interface IUser {
     location?: Record<string, unknown>;
     date?: Date;
     canDeliver?: string;
+    address:any,
+    preferredPickupLocation: any,
+    languagePreference: any,
+    dateOfBirth: any,
+    userType: any,
+    emailVerified: any,
+    paymentMethod: any,
     comparePassword(password: string): Promise<boolean>;
 }
+
 
 type UserDocument = IUser & Document;
 

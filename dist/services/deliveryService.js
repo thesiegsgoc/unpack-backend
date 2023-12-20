@@ -6,12 +6,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getHandlersLocationService = exports.pickupDeliveryService = exports.getDeliveryIdsService = exports.getPartnerDeliveryHistoryService = exports.getUserDeliveryHistoryService = exports.trackDeliveryService = exports.encryptDeliveryDetailsService = exports.addDeliveryService = void 0;
 const cryptr_1 = __importDefault(require("cryptr"));
-const Delivery_1 = __importDefault(require("../models/Delivery"));
-const User_1 = __importDefault(require("../models/User"));
+const delivery_1 = __importDefault(require("../models/delivery"));
+const user_1 = __importDefault(require("../models/users/user"));
 const scheduling_1 = __importDefault(require("../util/scheduling"));
 const db_1 = __importDefault(require("../util/db"));
-const Order_1 = __importDefault(require("../models/Order"));
-const Partner_1 = __importDefault(require("../models/Partner"));
+const order_1 = __importDefault(require("../models/order"));
+const partner_1 = __importDefault(require("../models/partner"));
 const cryptr = new cryptr_1.default('myTotallySecretKey');
 const addDeliveryService = async (deliveryData) => {
     const { receiver, phoneNumber, pickup, dropoff, sendorId, size, type, parcel, quantity, deliveryTime, deliveryDate, dropOffCost } = deliveryData;
@@ -20,7 +20,7 @@ const addDeliveryService = async (deliveryData) => {
     }
     const numCurrentDeliveries = await db_1.default.deliveries.countDocuments();
     const handler = await scheduling_1.default.assignHandler(pickup);
-    const newDelivery = new Delivery_1.default({
+    const newDelivery = new delivery_1.default({
         receiver,
         phoneNumber,
         pickup,
@@ -37,9 +37,9 @@ const addDeliveryService = async (deliveryData) => {
         dropOffCost,
     });
     await newDelivery.save();
-    await User_1.default.updateOne({ _id: sendorId }, { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } });
+    await user_1.default.updateOne({ _id: sendorId }, { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } });
     if (handler.success && handler.body.handler) {
-        await User_1.default.updateOne({ _id: handler.body.handler }, { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } });
+        await user_1.default.updateOne({ _id: handler.body.handler }, { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } });
     }
     return { trackingNumber: `D00${numCurrentDeliveries + 1}` };
 };
@@ -50,8 +50,8 @@ const encryptDeliveryDetailsService = async (deliveryIds) => {
     }
     const deliveryDetails = [];
     await Promise.all(deliveryIds.map(async (deliveryId) => {
-        const delivery = await Delivery_1.default.findOne({ deliveryId });
-        const user = delivery?.sendorId && await User_1.default.findOne({ userId: delivery.sendorId });
+        const delivery = await delivery_1.default.findOne({ deliveryId });
+        const user = delivery?.sendorId && await user_1.default.findOne({ userId: delivery.sendorId });
         if (!delivery || !user) {
             throw new Error(`Invalid delivery data for ID: ${deliveryId}`);
         }
@@ -84,7 +84,7 @@ const trackDeliveryService = async (trackingId) => {
         throw new Error('Provide a valid order ID.');
     }
     const { scheduledHandler, status, pickup, dropoff } = delivery;
-    const handlerDetails = await User_1.default.findById(scheduledHandler);
+    const handlerDetails = await user_1.default.findById(scheduledHandler);
     if (!handlerDetails) {
         throw new Error('Handler details not found.');
     }
@@ -99,18 +99,18 @@ const trackDeliveryService = async (trackingId) => {
 };
 exports.trackDeliveryService = trackDeliveryService;
 const getUserDeliveryHistoryService = async (userId) => {
-    const user = await User_1.default.findById(userId).populate('deliveries');
+    const user = await user_1.default.findById(userId).populate('deliveries');
     if (!user || !user.deliveries?.length) {
         throw new Error('User not found or has no delivery history.');
     }
     const deliveryList = [];
     for (const delivery of user.deliveries) {
-        const deliveryItem = await Delivery_1.default.findById(delivery);
+        const deliveryItem = await delivery_1.default.findById(delivery);
         if (!deliveryItem) {
             console.error(`Delivery data missing for ID: ${delivery}`);
             continue;
         }
-        const sender = await User_1.default.findById(deliveryItem.sendorId);
+        const sender = await user_1.default.findById(deliveryItem.sendorId);
         deliveryList.push({
             delivery: {
                 pickup: deliveryItem.pickup,
@@ -134,19 +134,19 @@ const getUserDeliveryHistoryService = async (userId) => {
 };
 exports.getUserDeliveryHistoryService = getUserDeliveryHistoryService;
 const getPartnerDeliveryHistoryService = async (partnerId) => {
-    const partner = await Partner_1.default.findOne({ partnerId }).populate('deliveries');
+    const partner = await partner_1.default.findOne({ partnerId }).populate('deliveries');
     if (!partner || !partner.deliveries?.length) {
         throw new Error('Partner not found or has no delivery history.');
     }
     const deliveryList = [];
     for (const delivery of partner.deliveries) {
-        const deliveryData = await Delivery_1.default.findById(delivery);
+        const deliveryData = await delivery_1.default.findById(delivery);
         if (!deliveryData) {
             console.error(`Delivery data missing for ID: ${delivery}`);
             continue;
         }
-        const orderData = await Order_1.default.findById(deliveryData.orderId);
-        const vendorData = await User_1.default.findById(deliveryData.vendorId);
+        const orderData = await order_1.default.findById(deliveryData.orderId);
+        const vendorData = await user_1.default.findById(deliveryData.vendorId);
         deliveryList.push({
             delivery: {
                 pickup: deliveryData.pickup,
@@ -183,13 +183,13 @@ const getDeliveryIdsService = async (userID) => {
     if (!userID) {
         throw new Error('Provide user ID.');
     }
-    const user = await User_1.default.findById({ _id: userID });
+    const user = await user_1.default.findById({ _id: userID });
     if (!user) {
         throw new Error('User not found.');
     }
     let deliveries = [];
     if (user.status === 'vendor' || user.status === 'consumer') {
-        deliveries = await Delivery_1.default.find({ "sendorId": userID }).exec();
+        deliveries = await delivery_1.default.find({ "sendorId": userID }).exec();
     }
     // Include other conditions if necessary
     if (!deliveries || deliveries.length === 0) {
@@ -210,7 +210,7 @@ const pickupDeliveryService = async (encryptedData, partnerId) => {
     if (!encryptedData) {
         throw new Error('Cannot decrypt undefined data.');
     }
-    const partner = await User_1.default.findById({ _id: partnerId });
+    const partner = await user_1.default.findById({ _id: partnerId });
     if (!partner) {
         throw new Error('You do not have authorization to read this data.');
     }
@@ -221,7 +221,7 @@ const pickupDeliveryService = async (encryptedData, partnerId) => {
     }
     let deliveryIds = [];
     for (const deliveryId of deliveryData.deliveryIds) {
-        const delivery = await Delivery_1.default.findOne({ deliveryId });
+        const delivery = await delivery_1.default.findOne({ deliveryId });
         if (delivery && delivery.scheduledHandler === partnerId) {
             await db_1.default.deliveries.updateOne({ deliveryId }, {
                 $set: {
@@ -241,7 +241,7 @@ const getHandlersLocationService = async (scheduledHandler) => {
     if (!scheduledHandler) {
         throw new Error('Provide valid handler id.');
     }
-    const handler = await User_1.default.findById(scheduledHandler);
+    const handler = await user_1.default.findById(scheduledHandler);
     if (!handler) {
         throw new Error('Handler does not exist.');
     }

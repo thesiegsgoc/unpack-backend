@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, {JwtPayload} from 'jsonwebtoken';
-import UserModel from '../models/User';
+import UserModel from '../models/users/user';
 import { IUser } from "../types/user";
 import config from '../config';
-
 const { JWT_SECRET_CODE } = config;
 
 // Extend the Express Request type to include the user field

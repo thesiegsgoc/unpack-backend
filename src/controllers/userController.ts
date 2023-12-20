@@ -1,4 +1,4 @@
-import User from "../models/User"; // Adjust the import based on your User model's export
+import User from "../models/users/user"; // Adjust the import based on your User model's export
 import jwt from 'jsonwebtoken';
 import db from '../util/db';
 import { v4 as uuidv4 } from 'uuid';
@@ -6,7 +6,7 @@ import cloudinary from '../util/cloudinary';
 import argon2 from 'argon2';
 import { Request, Response } from 'express';
 //Todo: change to import from services
-import { userRegisterService, loginUserService, uploadProfilePictureService, updateUserInfoService, updateUserLocationService, resetUserPasswordService } from '../services/userService'
+import * as UserServices from '../services/userService'
 
 const END_NUMBER = 1000000;
 
@@ -22,7 +22,7 @@ export const registerUserController = async (req: Request, res: Response) => {
             return res.status(400).json({ success: false, message: "Password must match" });
         }
 
-        const newUser = await userRegisterService({ username, phone, password, location, expoPushToken, status, securityAnswer, securityCode });
+        const newUser = await UserServices.userRegisterService({ username, phone, password, location, expoPushToken, status, securityAnswer, securityCode });
         res.status(201).json({ success: true, data: newUser });
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
@@ -33,7 +33,7 @@ export const registerUserController = async (req: Request, res: Response) => {
 export const loginUserController = async (req: Request, res: Response) => {
     try {
         const { username, password } = req.body;
-        const { token, user } = await loginUserService(username, password);
+        const { token, user } = await UserServices.loginUserService(username, password);
 
         res.json({
             success: true,
@@ -68,7 +68,7 @@ export const uploadProfilePictureController = async (req: Request, res: Response
             return res.status(400).json({ success: false, message: 'Cannot update a profile picture of an unknown user.' });
         }
 
-        const profileUrl = await uploadProfilePictureService(userID, file.path);
+        const profileUrl = await UserServices.uploadProfilePictureService(userID, file.path);
 
         res.json({
             success: true,
@@ -84,7 +84,7 @@ export const uploadProfilePictureController = async (req: Request, res: Response
 export const updateUserInfoController = async (req: Request, res: Response) => {
     try {
         const { userId, fullname, phone, email } = req.body;
-        await updateUserInfoService(userId, { fullname, phone, email });
+        await UserServices.updateUserInfoService(userId, { fullname, phone, email });
         res.json({ success: true, message: 'User info has updated successfully.' });
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
@@ -96,7 +96,7 @@ export const updateUserInfoController = async (req: Request, res: Response) => {
 export const updateUserLocationController = async (req: Request, res: Response) => {
     try {
         const { userId, location } = req.body;
-        await updateUserLocationService(userId, location);
+        await UserServices.updateUserLocationService(userId, location);
         res.json({ success: true, message: 'User location has been updated successfully.' });
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
@@ -116,12 +116,46 @@ export const resetUserPasswordController = async (req: Request, res: Response) =
     }
 
     try {
-        const username = await resetUserPasswordService(phone, password, securityCode, securityAnswer);
+        const username = await UserServices.resetUserPasswordService(phone, password, securityCode, securityAnswer);
         res.json({ success: true, body: { username }, message: "Password reset successfully." });
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+export const deleteUserController = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.body;
+        await UserServices.deleteUserService(userId);
+        res.json({ success: true, message: 'User has been deleted successfully.' });
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const getAllUsersController = async (req: Request, res: Response) => {
+    try {
+        const users = await UserServices.getAllUsersService();
+        res.json({ success: true, users });
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const getUserByIdController = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params;
+        const user = await UserServices.getUserByIdService(userId);
+        if (user) {
+            res.json({ success: true, user });
+        } else {
+            res.status(404).json({ success: false, message: 'User not found.' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 
 
  

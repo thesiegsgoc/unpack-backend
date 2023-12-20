@@ -30,8 +30,8 @@ exports.getDeliveryCostDetails = exports.assignHandler = exports.getHandler = ex
 //@ts-ignore
 const isGeoPointInPolygon = __importStar(require("geo-point-in-polygon"));
 const geolocation_utils_1 = require("geolocation-utils");
-const User_1 = __importDefault(require("../models/User"));
-const Zone_1 = __importDefault(require("../models/Zone"));
+const user_1 = __importDefault(require("../models/users/user"));
+const zone_1 = __importDefault(require("../models/zone"));
 const db_1 = __importDefault(require("./db"));
 const ZONES = [];
 const PARTNERS = [];
@@ -72,7 +72,7 @@ const getHandler = async (location) => {
     //@ts-ignore
     const handlers = zone ? zoneHandlers[zone] : [];
     for (const handler of handlers) {
-        const userDoc = await User_1.default.findById(handler).exec();
+        const userDoc = await user_1.default.findById(handler).exec();
         if (userDoc && userDoc.canDeliver) {
             return handler;
         }
@@ -87,7 +87,7 @@ const assignHandler = async (location) => {
             message: `Can't pick-up nor drop a package at an unknown location.`
         };
     }
-    const zones = await Zone_1.default.find({});
+    const zones = await zone_1.default.find({});
     let distanceToLocationFromZoneCenter;
     let prevDistance;
     let zoneHandlers;

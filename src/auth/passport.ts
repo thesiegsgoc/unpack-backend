@@ -1,10 +1,10 @@
 import bcrypt from 'bcryptjs';
 import { Strategy as LocalStrategy } from 'passport-local';
 import passport from 'passport';
-import User from "../models/User"; // Make sure this model is compatible with TypeScript
+import User from "../models/users/user"; // Make sure this model is compatible with TypeScript
+
 
 // Assuming User has a specific type or interface, you might need to import that as well
-
 export const loginCheck = (passport: passport.PassportStatic): void => {
     passport.use(
         new LocalStrategy({ usernameField: "phone" }, (phone, password, done) => {

@@ -1,5 +1,5 @@
 // orderService.ts
-import Order from "../models/Order";
+import Order from "../models/order";
 import db from '../util/db';
 
 export const createOrder = async (orderData: { name: string; parcel: string; quantity: number; size: string; orderId: string }) => {

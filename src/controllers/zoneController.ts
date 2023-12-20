@@ -1,4 +1,4 @@
-import Zone from "../models/Zone"; // Adjust if Zone has a named export
+import Zone from "../models/zone"; // Adjust if Zone has a named export
 import db from '../util/db'; // Adjust if db has a named export
 import { distanceTo } from 'geolocation-utils';
 import * as util from '../util/scheduling'; // Use * as util if scheduling exports multiple members

@@ -1,4 +1,4 @@
-import Zone from "../models/Zone"
+import Zone from "../models/zone"
 import db from '../util/db'
 import { distanceTo } from 'geolocation-utils'
 import { getDeliveryCostDetails } from '../util/scheduling';

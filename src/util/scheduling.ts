@@ -1,9 +1,9 @@
 //@ts-ignore
 import * as isGeoPointInPolygon from 'geo-point-in-polygon';
 import { distanceTo } from 'geolocation-utils';
-import UserModel from "../models/User";
-import Delivery from "../models/Delivery";
-import Zone from '../models/Zone';
+import UserModel from "../models/users/user";
+import Delivery from "../models/delivery";
+import Zone from '../models/zone';
 import db from './db';
 
 const ZONES: any[] = [];
