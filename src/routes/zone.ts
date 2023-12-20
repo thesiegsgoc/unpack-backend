@@ -15,6 +15,9 @@ import {
 } from '../controllers/zoneController';
 
 // Implement the user routes:
+router.get('/zones', (req: Request, res: Response) => {
+res.send('Get all zones');
+});
 router.post('/zone/register', registerZone);
 router.post('/zone/add-zone-handler', addZoneHandler);
 router.put('/zone/delete-zone-handler', deleteZoneHandler);

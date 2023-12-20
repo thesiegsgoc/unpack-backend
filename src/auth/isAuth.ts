@@ -2,6 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import jwt, {JwtPayload} from 'jsonwebtoken';
 import UserModel from '../models/User';
 import { IUser } from "../types/user";
+import config from '../config';
+
+const { JWT_SECRET_CODE } = config;
 
 // Extend the Express Request type to include the user field
 interface RequestWithUser extends Request {
@@ -25,7 +28,7 @@ export const isUserAuth = async (req: RequestWithUser, res: Response, next: Next
         const token = req.headers.authorization.split(' ')[1];
 
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET_CODE!) as DecodedToken;
+            const decoded = jwt.verify(token, JWT_SECRET_CODE) as DecodedToken;
             const user = await UserModel.findById(decoded.userId);
 
             if (!user) {
@@ -35,7 +38,6 @@ export const isUserAuth = async (req: RequestWithUser, res: Response, next: Next
             req.user = user;
             next();
         } catch (error: any) {
-            // Handle potential errors like expired token, invalid token etc.
             return res.status(401).json({ success: false, message: 'User not authorized.', error: error.message });
         }
     } else {

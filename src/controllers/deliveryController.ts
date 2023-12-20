@@ -8,6 +8,7 @@ import PartnerModel from '../models/Partner';
 import OrderModel from '../models/Order';
 import * as DeliveryServices from '../services/deliveryService'; //TODO: improve export and import of files
 const cryptr = new Cryptr('myTotallySecretKey');
+import { IUser } from "../types/user";
 // Define types and interfaces
 interface Coordinates {
   latitude: number;
@@ -84,6 +85,10 @@ interface PartnerDeliveryItem {
 type DeliveryItem = /*unresolved*/ any // TODO: Replace with actual type
 type GetDeliveryIdsRequestBody = /*unresolved*/ any
 
+interface RequestWithUser extends Request {
+  user?: IUser;
+}
+
 export const addDeliveryController = async (req: Request<{}, {}, AddDeliveryRequestBody>, res: Response) => {
   try {
       const deliveryData = req.body;
@@ -99,7 +104,7 @@ export const addDeliveryController = async (req: Request<{}, {}, AddDeliveryRequ
 };
 
 
-export const encryptDeliveryDetailsController = async (req: Request<{ deliveryIds: string[] }>, res: Response) => {
+export const encryptDeliveryDetailsController = async (req: Request, res: Response) => {
   try {
       const { deliveryIds } = req.body;
       const encryptedDetails = await DeliveryServices.encryptDeliveryDetailsService(deliveryIds);
@@ -112,6 +117,7 @@ export const encryptDeliveryDetailsController = async (req: Request<{ deliveryId
       return res.json({ success: false, message: error.message });
   }
 };
+
 
  
 export const trackDeliveryController = async (req: Request, res: Response) => {

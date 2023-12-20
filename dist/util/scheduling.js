@@ -27,6 +27,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getDeliveryCostDetails = exports.assignHandler = exports.getHandler = exports.getPartner = exports.getZone = void 0;
+//@ts-ignore
 const isGeoPointInPolygon = __importStar(require("geo-point-in-polygon"));
 const geolocation_utils_1 = require("geolocation-utils");
 const User_1 = __importDefault(require("../models/User"));
@@ -44,7 +45,7 @@ const PARTNERS = [];
     4. Determine the people in the list and move them in order.
        
 */
-const getZone = (location) => {
+const getZone = async (location) => {
     const latitude = location.latitude || location.lat;
     const longitude = location.longitude || location.lng;
     for (const zone of ZONES) {
@@ -54,7 +55,7 @@ const getZone = (location) => {
     }
 };
 exports.getZone = getZone;
-const getPartner = (location) => {
+const getPartner = async (location) => {
     const latitude = location.latitude;
     const longitude = location.longitude;
     for (const partner of PARTNERS) {
@@ -64,14 +65,15 @@ const getPartner = (location) => {
     }
 };
 exports.getPartner = getPartner;
-const getHandler = (location) => {
+const getHandler = async (location) => {
     const zones = []; // Define the type of elements in zones if known
     const zoneHandlers = {}; // Define the type for zoneHandlers if known
     const zone = (0, exports.getZone)(location);
+    //@ts-ignore
     const handlers = zone ? zoneHandlers[zone] : [];
     for (const handler of handlers) {
-        const { canDeliver } = User_1.default.findById({ _id: handler });
-        if (canDeliver) {
+        const userDoc = await User_1.default.findById(handler).exec();
+        if (userDoc && userDoc.canDeliver) {
             return handler;
         }
     }
@@ -82,7 +84,7 @@ const assignHandler = async (location) => {
     if (!location) {
         return {
             success: false,
-            message: `Can't pick-up nor drop a package at an unkonwon location.`
+            message: `Can't pick-up nor drop a package at an unknown location.`
         };
     }
     const zones = await Zone_1.default.find({});
@@ -91,19 +93,10 @@ const assignHandler = async (location) => {
     let zoneHandlers;
     let zoneName;
     let handlerId;
-    zones.forEach((zone) => {
+    for (const zone of zones) {
         try {
-            distanceToLocationFromZoneCenter = (0, geolocation_utils_1.distanceTo)({
-                lat: zone.centralLocation.latitude,
-                lon: zone.centralLocation.longitude
-            }, {
-                lat: location.latitude,
-                lon: location.longitude
-            });
-            if (prevDistance === undefined) {
-                prevDistance = distanceToLocationFromZoneCenter;
-            }
-            if (distanceToLocationFromZoneCenter <= prevDistance) {
+            distanceToLocationFromZoneCenter = (0, geolocation_utils_1.distanceTo)({ lat: zone.centralLocation.latitude, lon: zone.centralLocation.longitude }, { lat: location.latitude, lon: location.longitude });
+            if (prevDistance === undefined || distanceToLocationFromZoneCenter <= prevDistance) {
                 prevDistance = distanceToLocationFromZoneCenter;
                 zoneName = zone.zoneName;
                 zoneHandlers = zone.zoneHandlers;
@@ -115,7 +108,7 @@ const assignHandler = async (location) => {
                 message: error.message
             };
         }
-    });
+    }
     if (!zoneHandlers) {
         return {
             success: false,
@@ -123,23 +116,16 @@ const assignHandler = async (location) => {
         };
     }
     try {
-        zoneHandlers.forEach(async (zoneHandler, index) => {
+        for (const [index, zoneHandler] of zoneHandlers.entries()) {
             if (zoneHandler.available) {
                 handlerId = zoneHandler.id;
-                // Remove the handler from the current position in the queue:
                 zoneHandlers.splice(index, 1);
-                // Since the handler is scheduled to take the task, put him/her
-                // back into the end of the array to ensure that handlers get
-                // other handlers get the chance to deliver packages if available
-                // to work:
                 zoneHandlers.push(zoneHandler);
-                await db_1.default.zones.updateOne({ zoneName }, {
-                    $set: {
-                        zoneHandlers: zoneHandlers
-                    }
-                });
+                // Update the database for each zone handler
+                await db_1.default.zones.updateOne({ zoneName }, { $set: { zoneHandlers: zoneHandlers } });
+                break; // Exit loop once a handler is found and scheduled
             }
-        });
+        }
     }
     catch (error) {
         return { success: false, message: error.message };
@@ -153,13 +139,12 @@ const assignHandler = async (location) => {
     };
 };
 exports.assignHandler = assignHandler;
-const getDeliveryCostDetails = (zones, location) => {
+const getDeliveryCostDetails = async (zones, location) => {
     let distanceToLocationFromZoneCenter;
     let prevDistance;
-    let zoneHandlers;
     let zoneName;
     let cost;
-    zones.forEach((zone) => {
+    for (const zone of zones) {
         distanceToLocationFromZoneCenter = (0, geolocation_utils_1.distanceTo)({
             lat: zone.centralLocation.latitude,
             lon: zone.centralLocation.longitude
@@ -167,17 +152,12 @@ const getDeliveryCostDetails = (zones, location) => {
             lat: location.latitude,
             lon: location.longitude
         });
-        if (prevDistance === undefined) {
-            prevDistance = distanceToLocationFromZoneCenter;
-        }
-        if (distanceToLocationFromZoneCenter <= prevDistance) {
+        if (prevDistance === undefined || distanceToLocationFromZoneCenter <= prevDistance) {
             prevDistance = distanceToLocationFromZoneCenter;
             zoneName = zone.zoneName;
-            zoneHandlers = zone.zoneHandlers;
-            //Round to the nearest thousandths:
             cost = Math.round((zone.rate * distanceToLocationFromZoneCenter) / 1000000) * 1000;
         }
-    });
+    }
     return {
         zoneName,
         cost
