@@ -124,17 +124,5 @@ exports.UserSchema.pre('save', async function (next) {
  * @param { String } password the password value from the user
  * @returns { Boolean} true if the password is correct, otherwise false
  */
-exports.UserSchema.methods.comparePassword = async function (password) {
-    if (!password) {
-        throw new Error('Password is missing, provide one and try again.');
-    }
-    try {
-        const result = await argon2_1.default.verify(this.password, password);
-        return result;
-    }
-    catch (error) {
-        throw new Error(error.message);
-    }
-};
 const UserModel = mongoose_1.default.model('User', exports.UserSchema);
 exports.default = UserModel;

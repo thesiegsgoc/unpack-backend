@@ -44,10 +44,11 @@ const userRegisterService = async (userData) => {
 exports.userRegisterService = userRegisterService;
 const loginUserService = async (username, password) => {
     const user = await user_1.default.findOne({ username });
+    console.log(user);
     if (!user) {
         throw new Error('Incorrect username.');
     }
-    const isMatch = await user.comparePassword(password);
+    const isMatch = await argon2_1.default.verify(user.password, password);
     if (!isMatch) {
         throw new Error('Incorrect password.');
     }

@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 export interface IUser extends Document {
     userId: string;
     name: string;
+    username: string;
     phone: string;
     email?: string;
     password: string;
@@ -130,17 +131,6 @@ UserSchema.pre<IUser>('save', async function (next) {
  * @param { String } password the password value from the user
  * @returns { Boolean} true if the password is correct, otherwise false
  */
-UserSchema.methods.comparePassword = async function (password: string) {
-    if (!password) {
-        throw new Error('Password is missing, provide one and try again.');
-    }
-    try {
-        const result = await argon2.verify(this.password, password);
-        return result;
-    } catch (error: any) {
-        throw new Error(error.message);
-    }
-}
 
-const UserModel = mongoose.model<Document>('User', UserSchema);
+const UserModel = mongoose.model<IUser>('User', UserSchema);
 export default UserModel;

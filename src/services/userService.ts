@@ -47,11 +47,14 @@ export const userRegisterService = async (userData: { username: string, phone: s
 export const loginUserService = async (username: string, password: string) => {
     const user = await UserModel.findOne({ username });
 
+    console.log(user)
+
     if (!user) {
         throw new Error('Incorrect username.');
     }
 
-    const isMatch = await user.comparePassword(password);
+    const isMatch = await argon2.verify(user.password, password);
+
     if (!isMatch) {
         throw new Error('Incorrect password.');
     }
