@@ -7,7 +7,6 @@ import db from '../util/db';
 import PartnerModel from '../models/Partner';
 import OrderModel from '../models/Order';
 import * as DeliveryServices from '../services/deliveryService'; //TODO: improve export and import of files
-
 const cryptr = new Cryptr('myTotallySecretKey');
 // Define types and interfaces
 interface Coordinates {
@@ -84,7 +83,6 @@ interface PartnerDeliveryItem {
 
 type DeliveryItem = /*unresolved*/ any // TODO: Replace with actual type
 type GetDeliveryIdsRequestBody = /*unresolved*/ any
-
 
 export const addDeliveryController = async (req: Request<{}, {}, AddDeliveryRequestBody>, res: Response) => {
   try {

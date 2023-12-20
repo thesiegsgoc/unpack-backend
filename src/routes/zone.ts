@@ -4,14 +4,14 @@ const router = express.Router();
 
 // Importing controller functions
 import {
-    deleteZone,
-    registerZone,
-    addZoneHandler,
-    updateZoneInfo,
-    deleteZoneHandler,
-    updateZoneHandlerAvailability,
-    assignHandler,
-    deliveryCost
+    deleteZoneController as deleteZone,
+    registerZoneController as registerZone,
+    addZoneHandlerController as addZoneHandler,
+    updateZoneInfoController as updateZoneInfo,
+    deleteZoneHandlerController as deleteZoneHandler,
+    updateZoneHandlerAvailabilityController as updateZoneHandlerAvailability,
+    assignHandlerController as assignHandler,
+    deliveryCostController as deliveryCost
 } from '../controllers/zoneController';
 
 // Implement the user routes:

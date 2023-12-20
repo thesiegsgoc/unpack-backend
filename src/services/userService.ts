@@ -10,6 +10,8 @@ const {JWT_SECRET_CODE} = config;
 
 const END_NUMBER = 1000000;
 
+
+
 export const userRegisterService = async (userData: { username: string, phone: string, password: string, location: any, expoPushToken: string, status: string, securityAnswer: string, securityCode: string }) => {
     const { username, phone, password, location, expoPushToken, status, securityAnswer, securityCode } = userData;
 
