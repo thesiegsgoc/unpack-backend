@@ -15,12 +15,14 @@ import {
   getDeliveryIdsController as getDeliveryIds,
   pickupDeliveryController as pickupDelivery,
   getHandlersLocationController as getHandlersLocation,
+  getAllDeliveriesController,
 } from '../controllers/deliveryController'
 
 // Implement the user routes:
 router.post('/deliveries/add', addDelivery)
 router.post('/delivery/pickup', pickupDelivery)
 router.post('/deliveries/decrypt', decryptDeliveryDetails)
+router.get('/deliveries/all', getAllDeliveriesController)
 
 // TODO: return the isUserAuth middleware to the route above as bellow
 // router.post('/deliveries/encrypt', isUserAuth, async (req: RequestWithUser, res: Response) => {

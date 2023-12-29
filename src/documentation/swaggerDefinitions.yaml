@@ -1,0 +1,109 @@
+schemas:
+  User:
+    type: object
+    required:
+      - userId
+      - name
+      - phone
+      - password
+      - userType
+      - date
+      - emailVerified
+    properties:
+      userId:
+        type: string
+        description: Unique identifier of the user, automatically generated.
+      name:
+        type: string
+        description: Name of the user.
+      username:
+        type: string
+        description: Username of the user.
+      fullname:
+        type: string
+        description: Full name of the user.
+      phone:
+        type: string
+        description: Contact phone number of the user.
+      email:
+        type: string
+        description: Email address of the user.
+      password:
+        type: string
+        description: Hashed password for the user's account.
+      deliveries:
+        type: array
+        description: Array of deliveries associated with the user.
+        items:
+          type: object
+          # Define the structure for delivery items if necessary
+      status:
+        type: string
+        description: Status of the user's account.
+      avatar:
+        type: string
+        format: binary
+        description: Avatar image of the user.
+      expoPushToken:
+        type: string
+        description: Expo push token for sending notifications.
+      profilePhoto:
+        type: string
+        format: binary
+        description: Profile photo of the user.
+      canDeliver:
+        type: string
+        description: Indicates if the user can deliver.
+      rating:
+        type: number
+        format: double
+        description: User's rating.
+      securityCode:
+        type: string
+        description: Security code for account recovery.
+      securityAnswer:
+        type: string
+        description: Security answer for account recovery.
+      location:
+        type: object
+        description: Location details of the user.
+        # Define the structure for location if necessary
+      date:
+        type: string
+        format: date-time
+        description: Date when the user account was created.
+      address:
+        type: object
+        properties:
+          street:
+            type: string
+          city:
+            type: string
+          state:
+            type: string
+          zipCode:
+            type: string
+        description: Address of the user.
+      preferredPickupLocation:
+        type: string
+        description: Preferred pickup location for deliveries.
+      languagePreference:
+        type: string
+        description: Language preference of the user.
+      dateOfBirth:
+        type: string
+        format: date
+        description: User's date of birth.
+      userType:
+        type: string
+        enum: ['normal', 'vendor', 'zoneManager', 'driver', 'agent', 'admin']
+        description: Type of user account.
+      emailVerified:
+        type: boolean
+        description: Indicates if the user's email is verified.
+      paymentMethod:
+        type: object
+        description: Payment method details.
+        # Define the structure for payment method if necessary
+
+    # Add additional properties as needed

@@ -8,7 +8,7 @@ import zoneRouter from './routes/zone'
 import deliveryRouter from './routes/delivery'
 import swaggerUi from 'swagger-ui-express'
 import swaggerJSDoc from 'swagger-jsdoc'
-import { options } from './swaggerDef'
+import { options } from './documentation/swaggerDef'
 
 // Swagger setup
 const swaggerSpec = swaggerJSDoc(options)
@@ -36,12 +36,12 @@ app.use(orderRouter)
 app.use(deliveryRouter)
 
 // Default route
-// app.get('/', (req: Request, res: Response) => {
-//     res.send('Server is ready');
-// });
+app.get('/', (req: Request, res: Response) => {
+  res.send('Server is ready')
+})
 
 // Swagger setup
-app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+// app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // Error when a route is not on the server
 app.use('*', (req: Request, res: Response) => {

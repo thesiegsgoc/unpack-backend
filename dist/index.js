@@ -11,9 +11,8 @@ const user_1 = __importDefault(require("./routes/user"));
 const order_1 = __importDefault(require("./routes/order"));
 const zone_1 = __importDefault(require("./routes/zone"));
 const delivery_1 = __importDefault(require("./routes/delivery"));
-const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
-const swaggerDef_1 = require("./swaggerDef");
+const swaggerDef_1 = require("./documentation/swaggerDef");
 // Swagger setup
 const swaggerSpec = (0, swagger_jsdoc_1.default)(swaggerDef_1.options);
 //Initializing Environment Variables for the whole codebase:
@@ -34,11 +33,11 @@ app.use(zone_1.default);
 app.use(order_1.default);
 app.use(delivery_1.default);
 // Default route
-// app.get('/', (req: Request, res: Response) => {
-//     res.send('Server is ready');
-// });
+app.get('/', (req, res) => {
+    res.send('Server is ready');
+});
 // Swagger setup
-app.use('/', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerSpec));
+// app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 // Error when a route is not on the server
 app.use('*', (req, res) => {
     res.status(404).json({

@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getHandlersLocationController = exports.pickupDeliveryController = exports.getDeliveryIdsController = exports.getPartnerDeliveryHistoryController = exports.getUserDeliveryHistoryController = exports.trackDeliveryController = exports.encryptDeliveryDetailsController = exports.addDeliveryController = void 0;
+exports.getHandlersLocationController = exports.pickupDeliveryController = exports.getDeliveryIdsController = exports.getPartnerDeliveryHistoryController = exports.getUserDeliveryHistoryController = exports.getAllDeliveriesController = exports.trackDeliveryController = exports.encryptDeliveryDetailsController = exports.addDeliveryController = void 0;
 const cryptr_1 = __importDefault(require("cryptr"));
 const DeliveryServices = __importStar(require("../services/deliveryService")); //TODO: improve export and import of files
 const cryptr = new cryptr_1.default('myTotallySecretKey');
@@ -67,7 +67,7 @@ const trackDeliveryController = async (req, res) => {
         return res.json({
             success: true,
             body: trackingDetails,
-            message: 'Tracking details retrieved successfully.'
+            message: 'Tracking details retrieved successfully.',
         });
     }
     catch (error) {
@@ -75,6 +75,20 @@ const trackDeliveryController = async (req, res) => {
     }
 };
 exports.trackDeliveryController = trackDeliveryController;
+const getAllDeliveriesController = async (req, res) => {
+    try {
+        const allDeliveries = await DeliveryServices.getAllDeliveriesService();
+        return res.json({
+            success: true,
+            body: allDeliveries,
+            message: 'All delivery details retrieved successfully.',
+        });
+    }
+    catch (error) {
+        return res.json({ success: false, message: error.message });
+    }
+};
+exports.getAllDeliveriesController = getAllDeliveriesController;
 const getUserDeliveryHistoryController = async (req, res) => {
     try {
         const { userId } = req.body;
@@ -82,7 +96,7 @@ const getUserDeliveryHistoryController = async (req, res) => {
         return res.json({
             success: true,
             body: deliveryHistory,
-            message: 'User\'s delivery history retrieved successfully.'
+            message: "User's delivery history retrieved successfully.",
         });
     }
     catch (error) {
@@ -97,7 +111,7 @@ const getPartnerDeliveryHistoryController = async (req, res) => {
         return res.json({
             success: true,
             body: deliveryHistory,
-            message: 'Delivery history retrieved successfully.'
+            message: 'Delivery history retrieved successfully.',
         });
     }
     catch (error) {
@@ -112,7 +126,7 @@ const getDeliveryIdsController = async (req, res) => {
         return res.json({
             success: true,
             body: encryptedDeliveryIds,
-            message: 'Delivery details have been encrypted successfully.'
+            message: 'Delivery details have been encrypted successfully.',
         });
     }
     catch (error) {
@@ -138,7 +152,7 @@ const getHandlersLocationController = async (req, res) => {
         return res.json({
             success: true,
             body: { handlerLocation },
-            message: 'Handlers location retrieved successfully.'
+            message: 'Handlers location retrieved successfully.',
         });
     }
     catch (error) {

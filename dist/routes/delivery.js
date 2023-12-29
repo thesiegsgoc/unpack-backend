@@ -11,6 +11,7 @@ const deliveryController_1 = require("../controllers/deliveryController");
 router.post('/deliveries/add', deliveryController_1.addDeliveryController);
 router.post('/delivery/pickup', deliveryController_1.pickupDeliveryController);
 router.post('/deliveries/decrypt', deliveryController_1.encryptDeliveryDetailsController);
+router.get('/deliveries/all', deliveryController_1.getAllDeliveriesController);
 // TODO: return the isUserAuth middleware to the route above as bellow
 // router.post('/deliveries/encrypt', isUserAuth, async (req: RequestWithUser, res: Response) => {
 //     await encryptDeliveryDetails(req, res);
