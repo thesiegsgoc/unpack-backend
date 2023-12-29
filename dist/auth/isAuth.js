@@ -23,17 +23,25 @@ const isUserAuth = async (req, res, next) => {
             const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET_CODE);
             const user = await user_1.default.findById(decoded.userId);
             if (!user) {
-                return res.status(401).json({ success: false, message: 'User not authorized.' });
+                return res
+                    .status(401)
+                    .json({ success: false, message: 'User not authorized.' });
             }
             req.user = user;
             next();
         }
         catch (error) {
-            return res.status(401).json({ success: false, message: 'User not authorized.', error: error.message });
+            return res.status(401).json({
+                success: false,
+                message: 'User not authorized.',
+                error: error.message,
+            });
         }
     }
     else {
-        return res.status(401).json({ success: false, message: 'Authorization token not found.' });
+        return res
+            .status(401)
+            .json({ success: false, message: 'Authorization token not found.' });
     }
 };
 exports.isUserAuth = isUserAuth;

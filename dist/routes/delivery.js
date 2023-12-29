@@ -14,7 +14,7 @@ router.post('/deliveries/decrypt', deliveryController_1.encryptDeliveryDetailsCo
 // TODO: return the isUserAuth middleware to the route above as bellow
 // router.post('/deliveries/encrypt', isUserAuth, async (req: RequestWithUser, res: Response) => {
 //     await encryptDeliveryDetails(req, res);
-// }); 
+// });
 router.post('/deliveries/encrypt', async (req, res) => {
     await (0, deliveryController_1.encryptDeliveryDetailsController)(req, res);
 });

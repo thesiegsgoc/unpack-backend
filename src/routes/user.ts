@@ -1,7 +1,7 @@
-import express, { Request, Response, Router, NextFunction } from 'express';
-import * as UserControllers from "../controllers/userController";
+import express, { Request, Response, Router, NextFunction } from 'express'
+import * as UserControllers from '../controllers/userController'
 
-const router: Router = express.Router();
+const router: Router = express.Router()
 
 /**
  * @openapi
@@ -24,7 +24,7 @@ const router: Router = express.Router();
  * @access Public
  * @returns {Array<User>} 200 - An array of user objects
  */
-router.get('/api/users', UserControllers.getAllUsersController);
+router.get('/api/users', UserControllers.getAllUsersController)
 
 /**
  * @route POST /api/users
@@ -35,7 +35,7 @@ router.get('/api/users', UserControllers.getAllUsersController);
  * @param {string} password - Password for the user account
  * @returns {Object} 201 - The created user object
  */
-router.post('/api/users', UserControllers.registerUserController);
+router.post('/api/users', UserControllers.registerUserController)
 
 /**
  * @route PUT /api/users/:id
@@ -44,7 +44,7 @@ router.post('/api/users', UserControllers.registerUserController);
  * @param {string} id - Unique identifier of the user
  * @returns {Object} 200 - The updated user object
  */
-router.put('/api/users/:id', UserControllers.updateUserInfoController);
+router.put('/api/users/:id', UserControllers.updateUserInfoController)
 
 /**
  * @route DELETE /api/users/:id
@@ -53,7 +53,7 @@ router.put('/api/users/:id', UserControllers.updateUserInfoController);
  * @param {string} id - Unique identifier of the user to delete
  * @returns {Object} 200 - Success message
  */
-router.delete('/api/users/:id', UserControllers.deleteUserController);
+router.delete('/api/users/:id', UserControllers.deleteUserController)
 
 /**
  * @route GET /api/users/:id
@@ -62,6 +62,6 @@ router.delete('/api/users/:id', UserControllers.deleteUserController);
  * @param {string} id - Unique identifier of the user
  * @returns {Object<User>} 200 - A user object
  */
-router.get('/api/users/:id', UserControllers.getUserByIdController);
+router.get('/api/users/:id', UserControllers.getUserByIdController)
 
-export default router;
+export default router
