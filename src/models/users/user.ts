@@ -5,6 +5,7 @@ export interface IUser extends Document {
     userId: string;
     name: string;
     username: string;
+    fullname: string;
     phone: string;
     email?: string;
     password: string;

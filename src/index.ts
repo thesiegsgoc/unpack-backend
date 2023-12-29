@@ -6,6 +6,13 @@ import userRouter from "./routes/user";
 import orderRouter from "./routes/order";
 import zoneRouter from "./routes/zone";
 import deliveryRouter from "./routes/delivery";
+import swaggerUi from 'swagger-ui-express';
+import swaggerJSDoc from 'swagger-jsdoc';
+import { options } from './swaggerDef';
+
+// Swagger setup
+const swaggerSpec = swaggerJSDoc(options);
+
 //Initializing Environment Variables for the whole codebase:
 dotenv.config();
 
@@ -27,9 +34,21 @@ app.use(zoneRouter);
 app.use(orderRouter);
 app.use(deliveryRouter);
 
+// Default route
 app.get('/', (req: Request, res: Response) => {
     res.send('Server is ready');
 });
+
+// Swagger setup
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Error when a route is not on the server
+app.use('*', (req: Request, res: Response) => {
+    res.status(404).json({
+      message:
+        'The Route you requested was not found, please check your routes and try again',
+    })
+  })
 
 // Serving port details:
 app.listen(PORT, ()=> console.log(`Server is running on port ${PORT}`));

@@ -1,34 +1,35 @@
-import { Document } from 'mongoose';
-
-interface IUser {
+import mongoose, { Schema, Document } from 'mongoose';
+export interface IUser extends Document {
     userId: string;
+    name: string;
     username: string;
-    name?: string;
+    fullname: string;
     phone: string;
     email?: string;
     password: string;
-    deliveries?: Array<any>;
+    deliveries: any[];
     status: string;
     avatar?: Buffer;
-    expoPushToken?: string | number;
+    expoPushToken?: any;
     profilePhoto?: string;
+    canDeliver?: string;
     rating?: number;
     securityCode?: string;
     securityAnswer?: string;
-    location?: Record<string, unknown>;
-    date?: Date;
-    canDeliver?: string;
-    address:any,
-    preferredPickupLocation: any,
-    languagePreference: any,
-    dateOfBirth: any,
-    userType: any,
-    emailVerified: any,
-    paymentMethod: any,
+    location: any;
+    date: Date;
+    address: {
+        street: string;
+        city: string;
+        state: string;
+        zipCode: string;
+    };
+    preferredPickupLocation?: string;
+    languagePreference?: string;
+    dateOfBirth?: Date;
+    userType: 'normal' | 'vendor' | 'zoneManager' | 'driver' | 'agent';
+    emailVerified: boolean;
+    paymentMethod?: any;
+    isModified(path: string): boolean;
     comparePassword(password: string): Promise<boolean>;
 }
-
-
-type UserDocument = IUser & Document;
-
-export { IUser, UserDocument };
