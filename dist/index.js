@@ -23,7 +23,8 @@ const app = (0, express_1.default)();
 // Destructuring the config object
 const { MONGODB_URL, PORT } = config_1.default;
 // MongoDB connection:
-mongoose_1.default.connect(MONGODB_URL)
+mongoose_1.default
+    .connect(MONGODB_URL)
     .then(() => console.log('Database connected successfully...'))
     .catch((err) => console.log(err));
 // Implement the routes here:
@@ -33,11 +34,11 @@ app.use(zone_1.default);
 app.use(order_1.default);
 app.use(delivery_1.default);
 // Default route
-app.get('/', (req, res) => {
-    res.send('Server is ready');
-});
+// app.get('/', (req: Request, res: Response) => {
+//     res.send('Server is ready');
+// });
 // Swagger setup
-app.use('/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerSpec));
+app.use('/', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerSpec));
 // Error when a route is not on the server
 app.use('*', (req, res) => {
     res.status(404).json({
