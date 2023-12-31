@@ -30,21 +30,6 @@ const express_1 = __importDefault(require("express"));
 const UserControllers = __importStar(require("../controllers/userController"));
 const router = express_1.default.Router();
 /**
- * @openapi
- * /api/users:
- *   get:
- *     summary: Retrieves a list of all users
- *     description: This endpoint retrieves all registered users
- *     responses:
- *       200:
- *         description: A list of users
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/User'
- *
  * @route GET /api/users
  * @description Retrieves a list of all users
  * @access Public
@@ -60,7 +45,7 @@ router.get('/api/users', UserControllers.getAllUsersController);
  * @param {string} password - Password for the user account
  * @returns {Object} 201 - The created user object
  */
-router.post('/api/users', UserControllers.registerUserController);
+router.post('/api/users/register', UserControllers.registerUserController);
 /**
  * @route PUT /api/users/:id
  * @description Updates the information of a specific user

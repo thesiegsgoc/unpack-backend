@@ -26,17 +26,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserByIdController = exports.getAllUsersController = exports.deleteUserController = exports.resetUserPasswordController = exports.updateUserLocationController = exports.updateUserInfoController = exports.uploadProfilePictureController = exports.loginUserController = exports.registerUserController = void 0;
 //Todo: change to import from services
 const UserServices = __importStar(require("../services/userService"));
-const END_NUMBER = 1000000;
 const registerUserController = async (req, res) => {
     try {
-        const { username, phone, password, confirm, location, expoPushToken, status, securityCode, securityAnswer } = req.body;
-        if (!username || !phone || !password || !confirm || !status) {
-            return res.status(400).json({ success: false, message: "Fill empty fields" });
-        }
-        if (password !== confirm) {
-            return res.status(400).json({ success: false, message: "Password must match" });
-        }
-        const newUser = await UserServices.userRegisterService({ username, phone, password, location, expoPushToken, status, securityAnswer, securityCode });
+        const { username, phone, password, location, expoPushToken, status, securityCode, securityAnswer, } = req.body;
+        // if (!username || !phone || !password || !confirm || !status) {
+        //   return res
+        //     .status(400)
+        //     .json({ success: false, message: 'Fill empty fields' })
+        // }
+        // if (password !== confirm) {
+        //   return res
+        //     .status(400)
+        //     .json({ success: false, message: 'Password must match' })
+        // }
+        const newUser = await UserServices.userRegisterService({
+            username,
+            phone,
+            password,
+            location,
+            expoPushToken,
+            status,
+            securityAnswer,
+            securityCode,
+        });
         res.status(201).json({ success: true, data: newUser });
     }
     catch (error) {
@@ -58,7 +70,7 @@ const loginUserController = async (req, res) => {
             rating: user.rating || 5.0,
             phone: user.phone,
             email: user.email,
-            status: user.status
+            status: user.status,
         });
     }
     catch (error) {
@@ -68,21 +80,26 @@ const loginUserController = async (req, res) => {
 exports.loginUserController = loginUserController;
 const uploadProfilePictureController = async (req, res) => {
     try {
-        //TODO: Add file type for Request 
+        //TODO: Add file type for Request
         //@ts-ignore
         const { file } = req;
         const userID = JSON.parse(req.body.userID).userID;
         if (!file) {
-            return res.status(400).json({ success: false, message: 'No profile picture provided.' });
+            return res
+                .status(400)
+                .json({ success: false, message: 'No profile picture provided.' });
         }
         if (!userID) {
-            return res.status(400).json({ success: false, message: 'Cannot update a profile picture of an unknown user.' });
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot update a profile picture of an unknown user.',
+            });
         }
         const profileUrl = await UserServices.uploadProfilePictureService(userID, file.path);
         res.json({
             success: true,
             message: 'Profile picture successfully updated.',
-            body: { profileUrl }
+            body: { profileUrl },
         });
     }
     catch (error) {
@@ -105,7 +122,10 @@ const updateUserLocationController = async (req, res) => {
     try {
         const { userId, location } = req.body;
         await UserServices.updateUserLocationService(userId, location);
-        res.json({ success: true, message: 'User location has been updated successfully.' });
+        res.json({
+            success: true,
+            message: 'User location has been updated successfully.',
+        });
     }
     catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -115,14 +135,22 @@ exports.updateUserLocationController = updateUserLocationController;
 const resetUserPasswordController = async (req, res) => {
     const { phone, password, confirm, securityCode, securityAnswer } = req.body;
     if (!securityCode || !phone || !password || !confirm || !securityAnswer) {
-        return res.status(400).json({ success: false, message: "Fill empty fields" });
+        return res
+            .status(400)
+            .json({ success: false, message: 'Fill empty fields' });
     }
     if (password !== confirm) {
-        return res.status(400).json({ success: false, message: "Passwords must match" });
+        return res
+            .status(400)
+            .json({ success: false, message: 'Passwords must match' });
     }
     try {
         const username = await UserServices.resetUserPasswordService(phone, password, securityCode, securityAnswer);
-        res.json({ success: true, body: { username }, message: "Password reset successfully." });
+        res.json({
+            success: true,
+            body: { username },
+            message: 'Password reset successfully.',
+        });
     }
     catch (error) {
         res.status(500).json({ success: false, message: error.message });
