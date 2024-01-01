@@ -7,28 +7,28 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const VendorSchema = new mongoose_1.default.Schema({
     businessName: {
         type: String,
-        required: true
+        required: true,
     },
     businessType: {
         type: String,
         enum: ['Sole Proprietorship', 'Limited Company'],
-        required: true
+        required: true,
     },
     businessAddress: {
         street: String,
         city: String,
         state: String,
-        zipCode: String
+        zipCode: String,
     },
     contactDetails: {
         phoneNumbers: [String],
         emailAddresses: [String],
-        website: String
+        website: String,
     },
     businessLicenses: [String],
     taxCertificates: {
-        TIN: String
-    }
+        TIN: String,
+    },
 });
 const VendorModel = mongoose_1.default.model('Vendor', VendorSchema);
 exports.default = VendorModel;

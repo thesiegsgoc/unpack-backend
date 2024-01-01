@@ -22,59 +22,53 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserSchema = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const argon2_1 = __importDefault(require("argon2"));
 const uuid_1 = require("uuid");
 exports.UserSchema = new mongoose_1.default.Schema({
     userId: {
         type: String,
         required: true,
         default: uuid_1.v4,
-        unique: true
+        unique: true,
     },
-    name: {
+    username: {
         type: String,
-        required: true
+        required: true,
     },
-    phone: {
+    password: {
         type: String,
+        maxLength: 100,
         required: true,
     },
     email: {
         type: String,
-        required: false,
     },
-    password: {
+    phone: {
         type: String,
-        required: true,
-        maxLength: 100
     },
     status: {
         type: String,
-        required: false
     },
     avatar: {
         type: Buffer,
-        required: false
     },
     location: {
         type: mongoose_1.Schema.Types.Mixed,
-        default: {}
+        default: {},
     },
     address: {
         street: String,
         city: String,
         state: String,
-        zipCode: String
+        zipCode: String,
+        country: String,
+        coordinates: {},
     },
     userType: {
         type: String,
-        enum: ['user', 'vendor', 'driver', 'agent', "admin"],
+        enum: ['normal', 'vendor', 'zoneManager', 'driver', 'agent'],
     },
     deliveries: [mongoose_1.Schema.Types.Mixed],
     expoPushToken: mongoose_1.Schema.Types.Mixed,
@@ -93,36 +87,5 @@ exports.UserSchema = new mongoose_1.default.Schema({
     emailVerified: Boolean,
     paymentMethod: mongoose_1.Schema.Types.Mixed,
 });
-/**
- * Assign the method comparePassword to the schema.
- * The method compares the provided password with
- * the hashed one stored in the database.
- * @param { String } password the password value from the user
- * @returns { Boolean} true if the password is correct, otherwise false
- */
-//Pre-save hook for password hashing
-exports.UserSchema.pre('save', async function (next) {
-    if (this.isModified('password')) {
-        try {
-            const hash = await argon2_1.default.hash(this.password);
-            this.password = hash;
-            next();
-        }
-        catch (err) {
-            next(err);
-        }
-    }
-    else {
-        next();
-    }
-});
-/**
- * Assign the method comparePassword to the schema.
- * The method compares the provided password with
- * the hashed one stored in the database.
- *
- * @param { String } password the password value from the user
- * @returns { Boolean} true if the password is correct, otherwise false
- */
 const UserModel = mongoose_1.default.model('User', exports.UserSchema);
 exports.default = UserModel;
