@@ -5,9 +5,9 @@ const router = express.Router()
 // Importing your custom middleware and controller functions
 import { isUserAuth } from '../auth/isAuth'
 import {
-  addDeliveryController as addDelivery,
+  createDeliveryController as createDelivery,
   trackDeliveryController as trackDelivery,
-  addDeliveryController as updateDelivery,
+  updateDeliveryController as updateDelivery,
   getUserDeliveryHistoryController as getUserDeliveryHistory,
   encryptDeliveryDetailsController as encryptDeliveryDetails,
   encryptDeliveryDetailsController as decryptDeliveryDetails,
@@ -18,11 +18,10 @@ import {
   getAllDeliveriesController,
 } from '../controllers/deliveryController'
 
-// Implement the user routes:
-router.post('/deliveries/add', addDelivery)
+router.get('/deliveries', getAllDeliveriesController)
+router.post('/deliveries/add', createDelivery)
 router.post('/delivery/pickup', pickupDelivery)
 router.post('/deliveries/decrypt', decryptDeliveryDetails)
-router.get('/deliveries/all', getAllDeliveriesController)
 
 // TODO: return the isUserAuth middleware to the route above as bellow
 // router.post('/deliveries/encrypt', isUserAuth, async (req: RequestWithUser, res: Response) => {
@@ -32,6 +31,7 @@ router.get('/deliveries/all', getAllDeliveriesController)
 router.post('/deliveries/encrypt', async (req: Request, res: Response) => {
   await encryptDeliveryDetails(req, res)
 })
+
 router.post('/deliveries/ids', getDeliveryIds)
 router.get('/deliveries/:trackingId/track', trackDelivery)
 router.put('/deliveries/:deliverId/update', updateDelivery)

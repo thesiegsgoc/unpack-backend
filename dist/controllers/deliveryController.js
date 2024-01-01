@@ -26,14 +26,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getHandlersLocationController = exports.pickupDeliveryController = exports.getDeliveryIdsController = exports.getPartnerDeliveryHistoryController = exports.getUserDeliveryHistoryController = exports.getAllDeliveriesController = exports.trackDeliveryController = exports.encryptDeliveryDetailsController = exports.addDeliveryController = void 0;
+exports.getHandlersLocationController = exports.pickupDeliveryController = exports.getDeliveryIdsController = exports.getPartnerDeliveryHistoryController = exports.getUserDeliveryHistoryController = exports.getAllDeliveriesController = exports.trackDeliveryController = exports.encryptDeliveryDetailsController = exports.updateDeliveryController = exports.createDeliveryController = void 0;
 const cryptr_1 = __importDefault(require("cryptr"));
 const DeliveryServices = __importStar(require("../services/deliveryService")); //TODO: improve export and import of files
 const cryptr = new cryptr_1.default('myTotallySecretKey');
-const addDeliveryController = async (req, res) => {
+const createDeliveryController = async (req, res) => {
     try {
         const deliveryData = req.body;
-        const result = await DeliveryServices.addDeliveryService(deliveryData);
+        const result = await DeliveryServices.createDeliveryService(deliveryData);
         return res.json({
             success: true,
             message: 'Delivery ordered successfully',
@@ -44,7 +44,22 @@ const addDeliveryController = async (req, res) => {
         return res.json({ success: false, message: error.message });
     }
 };
-exports.addDeliveryController = addDeliveryController;
+exports.createDeliveryController = createDeliveryController;
+const updateDeliveryController = async (req, res) => {
+    try {
+        const deliveryData = req.body;
+        const result = await DeliveryServices.updateDeliveryService(deliveryData);
+        return res.json({
+            success: true,
+            delivery: result,
+            message: 'Delivery updated successfully',
+        });
+    }
+    catch (error) {
+        return res.json({ success: false, message: error.message });
+    }
+};
+exports.updateDeliveryController = updateDeliveryController;
 const encryptDeliveryDetailsController = async (req, res) => {
     try {
         const { deliveryIds } = req.body;

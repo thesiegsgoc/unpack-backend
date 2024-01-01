@@ -17,7 +17,7 @@ type DeliveryItem = /*unresolved*/ any
 type PartnerDeliveryItem = /*unresolved*/ any
 type Delivery = /*unresolved*/ any
 
-export const addDeliveryService = async (
+export const createDeliveryService = async (
   deliveryData: AddDeliveryRequestBody
 ) => {
   const {
@@ -74,6 +74,37 @@ export const addDeliveryService = async (
   }
 
   return { trackingNumber: `D00${numCurrentDeliveries + 1}` }
+}
+
+export const updateDeliveryService = async (
+  deliveryData: Delivery
+): Promise<Delivery | null> => {
+  try {
+    // Ensure the deliveryData includes the deliveryId
+    const { deliveryId } = deliveryData
+    if (!deliveryId) {
+      throw new Error('Delivery ID is required for updating.')
+    }
+
+    // Find the existing delivery record in the database
+    const existingDelivery = await DeliveryModel.findOne({ deliveryId })
+
+    if (!existingDelivery) {
+      throw new Error(`Delivery with ID ${deliveryId} not found.`)
+    }
+
+    // Update the existing delivery record with the new data
+    const updatedDelivery = await DeliveryModel.findOneAndUpdate(
+      { deliveryId },
+      { $set: deliveryData },
+      { new: true } // Return the updated document
+    )
+
+    return updatedDelivery
+  } catch (error: any) {
+    console.error('Error updating delivery:', error.message)
+    throw error
+  }
 }
 
 export const encryptDeliveryDetailsService = async (deliveryIds: string[]) => {

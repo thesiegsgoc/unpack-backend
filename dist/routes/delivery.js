@@ -7,11 +7,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const router = express_1.default.Router();
 const deliveryController_1 = require("../controllers/deliveryController");
-// Implement the user routes:
-router.post('/deliveries/add', deliveryController_1.addDeliveryController);
+router.get('/deliveries', deliveryController_1.getAllDeliveriesController);
+router.post('/deliveries/add', deliveryController_1.createDeliveryController);
 router.post('/delivery/pickup', deliveryController_1.pickupDeliveryController);
 router.post('/deliveries/decrypt', deliveryController_1.encryptDeliveryDetailsController);
-router.get('/deliveries/all', deliveryController_1.getAllDeliveriesController);
 // TODO: return the isUserAuth middleware to the route above as bellow
 // router.post('/deliveries/encrypt', isUserAuth, async (req: RequestWithUser, res: Response) => {
 //     await encryptDeliveryDetails(req, res);
@@ -21,7 +20,7 @@ router.post('/deliveries/encrypt', async (req, res) => {
 });
 router.post('/deliveries/ids', deliveryController_1.getDeliveryIdsController);
 router.get('/deliveries/:trackingId/track', deliveryController_1.trackDeliveryController);
-router.put('/deliveries/:deliverId/update', deliveryController_1.addDeliveryController);
+router.put('/deliveries/:deliverId/update', deliveryController_1.updateDeliveryController);
 router.post('/deliveries/history/user', deliveryController_1.getUserDeliveryHistoryController);
 router.put('/deliveries/history/partner', deliveryController_1.getPartnerDeliveryHistoryController);
 router.post('/deliveries/handler/location', deliveryController_1.getHandlersLocationController);

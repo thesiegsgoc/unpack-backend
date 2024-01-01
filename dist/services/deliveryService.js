@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getHandlersLocationService = exports.pickupDeliveryService = exports.getDeliveryIdsService = exports.getPartnerDeliveryHistoryService = exports.getUserDeliveryHistoryService = exports.getAllDeliveriesService = exports.trackDeliveryService = exports.encryptDeliveryDetailsService = exports.addDeliveryService = void 0;
+exports.getHandlersLocationService = exports.pickupDeliveryService = exports.getDeliveryIdsService = exports.getPartnerDeliveryHistoryService = exports.getUserDeliveryHistoryService = exports.getAllDeliveriesService = exports.trackDeliveryService = exports.encryptDeliveryDetailsService = exports.updateDeliveryService = exports.createDeliveryService = void 0;
 const cryptr_1 = __importDefault(require("cryptr"));
 const delivery_1 = __importDefault(require("../models/delivery"));
 const user_1 = __importDefault(require("../models/users/user"));
@@ -13,7 +13,7 @@ const db_1 = __importDefault(require("../util/db"));
 const order_1 = __importDefault(require("../models/order"));
 const partner_1 = __importDefault(require("../models/partner"));
 const cryptr = new cryptr_1.default('myTotallySecretKey');
-const addDeliveryService = async (deliveryData) => {
+const createDeliveryService = async (deliveryData) => {
     const { receiver, phoneNumber, pickup, dropoff, sendorId, size, type, parcel, quantity, deliveryTime, deliveryDate, dropOffCost, } = deliveryData;
     if (!quantity || !dropoff || !pickup) {
         throw new Error('Fill out empty fields.');
@@ -43,7 +43,30 @@ const addDeliveryService = async (deliveryData) => {
     }
     return { trackingNumber: `D00${numCurrentDeliveries + 1}` };
 };
-exports.addDeliveryService = addDeliveryService;
+exports.createDeliveryService = createDeliveryService;
+const updateDeliveryService = async (deliveryData) => {
+    try {
+        // Ensure the deliveryData includes the deliveryId
+        const { deliveryId } = deliveryData;
+        if (!deliveryId) {
+            throw new Error('Delivery ID is required for updating.');
+        }
+        // Find the existing delivery record in the database
+        const existingDelivery = await delivery_1.default.findOne({ deliveryId });
+        if (!existingDelivery) {
+            throw new Error(`Delivery with ID ${deliveryId} not found.`);
+        }
+        // Update the existing delivery record with the new data
+        const updatedDelivery = await delivery_1.default.findOneAndUpdate({ deliveryId }, { $set: deliveryData }, { new: true } // Return the updated document
+        );
+        return updatedDelivery;
+    }
+    catch (error) {
+        console.error('Error updating delivery:', error.message);
+        throw error;
+    }
+};
+exports.updateDeliveryService = updateDeliveryService;
 const encryptDeliveryDetailsService = async (deliveryIds) => {
     if (!deliveryIds || deliveryIds.length === 0) {
         throw new Error('No delivery IDs provided.');

@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "inlineSourceMap": true,
+        "outDir": "D:\\ufumbuzilabs\\unpack\\unpack-backend",
+        "rootDir": ".",
+        "sourceRoot": "D:/ufumbuzilabs/unpack/unpack-backend",
+        "typeRoots": [
+            "node_modules/@types"
+        ],
+        "types": [
+            "node"
+        ]
+    }
+}

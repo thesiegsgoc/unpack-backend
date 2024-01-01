@@ -88,17 +88,34 @@ interface RequestWithUser extends Request {
   user?: IUser
 }
 
-export const addDeliveryController = async (
+export const createDeliveryController = async (
   req: Request<{}, {}, AddDeliveryRequestBody>,
   res: Response
 ) => {
   try {
     const deliveryData = req.body
-    const result = await DeliveryServices.addDeliveryService(deliveryData)
+    const result = await DeliveryServices.createDeliveryService(deliveryData)
     return res.json({
       success: true,
       message: 'Delivery ordered successfully',
       trackingNumber: result.trackingNumber,
+    })
+  } catch (error: any) {
+    return res.json({ success: false, message: error.message })
+  }
+}
+
+export const updateDeliveryController = async (
+  req: Request<{}, {}, AddDeliveryRequestBody>,
+  res: Response
+) => {
+  try {
+    const deliveryData = req.body
+    const result = await DeliveryServices.updateDeliveryService(deliveryData)
+    return res.json({
+      success: true,
+      delivery: result,
+      message: 'Delivery updated successfully',
     })
   } catch (error: any) {
     return res.json({ success: false, message: error.message })
