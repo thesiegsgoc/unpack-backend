@@ -8,9 +8,9 @@ interface Coordinates {
 interface AddDeliveryRequestBody {
   receiver: string
   phoneNumber: string
-  pickup: Coordinates
-  dropoff: string
-  sendorId: string
+  pickupLocation: Coordinates
+  dropoffLocation: Coordinates
+  senderId: string
   size: string
   type: string
   parcel: string

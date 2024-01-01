@@ -52,22 +52,22 @@ export const UserSchema: Schema<IUserModel> = new mongoose.Schema({
     type: String,
     enum: ['normal', 'vendor', 'zoneManager', 'driver', 'agent'],
   },
-  deliveries: [Schema.Types.Mixed],
   expoPushToken: Schema.Types.Mixed,
   profilePhoto: String,
   canDeliver: String,
   rating: Number,
   securityCode: String,
   securityAnswer: String,
-  date: {
-    type: Date,
-    default: Date.now,
-  },
   preferredPickupLocation: String,
   languagePreference: String,
   dateOfBirth: Date,
   emailVerified: Boolean,
   paymentMethod: Schema.Types.Mixed,
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+  deliveries: [Schema.Types.Mixed],
 })
 
 const UserModel = mongoose.model<IUser>('User', UserSchema)

@@ -1,5 +1,3 @@
-// deliveryService.ts
-
 import Cryptr from 'cryptr'
 import DeliveryModel from '../models/delivery'
 import UserModel from '../models/users/user'
@@ -7,7 +5,6 @@ import scheduling from '../util/scheduling'
 import db from '../util/db'
 import OrderModel from '../models/order'
 import PartnerModel from '../models/partner'
-
 const cryptr = new Cryptr('myTotallySecretKey')
 
 type AddDeliveryRequestBody = /*unresolved*/ any // TODO: Define the type for AddDeliveryRequestBody in the types file
@@ -24,8 +21,8 @@ export const createDeliveryService = async (
     receiver,
     phoneNumber,
     pickup,
-    dropoff,
-    sendorId,
+    dropoffLocation,
+    senderId,
     size,
     type,
     parcel,
@@ -35,10 +32,6 @@ export const createDeliveryService = async (
     dropOffCost,
   } = deliveryData
 
-  if (!quantity || !dropoff || !pickup) {
-    throw new Error('Fill out empty fields.')
-  }
-
   const numCurrentDeliveries = await db.deliveries.countDocuments()
   const handler = await scheduling.assignHandler(pickup)
 
@@ -46,8 +39,8 @@ export const createDeliveryService = async (
     receiver,
     phoneNumber,
     pickup,
-    dropoff,
-    sendorId,
+    dropoffLocation,
+    senderId,
     size,
     type,
     parcel,
@@ -62,7 +55,7 @@ export const createDeliveryService = async (
   await newDelivery.save()
 
   await UserModel.updateOne(
-    { _id: sendorId },
+    { _id: senderId },
     { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } }
   )
 
@@ -123,8 +116,8 @@ export const encryptDeliveryDetailsService = async (deliveryIds: string[]) => {
     deliveryIds.map(async (deliveryId: string) => {
       const delivery = await DeliveryModel.findOne({ deliveryId })
       const user =
-        delivery?.sendorId &&
-        (await UserModel.findOne({ userId: delivery.sendorId }))
+        delivery?.senderId &&
+        (await UserModel.findOne({ userId: delivery.senderId }))
 
       if (!delivery || !user) {
         throw new Error(`Invalid delivery data for ID: ${deliveryId}`)
@@ -134,12 +127,12 @@ export const encryptDeliveryDetailsService = async (deliveryIds: string[]) => {
         from: {
           phone: user.phone,
           email: user.email!,
-          pickup: delivery.pickup,
+          pickup: delivery.pickupLocation,
         },
         to: {
           receiver: delivery.receiver!,
           phonenumber: delivery.phoneNumber!,
-          dropoff: delivery.dropoff,
+          dropoff: delivery.dropoffLocation,
         },
         shipper: delivery.scheduledHandler!,
         notes: delivery.notes,
@@ -210,12 +203,12 @@ export const getAllDeliveriesService = async () => {
     const mappedDeliveries = deliveries.map((delivery) => {
       return {
         deliveryId: delivery.deliveryId,
-        senderId: delivery.sendorId,
+        senderId: delivery.senderId,
         receiver: delivery.receiver,
         status: delivery.status,
         scheduledHandler: delivery.scheduledHandler,
-        pickupLocation: delivery.pickup,
-        dropoffLocation: delivery.dropoff,
+        pickupLocation: delivery.pickupLocation,
+        dropoffLocation: delivery.dropoffLocation,
         deliveryTime: delivery.deliveryTime,
         deliveryDate: delivery.deliveryDate,
         // Add more fields as required
@@ -245,12 +238,12 @@ export const getUserDeliveryHistoryService = async (userId: string) => {
       continue
     }
 
-    const sender = await UserModel.findById(deliveryItem.sendorId)
+    const sender = await UserModel.findById(deliveryItem.senderId)
 
     deliveryList.push({
       delivery: {
-        pickup: deliveryItem.pickup,
-        dropoff: deliveryItem.dropoff,
+        pickup: deliveryItem.pickupLocation,
+        dropoff: deliveryItem.dropoffLocation,
         time: deliveryItem.deliveryTime!,
         date: deliveryItem.deliveryDate!,
         status: deliveryItem.status,
@@ -294,15 +287,15 @@ export const getPartnerDeliveryHistoryService = async (partnerId: string) => {
 
     deliveryList.push({
       delivery: {
-        pickup: deliveryData.pickup,
-        dropoff: deliveryData.dropoff,
+        pickup: deliveryData.pickupLocation,
+        dropoff: deliveryData.dropoffLocation,
         time: deliveryData.deliveryTime!, // Assume deliveryTime is available
         date: deliveryData.deliveryDate!, // Assume deliveryDate is available
         status: deliveryData.status,
         deliveryId: deliveryData.id!, // Assume _id is the deliveryId
         type: deliveryData.type!, // Assume type is available
         receiver: deliveryData.receiver!, // Assume receiver is available
-        sendor: deliveryData.sendorId, // Assume sendorId is available
+        sendor: deliveryData.senderId, // Assume senderId is available
         expoPushToken: vendorData?.expoPushToken,
         dropOffCost: deliveryData.dropOffCost,
         pickUpCost: deliveryData.pickUpCost,
@@ -338,7 +331,7 @@ export const getDeliveryIdsService = async (userID: string) => {
   let deliveries: Delivery[] = []
 
   if (user.status === 'vendor' || user.status === 'consumer') {
-    deliveries = await DeliveryModel.find({ sendorId: userID }).exec()
+    deliveries = await DeliveryModel.find({ senderId: userID }).exec()
   }
   // Include other conditions if necessary
 

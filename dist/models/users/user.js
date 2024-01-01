@@ -74,22 +74,22 @@ exports.UserSchema = new mongoose_1.default.Schema({
         type: String,
         enum: ['normal', 'vendor', 'zoneManager', 'driver', 'agent'],
     },
-    deliveries: [mongoose_1.Schema.Types.Mixed],
     expoPushToken: mongoose_1.Schema.Types.Mixed,
     profilePhoto: String,
     canDeliver: String,
     rating: Number,
     securityCode: String,
     securityAnswer: String,
-    date: {
-        type: Date,
-        default: Date.now,
-    },
     preferredPickupLocation: String,
     languagePreference: String,
     dateOfBirth: Date,
     emailVerified: Boolean,
     paymentMethod: mongoose_1.Schema.Types.Mixed,
+    date: {
+        type: Date,
+        default: Date.now,
+    },
+    deliveries: [mongoose_1.Schema.Types.Mixed],
 });
 const UserModel = mongoose_1.default.model('User', exports.UserSchema);
 exports.default = UserModel;

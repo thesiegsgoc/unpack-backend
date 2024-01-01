@@ -1,5 +1,4 @@
 "use strict";
-// deliveryService.ts
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -14,18 +13,15 @@ const order_1 = __importDefault(require("../models/order"));
 const partner_1 = __importDefault(require("../models/partner"));
 const cryptr = new cryptr_1.default('myTotallySecretKey');
 const createDeliveryService = async (deliveryData) => {
-    const { receiver, phoneNumber, pickup, dropoff, sendorId, size, type, parcel, quantity, deliveryTime, deliveryDate, dropOffCost, } = deliveryData;
-    if (!quantity || !dropoff || !pickup) {
-        throw new Error('Fill out empty fields.');
-    }
+    const { receiver, phoneNumber, pickup, dropoffLocation, senderId, size, type, parcel, quantity, deliveryTime, deliveryDate, dropOffCost, } = deliveryData;
     const numCurrentDeliveries = await db_1.default.deliveries.countDocuments();
     const handler = await scheduling_1.default.assignHandler(pickup);
     const newDelivery = new delivery_1.default({
         receiver,
         phoneNumber,
         pickup,
-        dropoff,
-        sendorId,
+        dropoffLocation,
+        senderId,
         size,
         type,
         parcel,
@@ -37,7 +33,7 @@ const createDeliveryService = async (deliveryData) => {
         dropOffCost,
     });
     await newDelivery.save();
-    await user_1.default.updateOne({ _id: sendorId }, { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } });
+    await user_1.default.updateOne({ _id: senderId }, { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } });
     if (handler.success && handler.body.handler) {
         await user_1.default.updateOne({ _id: handler.body.handler }, { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } });
     }
@@ -74,8 +70,8 @@ const encryptDeliveryDetailsService = async (deliveryIds) => {
     const deliveryDetails = [];
     await Promise.all(deliveryIds.map(async (deliveryId) => {
         const delivery = await delivery_1.default.findOne({ deliveryId });
-        const user = delivery?.sendorId &&
-            (await user_1.default.findOne({ userId: delivery.sendorId }));
+        const user = delivery?.senderId &&
+            (await user_1.default.findOne({ userId: delivery.senderId }));
         if (!delivery || !user) {
             throw new Error(`Invalid delivery data for ID: ${deliveryId}`);
         }
@@ -83,12 +79,12 @@ const encryptDeliveryDetailsService = async (deliveryIds) => {
             from: {
                 phone: user.phone,
                 email: user.email,
-                pickup: delivery.pickup,
+                pickup: delivery.pickupLocation,
             },
             to: {
                 receiver: delivery.receiver,
                 phonenumber: delivery.phoneNumber,
-                dropoff: delivery.dropoff,
+                dropoff: delivery.dropoffLocation,
             },
             shipper: delivery.scheduledHandler,
             notes: delivery.notes,
@@ -143,12 +139,12 @@ const getAllDeliveriesService = async () => {
         const mappedDeliveries = deliveries.map((delivery) => {
             return {
                 deliveryId: delivery.deliveryId,
-                senderId: delivery.sendorId,
+                senderId: delivery.senderId,
                 receiver: delivery.receiver,
                 status: delivery.status,
                 scheduledHandler: delivery.scheduledHandler,
-                pickupLocation: delivery.pickup,
-                dropoffLocation: delivery.dropoff,
+                pickupLocation: delivery.pickupLocation,
+                dropoffLocation: delivery.dropoffLocation,
                 deliveryTime: delivery.deliveryTime,
                 deliveryDate: delivery.deliveryDate,
                 // Add more fields as required
@@ -173,11 +169,11 @@ const getUserDeliveryHistoryService = async (userId) => {
             console.error(`Delivery data missing for ID: ${delivery}`);
             continue;
         }
-        const sender = await user_1.default.findById(deliveryItem.sendorId);
+        const sender = await user_1.default.findById(deliveryItem.senderId);
         deliveryList.push({
             delivery: {
-                pickup: deliveryItem.pickup,
-                dropoff: deliveryItem.dropoff,
+                pickup: deliveryItem.pickupLocation,
+                dropoff: deliveryItem.dropoffLocation,
                 time: deliveryItem.deliveryTime,
                 date: deliveryItem.deliveryDate,
                 status: deliveryItem.status,
@@ -212,15 +208,15 @@ const getPartnerDeliveryHistoryService = async (partnerId) => {
         const vendorData = await user_1.default.findById(deliveryData.vendorId);
         deliveryList.push({
             delivery: {
-                pickup: deliveryData.pickup,
-                dropoff: deliveryData.dropoff,
+                pickup: deliveryData.pickupLocation,
+                dropoff: deliveryData.dropoffLocation,
                 time: deliveryData.deliveryTime,
                 date: deliveryData.deliveryDate,
                 status: deliveryData.status,
                 deliveryId: deliveryData.id,
                 type: deliveryData.type,
                 receiver: deliveryData.receiver,
-                sendor: deliveryData.sendorId,
+                sendor: deliveryData.senderId,
                 expoPushToken: vendorData?.expoPushToken,
                 dropOffCost: deliveryData.dropOffCost,
                 pickUpCost: deliveryData.pickUpCost,
@@ -252,7 +248,7 @@ const getDeliveryIdsService = async (userID) => {
     }
     let deliveries = [];
     if (user.status === 'vendor' || user.status === 'consumer') {
-        deliveries = await delivery_1.default.find({ sendorId: userID }).exec();
+        deliveries = await delivery_1.default.find({ senderId: userID }).exec();
     }
     // Include other conditions if necessary
     if (!deliveries || deliveries.length === 0) {

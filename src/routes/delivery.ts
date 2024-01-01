@@ -18,19 +18,25 @@ import {
   getAllDeliveriesController,
 } from '../controllers/deliveryController'
 
-router.get('/deliveries', getAllDeliveriesController)
-router.post('/deliveries/add', createDelivery)
-router.post('/delivery/pickup', pickupDelivery)
-router.post('/deliveries/decrypt', decryptDeliveryDetails)
-
 // TODO: return the isUserAuth middleware to the route above as bellow
 // router.post('/deliveries/encrypt', isUserAuth, async (req: RequestWithUser, res: Response) => {
 //     await encryptDeliveryDetails(req, res);
 // });
 
-router.post('/deliveries/encrypt', async (req: Request, res: Response) => {
-  await encryptDeliveryDetails(req, res)
-})
+// Versioning and plural nouns
+router.get('/deliveries', getAllDeliveriesController)
+router.post('/deliveries/create', createDelivery)
+router.post('/deliveries/pickup', pickupDelivery)
+router.post('/deliveries/decrypt', decryptDeliveryDetails)
+
+// Secure endpoint with isUserAuth middleware
+router.post(
+  '/deliveries/encrypt',
+  isUserAuth,
+  async (req: Request, res: Response) => {
+    await encryptDeliveryDetails(req, res)
+  }
+)
 
 router.post('/deliveries/ids', getDeliveryIds)
 router.get('/deliveries/:trackingId/track', trackDelivery)

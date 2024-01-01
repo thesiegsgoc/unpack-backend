@@ -4,9 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
-// For now, it should be find to treat oderId as a
-// tracking number as well. So, it should also be used
-// in the DeliverySchema.
 const DeliverySchema = new mongoose_1.default.Schema({
     deliveryId: {
         type: String,
@@ -14,84 +11,80 @@ const DeliverySchema = new mongoose_1.default.Schema({
     receiverId: {
         type: String,
     },
-    sendorId: {
+    senderId: {
         type: String,
-        required: true
+        required: true,
     },
     partnerId: {
-        type: String
+        type: String,
     },
     receiver: {
-        type: String
+        type: String,
     },
     quantity: {
         type: Number,
-        required: true
+        required: true,
     },
     phoneNumber: {
-        type: String
+        type: String,
     },
     size: {
-        type: String
+        type: String,
     },
     type: {
-        type: String
+        type: String,
     },
     parcel: {
-        type: String
+        type: String,
     },
-    pickup: {
-        type: Object,
-        required: true
-    },
-    dropoff: {
+    dropoffLocation: {
         type: Object,
         required: true,
     },
     notes: {
         type: String,
-        maxLength: 255
+        maxLength: 255,
     },
-    pickedUpFrom: {
-        type: Array
+    pickupLocation: {
+        type: Array,
     },
     currentHandler: {
-        type: Object
+        type: Object,
     },
     scheduledHandler: {
-        type: String || undefined
+        type: String || undefined,
     },
     deliveryTime: {
-        type: String
+        type: String,
     },
     deliveryDate: {
-        type: String
+        type: String,
     },
     dropOffCost: {
-        type: Object
+        type: Object,
     },
     pickUpCost: {
-        type: Object
+        type: Object,
     },
     deliveryCost: {
-        type: Number
+        type: Number,
     },
     status: {
         type: Object,
         default: {
-            value: 'In Process'
-        }
+            value: 'In Process',
+        },
     },
     orderId: {
-        type: String
+        type: String,
     },
     vendorId: {
-        type: String
+        type: String,
     },
     date: {
         type: Date,
         default: Date.now,
     },
 });
-const DeliveryModel = mongoose_1.default.model("Delivery", DeliverySchema);
+const DeliveryModel = mongoose_1.default.model('Delivery', DeliverySchema);
 exports.default = DeliveryModel;

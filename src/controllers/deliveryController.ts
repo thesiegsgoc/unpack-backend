@@ -18,9 +18,9 @@ interface Coordinates {
 interface AddDeliveryRequestBody {
   receiver: string
   phoneNumber: string
-  pickup: Coordinates
+  pickupLocation: Coordinates
   dropoff: string
-  sendorId: string
+  senderId: string
   size: string
   type: string
   parcel: string
@@ -34,7 +34,7 @@ interface AddDeliveryRequestBody {
 }
 
 interface DeliveryItemDetails {
-  pickup: string
+  pickupLocation: string
   dropoff: string
   time: string
   date: string
@@ -54,7 +54,7 @@ interface DeliveryDetailsFrom {
   fullname: string
   phone: string
   email: string
-  pickup: string
+  pickupLocation: string
 }
 
 interface DeliveryDetailsTo {
