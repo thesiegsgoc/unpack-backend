@@ -6,12 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserByIdService = exports.getAllUsersService = exports.deleteUserService = exports.resetUserPasswordService = exports.updateUserLocationService = exports.updateUserInfoService = exports.uploadProfilePictureService = exports.loginUserService = exports.userRegisterService = void 0;
 const db_1 = __importDefault(require("../util/db"));
 const uuid_1 = require("uuid");
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const user_1 = __importDefault(require("../models/users/user"));
 const cloudinary_1 = __importDefault(require("../util/cloudinary"));
-const config_1 = __importDefault(require("../config"));
+const generateJwtToken_1 = require("../util/generateJwtToken");
 const argon2_1 = __importDefault(require("argon2"));
-const { JWT_SECRET_CODE } = config_1.default;
 const END_NUMBER = 1000000;
 const userRegisterService = async (userData) => {
     const { fullname, phone, password, location, expoPushToken, status, securityAnswer, securityCode, } = userData;
@@ -21,9 +19,7 @@ const userRegisterService = async (userData) => {
     }
     const userCount = await db_1.default.users.countDocuments({});
     const hashedPassword = await argon2_1.default.hash(password);
-    console.log(hashedPassword);
     const username = fullname?.replace(/\s+/g, '_').toLowerCase();
-    console.log('User', userCount);
     const newUser = new user_1.default({
         userId: `U-${(0, uuid_1.v4)()}-${END_NUMBER + userCount + 1}`,
         username: username,
@@ -39,23 +35,21 @@ const userRegisterService = async (userData) => {
         securityAnswer,
         securityCode,
     });
+    console.log(newUser);
     await newUser.save();
     return newUser;
 };
 exports.userRegisterService = userRegisterService;
 const loginUserService = async (username, password) => {
     const user = await user_1.default.findOne({ username });
-    console.log(user);
     if (!user) {
         throw new Error('Incorrect username.');
     }
-    //const isMatch = await argon2.verify(user.password, password)
-    // if (!isMatch) {
-    //     throw new Error('Incorrect password.');
-    // }
-    const token = jsonwebtoken_1.default.sign({ userId: user.userId }, JWT_SECRET_CODE, {
-        expiresIn: '30d',
-    });
+    const isPasswordMatch = await argon2_1.default.verify(user.password, password);
+    if (!isPasswordMatch) {
+        throw new Error('Incorrect password.');
+    }
+    const token = await (0, generateJwtToken_1.generateJwtToken)(user.userId);
     return {
         token,
         user,

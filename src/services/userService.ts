@@ -3,10 +3,9 @@ import { v4 as uuidv4 } from 'uuid'
 import jwt from 'jsonwebtoken'
 import UserModel from '../models/users/user'
 import cloudinary from '../util/cloudinary'
+import { generateJwtToken } from '../util/generateJwtToken'
 import config from '../config'
 import argon2 from 'argon2'
-
-const { JWT_SECRET_CODE } = config
 
 const END_NUMBER = 1000000
 
@@ -41,11 +40,8 @@ export const userRegisterService = async (userData: {
 
   const hashedPassword = await argon2.hash(password)
 
-  console.log(hashedPassword)
-
   const username: string = fullname?.replace(/\s+/g, '_').toLowerCase()
 
-  console.log('User', userCount)
   const newUser = new UserModel({
     userId: `U-${uuidv4()}-${END_NUMBER + userCount + 1}`,
     username: username,
@@ -62,6 +58,8 @@ export const userRegisterService = async (userData: {
     securityCode,
   })
 
+  console.log(newUser)
+
   await newUser.save()
   return newUser
 }
@@ -69,21 +67,18 @@ export const userRegisterService = async (userData: {
 export const loginUserService = async (username: string, password: string) => {
   const user = await UserModel.findOne({ username })
 
-  console.log(user)
-
   if (!user) {
     throw new Error('Incorrect username.')
   }
 
-  //const isMatch = await argon2.verify(user.password, password)
+  const isPasswordMatch = await argon2.verify(user.password!, password)
 
-  // if (!isMatch) {
-  //     throw new Error('Incorrect password.');
-  // }
+  if (!isPasswordMatch) {
+    throw new Error('Incorrect password.')
+  }
 
-  const token = jwt.sign({ userId: user.userId }, JWT_SECRET_CODE, {
-    expiresIn: '30d',
-  })
+  const token = await generateJwtToken(user.userId!)
+
   return {
     token,
     user,
