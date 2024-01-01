@@ -1,9 +1,3 @@
-import User from '../models/users/user' // Adjust the import based on your User model's export
-import jwt from 'jsonwebtoken'
-import db from '../util/db'
-import { v4 as uuidv4 } from 'uuid'
-import cloudinary from '../util/cloudinary'
-import argon2 from 'argon2'
 import { Request, Response } from 'express'
 //Todo: change to import from services
 import * as UserServices from '../services/userService'
@@ -11,7 +5,7 @@ import * as UserServices from '../services/userService'
 export const registerUserController = async (req: Request, res: Response) => {
   try {
     const {
-      username,
+      fullname,
       phone,
       password,
       location,
@@ -21,20 +15,8 @@ export const registerUserController = async (req: Request, res: Response) => {
       securityAnswer,
     } = req.body
 
-    // if (!username || !phone || !password || !confirm || !status) {
-    //   return res
-    //     .status(400)
-    //     .json({ success: false, message: 'Fill empty fields' })
-    // }
-
-    // if (password !== confirm) {
-    //   return res
-    //     .status(400)
-    //     .json({ success: false, message: 'Password must match' })
-    // }
-
     const newUser = await UserServices.userRegisterService({
-      username,
+      fullname,
       phone,
       password,
       location,
@@ -63,7 +45,7 @@ export const loginUserController = async (req: Request, res: Response) => {
       token,
       expoPushToken: user.expoPushToken,
       profilePhoto: user.profilePhoto,
-      username: user.fullname || user.username,
+      username,
       rating: user.rating || 5.0,
       phone: user.phone,
       email: user.email,

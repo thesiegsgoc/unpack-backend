@@ -28,19 +28,9 @@ exports.getUserByIdController = exports.getAllUsersController = exports.deleteUs
 const UserServices = __importStar(require("../services/userService"));
 const registerUserController = async (req, res) => {
     try {
-        const { username, phone, password, location, expoPushToken, status, securityCode, securityAnswer, } = req.body;
-        // if (!username || !phone || !password || !confirm || !status) {
-        //   return res
-        //     .status(400)
-        //     .json({ success: false, message: 'Fill empty fields' })
-        // }
-        // if (password !== confirm) {
-        //   return res
-        //     .status(400)
-        //     .json({ success: false, message: 'Password must match' })
-        // }
+        const { fullname, phone, password, location, expoPushToken, status, securityCode, securityAnswer, } = req.body;
         const newUser = await UserServices.userRegisterService({
-            username,
+            fullname,
             phone,
             password,
             location,
@@ -66,7 +56,7 @@ const loginUserController = async (req, res) => {
             token,
             expoPushToken: user.expoPushToken,
             profilePhoto: user.profilePhoto,
-            username: user.fullname || user.username,
+            username,
             rating: user.rating || 5.0,
             phone: user.phone,
             email: user.email,

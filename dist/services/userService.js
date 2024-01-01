@@ -14,22 +14,23 @@ const argon2_1 = __importDefault(require("argon2"));
 const { JWT_SECRET_CODE } = config_1.default;
 const END_NUMBER = 1000000;
 const userRegisterService = async (userData) => {
-    const { username, phone, password, location, expoPushToken, status, securityAnswer, securityCode, } = userData;
-    const userPhone = await user_1.default.findOne({ phone: phone });
-    if (userPhone) {
-        throw new Error(`Cannot register multiple users with the same phone number ${phone}.`);
-    }
-    const existingUser = await user_1.default.findOne({ username: username });
+    const { fullname, phone, password, location, expoPushToken, status, securityAnswer, securityCode, } = userData;
+    const existingUser = await user_1.default.findOne({ fullname: fullname });
     if (existingUser) {
-        throw new Error(`${username} is not available. Choose another username.`);
+        throw new Error(`${fullname} is already registered. Please login`);
     }
     const userCount = await db_1.default.users.countDocuments({});
+    const hashedPassword = await argon2_1.default.hash(password);
+    console.log(hashedPassword);
+    const username = fullname?.replace(/\s+/g, '_').toLowerCase();
+    console.log('User', userCount);
     const newUser = new user_1.default({
         userId: `U-${(0, uuid_1.v4)()}-${END_NUMBER + userCount + 1}`,
-        username,
+        username: username,
+        fullname,
         phone,
         location,
-        password,
+        password: hashedPassword,
         status,
         deliveries: [],
         expoPushToken,
@@ -48,7 +49,7 @@ const loginUserService = async (username, password) => {
     if (!user) {
         throw new Error('Incorrect username.');
     }
-    //    const isMatch = await argon2.verify(user.password, password);
+    //const isMatch = await argon2.verify(user.password, password)
     // if (!isMatch) {
     //     throw new Error('Incorrect password.');
     // }

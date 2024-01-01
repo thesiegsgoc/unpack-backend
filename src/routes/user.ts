@@ -22,6 +22,7 @@ router.get('/api/users', UserControllers.getAllUsersController)
  */
 router.post('/api/users/register', UserControllers.registerUserController)
 
+router.post('/api/users/login', UserControllers.loginUserController)
 /**
  * @route PUT /api/users/:id
  * @description Updates the information of a specific user

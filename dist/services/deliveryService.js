@@ -58,7 +58,6 @@ const encryptDeliveryDetailsService = async (deliveryIds) => {
         }
         deliveryDetails.push({
             from: {
-                fullname: user.fullname,
                 phone: user.phone,
                 email: user.email,
                 pickup: delivery.pickup,
@@ -103,7 +102,7 @@ const trackDeliveryService = async (trackingId) => {
     return {
         pickup,
         dropoff,
-        handlerName: fullname || username,
+        handlerName: name,
         handlerRating: rating,
         handlerProfilePhoto: profilePhoto,
         scheduledHandler,
@@ -162,7 +161,7 @@ const getUserDeliveryHistoryService = async (userId) => {
                 deliveryId: delivery,
                 type: deliveryItem.type,
                 receiver: deliveryItem.receiver,
-                sendor: sender?.fullname || sender?.username,
+                sendor: sender?.fullname,
                 expoPushToken: sender?.expoPushToken,
                 dropOffCost: deliveryItem.dropOffCost,
                 pickUpCost: deliveryItem.pickUpCost,
@@ -212,7 +211,7 @@ const getPartnerDeliveryHistoryService = async (partnerId) => {
                 size: orderData?.size,
             },
             vendor: {
-                fullname: vendorData?.fullname || vendorData?.username,
+                fullname: vendorData?.fullname,
                 avatar: vendorData?.avatar,
             },
         });

@@ -101,7 +101,6 @@ export const encryptDeliveryDetailsService = async (deliveryIds: string[]) => {
 
       deliveryDetails.push({
         from: {
-          fullname: user.fullname!,
           phone: user.phone,
           email: user.email!,
           pickup: delivery.pickup,
@@ -160,7 +159,7 @@ export const trackDeliveryService = async (trackingId: string) => {
   return {
     pickup,
     dropoff,
-    handlerName: fullname || username,
+    handlerName: name,
     handlerRating: rating,
     handlerProfilePhoto: profilePhoto,
     scheduledHandler,
@@ -227,7 +226,7 @@ export const getUserDeliveryHistoryService = async (userId: string) => {
         deliveryId: delivery,
         type: deliveryItem.type!,
         receiver: deliveryItem.receiver!,
-        sendor: sender?.fullname || sender?.username!,
+        sendor: sender?.fullname,
         expoPushToken: sender?.expoPushToken!,
         dropOffCost: deliveryItem.dropOffCost,
         pickUpCost: deliveryItem.pickUpCost,
@@ -286,7 +285,7 @@ export const getPartnerDeliveryHistoryService = async (partnerId: string) => {
         size: orderData?.size!,
       },
       vendor: {
-        fullname: vendorData?.fullname || vendorData?.username,
+        fullname: vendorData?.fullname,
         avatar: vendorData?.avatar!,
       },
     })

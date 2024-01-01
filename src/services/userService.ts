@@ -11,7 +11,7 @@ const { JWT_SECRET_CODE } = config
 const END_NUMBER = 1000000
 
 export const userRegisterService = async (userData: {
-  username: string
+  fullname: string
   phone: string
   password: string
   location: any
@@ -21,7 +21,7 @@ export const userRegisterService = async (userData: {
   securityCode: string
 }) => {
   const {
-    username,
+    fullname,
     phone,
     password,
     location,
@@ -31,25 +31,28 @@ export const userRegisterService = async (userData: {
     securityCode,
   } = userData
 
-  const userPhone = await UserModel.findOne({ phone: phone })
-  if (userPhone) {
-    throw new Error(
-      `Cannot register multiple users with the same phone number ${phone}.`
-    )
-  }
+  const existingUser = await UserModel.findOne({ fullname: fullname })
 
-  const existingUser = await UserModel.findOne({ username: username })
   if (existingUser) {
-    throw new Error(`${username} is not available. Choose another username.`)
+    throw new Error(`${fullname} is already registered. Please login`)
   }
 
   const userCount = await db.users.countDocuments({})
+
+  const hashedPassword = await argon2.hash(password)
+
+  console.log(hashedPassword)
+
+  const username: string = fullname?.replace(/\s+/g, '_').toLowerCase()
+
+  console.log('User', userCount)
   const newUser = new UserModel({
     userId: `U-${uuidv4()}-${END_NUMBER + userCount + 1}`,
-    username,
+    username: username,
+    fullname,
     phone,
     location,
-    password,
+    password: hashedPassword,
     status,
     deliveries: [],
     expoPushToken,
@@ -72,7 +75,7 @@ export const loginUserService = async (username: string, password: string) => {
     throw new Error('Incorrect username.')
   }
 
-  //    const isMatch = await argon2.verify(user.password, password);
+  //const isMatch = await argon2.verify(user.password, password)
 
   // if (!isMatch) {
   //     throw new Error('Incorrect password.');

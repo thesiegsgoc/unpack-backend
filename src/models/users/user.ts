@@ -20,7 +20,10 @@ export const UserSchema: Schema<IUserModel> = new mongoose.Schema({
     maxLength: 100,
     required: true,
   },
-
+  fullname: {
+    type: String,
+    required: true,
+  },
   email: {
     type: String,
   },

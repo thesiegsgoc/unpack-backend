@@ -42,6 +42,10 @@ exports.UserSchema = new mongoose_1.default.Schema({
         maxLength: 100,
         required: true,
     },
+    fullname: {
+        type: String,
+        required: true,
+    },
     email: {
         type: String,
     },
