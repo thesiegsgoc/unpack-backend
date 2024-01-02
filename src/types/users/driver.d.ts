@@ -1,4 +1,4 @@
-interface IDriver extends IUserModel {
+interface IDriver extends IUser {
   licenseInfo: {
     number: string
     expiryDate: Date

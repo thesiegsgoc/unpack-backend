@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
+const user_1 = __importDefault(require("./user"));
 const DriverSchema = new mongoose_1.default.Schema({
     licenseInfo: {
         number: { type: String, required: true },
@@ -37,5 +38,5 @@ const DriverSchema = new mongoose_1.default.Schema({
         safetyAndComplianceIndicators: [{ type: String }],
     },
 });
-const DriverModel = mongoose_1.default.model('Driver', DriverSchema);
+const DriverModel = user_1.default.discriminator('Driver', DriverSchema);
 exports.default = DriverModel;

@@ -8,5 +8,6 @@ const users = database.collection('users');
 const orders = database.collection('orders');
 const zones = database.collection('zones');
 const deliveries = database.collection('deliveries');
-const db = { users, orders, zones, deliveries };
+const drivers = database.collection('drivers');
+const db = { users, orders, zones, deliveries, drivers };
 exports.default = db;

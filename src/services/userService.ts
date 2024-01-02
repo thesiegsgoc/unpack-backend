@@ -1,24 +1,13 @@
 import db from '../util/db'
 import { v4 as uuidv4 } from 'uuid'
-import jwt from 'jsonwebtoken'
 import UserModel from '../models/users/user'
 import cloudinary from '../util/cloudinary'
 import { generateJwtToken } from '../util/generateJwtToken'
-import config from '../config'
 import argon2 from 'argon2'
 
 const END_NUMBER = 1000000
 
-export const userRegisterService = async (userData: {
-  fullname: string
-  phone: string
-  password: string
-  location: any
-  expoPushToken: string
-  status: string
-  securityAnswer: string
-  securityCode: string
-}) => {
+export const userRegisterService = async (userData: IUser) => {
   const {
     fullname,
     phone,
@@ -33,14 +22,14 @@ export const userRegisterService = async (userData: {
   const existingUser = await UserModel.findOne({ fullname: fullname })
 
   if (existingUser) {
-    throw new Error(`${fullname} is already registered. Please login`)
+    throw new Error('User is already registered. Please login')
   }
 
   const userCount = await db.users.countDocuments({})
 
-  const hashedPassword = await argon2.hash(password)
+  const hashedPassword = await argon2.hash(password!)
 
-  const username: string = fullname?.replace(/\s+/g, '_').toLowerCase()
+  const username: string = fullname?.replace(/\s+/g, '_').toLowerCase()!
 
   const newUser = new UserModel({
     userId: `U-${uuidv4()}-${END_NUMBER + userCount + 1}`,

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import UserModel from './user'
 
 const DriverSchema = new mongoose.Schema({
   licenseInfo: {
@@ -34,5 +35,5 @@ const DriverSchema = new mongoose.Schema({
   },
 })
 
-const DriverModel = mongoose.model<IDriver>('Driver', DriverSchema)
+const DriverModel = UserModel.discriminator<IUser>('Driver', DriverSchema)
 export default DriverModel

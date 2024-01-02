@@ -15,7 +15,7 @@ const userRegisterService = async (userData) => {
     const { fullname, phone, password, location, expoPushToken, status, securityAnswer, securityCode, } = userData;
     const existingUser = await user_1.default.findOne({ fullname: fullname });
     if (existingUser) {
-        throw new Error(`${fullname} is already registered. Please login`);
+        throw new Error('User is already registered. Please login');
     }
     const userCount = await db_1.default.users.countDocuments({});
     const hashedPassword = await argon2_1.default.hash(password);
