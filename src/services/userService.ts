@@ -124,18 +124,6 @@ export const updateUserInfoService = async (
   )
 }
 
-export const updateUserLocationService = async (
-  userId: string,
-  location: any
-) => {
-  await UserModel.updateOne(
-    { _id: userId },
-    {
-      $set: { location },
-    }
-  )
-}
-
 export const resetUserPasswordService = async (
   phone: string,
   password: string,
@@ -183,4 +171,17 @@ export const getUserByIdService = async (userId: string) => {
     throw new Error('No user found.')
   }
   return user
+}
+
+//TODO: User send current location
+export const updateUserLocationService = async (
+  userId: string,
+  location: any
+) => {
+  await UserModel.updateOne(
+    { _id: userId },
+    {
+      $set: { location },
+    }
+  )
 }

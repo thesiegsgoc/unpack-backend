@@ -1,0 +1,1 @@
+interface IAdmin extends IUserModel {}

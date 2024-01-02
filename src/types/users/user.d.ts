@@ -31,3 +31,7 @@ interface IUser {
   emailVerified?: boolean
   paymentMethod?: any
 }
+
+interface RequestWithUser extends Request {
+  user?: IUser
+}

@@ -1,39 +1,4 @@
-import mongoose, { Document } from 'mongoose'
-import { IUserModel } from './user'
-
-interface IDriver extends IUserModel {
-  licenseInfo: {
-    number: string
-    expiryDate: Date
-    issuingState: string
-  }
-  vehicleInfo: {
-    make: string
-    model: string
-    year: number
-    color: string
-    licensePlate: string
-    insurance: string
-    registrationDocument: string
-  }
-  driverStatus: string
-  currentLocation: string
-  availability: string
-  preferredDeliveryTypes: string[]
-  realTimeStatusUpdates: string
-  earnings: {
-    rates: number
-    incentives: number
-    deductions: number
-    paymentHistory: any[]
-  }
-  performance: {
-    completionRate: number
-    onTimeDeliveryRate: number
-    customerRatings: number[]
-    safetyAndComplianceIndicators: string[]
-  }
-}
+import mongoose from 'mongoose'
 
 const DriverSchema = new mongoose.Schema({
   licenseInfo: {

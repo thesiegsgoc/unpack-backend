@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserByIdService = exports.getAllUsersService = exports.deleteUserService = exports.resetUserPasswordService = exports.updateUserLocationService = exports.updateUserInfoService = exports.uploadProfilePictureService = exports.loginUserService = exports.userRegisterService = void 0;
+exports.updateUserLocationService = exports.getUserByIdService = exports.getAllUsersService = exports.deleteUserService = exports.resetUserPasswordService = exports.updateUserInfoService = exports.uploadProfilePictureService = exports.loginUserService = exports.userRegisterService = void 0;
 const db_1 = __importDefault(require("../util/db"));
 const uuid_1 = require("uuid");
 const user_1 = __importDefault(require("../models/users/user"));
@@ -82,12 +82,6 @@ const updateUserInfoService = async (userId, userInfo) => {
     });
 };
 exports.updateUserInfoService = updateUserInfoService;
-const updateUserLocationService = async (userId, location) => {
-    await user_1.default.updateOne({ _id: userId }, {
-        $set: { location },
-    });
-};
-exports.updateUserLocationService = updateUserLocationService;
 const resetUserPasswordService = async (phone, password, securityCode, securityAnswer) => {
     const user = await user_1.default.findOne({ phone });
     if (!user) {
@@ -126,3 +120,10 @@ const getUserByIdService = async (userId) => {
     return user;
 };
 exports.getUserByIdService = getUserByIdService;
+//TODO: User send current location
+const updateUserLocationService = async (userId, location) => {
+    await user_1.default.updateOne({ _id: userId }, {
+        $set: { location },
+    });
+};
+exports.updateUserLocationService = updateUserLocationService;
