@@ -12,7 +12,7 @@
 import db from '../util/db'
 import argon2 from 'argon2'
 import DriverModel from '../models/users/driver'
-export const createRegistrationService = async (userData: IDriver) => {
+export const registerDriverService = async (userData: IDriver) => {
   const existingDriver = await db.drivers.findOne({ email: userData.email })
 
   if (existingDriver) {
@@ -35,12 +35,9 @@ export const createRegistrationService = async (userData: IDriver) => {
         password: hashedPassword,
       })
 
-      console.log('New Driver', newDriver)
-
       await newDriver.save()
       return newDriver
     } catch (error) {
-      // Handle any errors that might occur during password hashing or saving the new driver.
       throw new Error('Error creating a new driver.')
     }
   }
@@ -66,10 +63,8 @@ export const updateDriverService = async (
     throw new Error(`Driver with ID ${driverId} not found.`)
   }
 
-  // Update only the provided fields in updatedData
   Object.assign(driver, updatedData)
 
-  // Save the updated driver
   await driver.save()
 
   return driver
@@ -82,7 +77,6 @@ export const deleteDriverService = async (driverId: string) => {
     throw new Error(`Driver with ID ${driverId} not found.`)
   }
 
-  // Delete the driver
   await DriverModel.deleteOne({ _id: driverId })
 
   return { message: 'Driver deleted successfully.' }
