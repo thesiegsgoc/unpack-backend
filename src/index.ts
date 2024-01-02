@@ -10,6 +10,7 @@ import driverRouter from './routes/driver'
 import swaggerUi from 'swagger-ui-express'
 import swaggerJSDoc from 'swagger-jsdoc'
 import { options } from './documentation/swaggerDef'
+import websocket from './websocket/index'
 
 // Swagger setup
 const swaggerSpec = swaggerJSDoc(options)
@@ -54,4 +55,9 @@ app.use('*', (req: Request, res: Response) => {
 })
 
 // Serving port details:
-app.listen(PORT, () => console.log(`Server is running on port ${PORT}`))
+
+const server = app.listen(PORT, () =>
+  console.log(`Server is running on port ${PORT}`)
+)
+
+websocket(server)
