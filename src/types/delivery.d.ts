@@ -13,7 +13,7 @@ interface DeliveryRequestBody {
   size: string
   type: string
   parcel: string
-  notes?: string // Optional
+  notes?: string
   quantity: number
   deliveryTime: string
   deliveryDate: string
