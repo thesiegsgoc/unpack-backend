@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteDriverController = exports.updateDriverDetailsController = exports.getDriverDetailsController = exports.createDriverController = void 0;
+exports.deleteDriverController = exports.updateDriverController = exports.getAllDriversController = exports.getDriverDetailsController = exports.loginDriverController = exports.createDriverController = void 0;
 const DriverServices = __importStar(require("../services/driverService"));
 const createDriverController = async (req, res) => {
     try {
@@ -47,6 +47,28 @@ const createDriverController = async (req, res) => {
     }
 };
 exports.createDriverController = createDriverController;
+const loginDriverController = async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const { token, driver } = await DriverServices.loginDriverService(username, password);
+        res.json({
+            success: true,
+            userID: driver.userId,
+            token,
+            expoPushToken: driver.expoPushToken,
+            profilePhoto: driver.profilePhoto,
+            username,
+            rating: driver.rating || 5.0,
+            phone: driver.phone,
+            email: driver.email,
+            status: driver.status,
+        });
+    }
+    catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+exports.loginDriverController = loginDriverController;
 // Get Driver Details
 const getDriverDetailsController = async (req, res) => {
     try {
@@ -60,8 +82,19 @@ const getDriverDetailsController = async (req, res) => {
     }
 };
 exports.getDriverDetailsController = getDriverDetailsController;
+const getAllDriversController = async (req, res) => {
+    try {
+        const drivers = await DriverServices.getAllDriversService();
+        res.status(200).json({ success: true, data: drivers });
+    }
+    catch (err) {
+        console.error('Error getting all drivers:', err);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
+exports.getAllDriversController = getAllDriversController;
 // Update Driver Details
-const updateDriverDetailsController = async (req, res) => {
+const updateDriverController = async (req, res) => {
     try {
         const { driverId } = req.params;
         const updatedDriver = await DriverServices.updateDriverService(driverId, req.body);
@@ -76,7 +109,7 @@ const updateDriverDetailsController = async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 };
-exports.updateDriverDetailsController = updateDriverDetailsController;
+exports.updateDriverController = updateDriverController;
 const deleteDriverController = async (req, res) => {
     try {
         const { driverId } = req.params;

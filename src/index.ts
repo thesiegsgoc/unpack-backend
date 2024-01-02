@@ -6,6 +6,7 @@ import userRouter from './routes/user'
 import orderRouter from './routes/order'
 import zoneRouter from './routes/zone'
 import deliveryRouter from './routes/delivery'
+import driverRouter from './routes/driver'
 import swaggerUi from 'swagger-ui-express'
 import swaggerJSDoc from 'swagger-jsdoc'
 import { options } from './documentation/swaggerDef'
@@ -34,6 +35,7 @@ app.use(userRouter)
 app.use(zoneRouter)
 app.use(orderRouter)
 app.use(deliveryRouter)
+app.use(driverRouter)
 
 // Default route
 app.get('/', (req: Request, res: Response) => {

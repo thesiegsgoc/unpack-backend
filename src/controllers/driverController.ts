@@ -22,6 +22,31 @@ export const createDriverController = async (req: Request, res: Response) => {
   }
 }
 
+export const loginDriverController = async (req: Request, res: Response) => {
+  try {
+    const { username, password } = req.body
+    const { token, driver } = await DriverServices.loginDriverService(
+      username,
+      password
+    )
+
+    res.json({
+      success: true,
+      userID: driver.userId,
+      token,
+      expoPushToken: driver.expoPushToken,
+      profilePhoto: driver.profilePhoto,
+      username,
+      rating: driver.rating || 5.0,
+      phone: driver.phone,
+      email: driver.email,
+      status: driver.status,
+    })
+  } catch (error: any) {
+    res.status(400).json({ success: false, error: error.message })
+  }
+}
+
 // Get Driver Details
 export const getDriverDetailsController = async (
   req: Request,
@@ -37,11 +62,18 @@ export const getDriverDetailsController = async (
   }
 }
 
+export const getAllDriversController = async (req: Request, res: Response) => {
+  try {
+    const drivers = await DriverServices.getAllDriversService()
+    res.status(200).json({ success: true, data: drivers })
+  } catch (err) {
+    console.error('Error getting all drivers:', err)
+    res.status(500).json({ success: false, message: 'Internal Server Error' })
+  }
+}
+
 // Update Driver Details
-export const updateDriverDetailsController = async (
-  req: Request,
-  res: Response
-) => {
+export const updateDriverController = async (req: Request, res: Response) => {
   try {
     const { driverId } = req.params
     const updatedDriver = await DriverServices.updateDriverService(

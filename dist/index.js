@@ -11,6 +11,7 @@ const user_1 = __importDefault(require("./routes/user"));
 const order_1 = __importDefault(require("./routes/order"));
 const zone_1 = __importDefault(require("./routes/zone"));
 const delivery_1 = __importDefault(require("./routes/delivery"));
+const driver_1 = __importDefault(require("./routes/driver"));
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 const swaggerDef_1 = require("./documentation/swaggerDef");
 // Swagger setup
@@ -32,6 +33,7 @@ app.use(user_1.default);
 app.use(zone_1.default);
 app.use(order_1.default);
 app.use(delivery_1.default);
+app.use(driver_1.default);
 // Default route
 app.get('/', (req, res) => {
     res.send('Server is ready');
