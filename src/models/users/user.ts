@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { IUser } from './../../types/user'
 
 export interface IUserModel extends IUser, Document {}
 

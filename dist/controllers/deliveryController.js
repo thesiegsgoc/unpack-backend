@@ -22,14 +22,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getHandlersLocationController = exports.pickupDeliveryController = exports.getDeliveryIdsController = exports.getPartnerDeliveryHistoryController = exports.getUserDeliveryHistoryController = exports.getAllDeliveriesController = exports.trackDeliveryController = exports.encryptDeliveryDetailsController = exports.updateDeliveryController = exports.createDeliveryController = void 0;
-const cryptr_1 = __importDefault(require("cryptr"));
-const DeliveryServices = __importStar(require("../services/deliveryService")); //TODO: improve export and import of files
-const cryptr = new cryptr_1.default('myTotallySecretKey');
+const DeliveryServices = __importStar(require("../services/deliveryService"));
 const createDeliveryController = async (req, res) => {
     try {
         const deliveryData = req.body;
@@ -136,8 +131,8 @@ const getPartnerDeliveryHistoryController = async (req, res) => {
 exports.getPartnerDeliveryHistoryController = getPartnerDeliveryHistoryController;
 const getDeliveryIdsController = async (req, res) => {
     try {
-        const { userID } = req.body;
-        const encryptedDeliveryIds = await DeliveryServices.getDeliveryIdsService(userID);
+        const { userId } = req.body;
+        const encryptedDeliveryIds = await DeliveryServices.getDeliveryIdsService(userId);
         return res.json({
             success: true,
             body: encryptedDeliveryIds,

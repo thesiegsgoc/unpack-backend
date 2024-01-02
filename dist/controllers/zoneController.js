@@ -5,16 +5,19 @@ const zoneService_1 = require("../services/zoneService");
 const registerZoneController = async (req, res) => {
     try {
         const { zoneName, rate, centralLocation } = req.body;
-        if (!zoneName || !rate || !centralLocation.longitude || !centralLocation.latitude) {
+        if (!zoneName ||
+            !rate ||
+            !centralLocation.longitude ||
+            !centralLocation.latitude) {
             return res.status(400).json({
                 success: false,
-                message: 'A Zone should at-least have a name, transportation rate greater than 0, and valid central location.'
+                message: 'A Zone should at-least have a name, transportation rate greater than 0, and valid central location.',
             });
         }
         const zoneNameResult = await (0, zoneService_1.registerZoneService)(zoneName, rate, centralLocation);
         res.json({
             success: true,
-            message: `${zoneNameResult} zone is added successfully.`
+            message: `${zoneNameResult} zone is added successfully.`,
         });
     }
     catch (error) {
@@ -28,19 +31,19 @@ const updateZoneInfoController = async (req, res) => {
         if (!zoneName || zoneName === '') {
             return res.status(400).json({
                 success: false,
-                message: 'A Zone should at-least have a name.'
+                message: 'A Zone should at-least have a name.',
             });
         }
         if (!rate || rate <= 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Transportation rate should be greater than 0.'
+                message: 'Transportation rate should be greater than 0.',
             });
         }
         await (0, zoneService_1.updateZoneInfoService)(zoneName, rate);
         res.json({
             success: true,
-            message: `Zone ${zoneName}'s info is updated successfully.`
+            message: `Zone ${zoneName}'s info is updated successfully.`,
         });
     }
     catch (error) {
@@ -54,13 +57,13 @@ const deleteZoneController = async (req, res) => {
         if (!zoneName || zoneName === '') {
             return res.status(400).json({
                 success: false,
-                message: 'A Zone should at-least have a name.'
+                message: 'A Zone should at-least have a name.',
             });
         }
         await (0, zoneService_1.deleteZoneService)(zoneName);
         res.json({
             success: true,
-            message: `Zone ${zoneName} is deleted successfully.`
+            message: `Zone ${zoneName} is deleted successfully.`,
         });
     }
     catch (error) {
@@ -74,19 +77,19 @@ const addZoneHandlerController = async (req, res) => {
         if (!zoneName || zoneName === '') {
             return res.status(400).json({
                 success: false,
-                message: 'A Zone should at-least have a name.'
+                message: 'A Zone should at-least have a name.',
             });
         }
         if (!handler) {
             return res.status(400).json({
                 success: false,
-                message: 'Cannot have an empty handler'
+                message: 'Cannot have an empty handler',
             });
         }
         await (0, zoneService_1.addZoneHandlerService)(zoneName, handler);
         res.json({
             success: true,
-            message: `${handler} is successfully added as a handler in zone ${zoneName}.`
+            message: `${handler} is successfully added as a handler in zone ${zoneName}.`,
         });
     }
     catch (error) {
@@ -100,19 +103,19 @@ const deleteZoneHandlerController = async (req, res) => {
         if (!zoneName || zoneName === '') {
             return res.status(400).json({
                 success: false,
-                message: 'A Zone should at-least have a name.'
+                message: 'A Zone should at-least have a name.',
             });
         }
         if (!handler) {
             return res.status(400).json({
                 success: false,
-                message: 'Cannot have an empty handler'
+                message: 'Cannot have an empty handler',
             });
         }
         await (0, zoneService_1.deleteZoneHandlerService)(zoneName, handler);
         res.json({
             success: true,
-            message: `Handler ${handler} is successfully deleted as a ${zoneName} zone handler.`
+            message: `Handler ${handler} is successfully deleted as a ${zoneName} zone handler.`,
         });
     }
     catch (error) {
@@ -126,13 +129,13 @@ const updateZoneHandlerAvailabilityController = async (req, res) => {
         if (!handler) {
             return res.status(400).json({
                 success: false,
-                message: 'Cannot have an empty handler'
+                message: 'Cannot have an empty handler',
             });
         }
         await (0, zoneService_1.updateZoneHandlerAvailabilityService)(handler, available);
         res.json({
             success: true,
-            message: `Handler ${handler}'s availability updated successfully.`
+            message: `Handler ${handler}'s availability updated successfully.`,
         });
     }
     catch (error) {
@@ -147,7 +150,9 @@ const assignHandlerController = async (req, res) => {
         res.json({
             success: true,
             body: { handlerId },
-            message: handlerId ? `Handler successfully scheduled to pick up a package.` : `No available handler found.`
+            message: handlerId
+                ? `Handler successfully scheduled to pick up a package.`
+                : `No available handler found.`,
         });
     }
     catch (error) {
@@ -161,14 +166,14 @@ const deliveryCostController = async (req, res) => {
         if (!pickUpLocation || !dropOffLocation || !deliveryType) {
             return res.status(400).json({
                 success: false,
-                message: `Can't pick-up nor drop a package at an unknown location.`
+                message: `Can't pick-up nor drop a package at an unknown location.`,
             });
         }
         const costDetails = await (0, zoneService_1.deliveryCostService)(pickUpLocation, dropOffLocation, deliveryType);
         res.json({
             success: true,
             body: costDetails,
-            message: `Cost details calculated successfully.`
+            message: `Cost details calculated successfully.`,
         });
     }
     catch (error) {

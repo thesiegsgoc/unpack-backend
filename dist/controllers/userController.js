@@ -24,7 +24,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserByIdController = exports.getAllUsersController = exports.deleteUserController = exports.resetUserPasswordController = exports.updateUserLocationController = exports.updateUserInfoController = exports.uploadProfilePictureController = exports.loginUserController = exports.registerUserController = void 0;
-//Todo: change to import from services
 const UserServices = __importStar(require("../services/userService"));
 const registerUserController = async (req, res) => {
     try {

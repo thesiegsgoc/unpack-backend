@@ -1,5 +1,4 @@
 "use strict";
-// orderController.ts
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -25,7 +24,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateOrderInfo = exports.addOrder = void 0;
-const OrderService = __importStar(require("../services/orderServices")); // Adjust the import path as needed
+const OrderService = __importStar(require("../services/orderServices"));
 const addOrder = async (req, res) => {
     const { name, parcel, quantity, size, orderId } = req.body;
     if (!name || !parcel || !quantity || !size || !orderId) {
@@ -33,7 +32,13 @@ const addOrder = async (req, res) => {
     }
     else {
         try {
-            const newOrder = await OrderService.createOrder({ name, parcel, quantity, size, orderId });
+            const newOrder = await OrderService.createOrder({
+                name,
+                parcel,
+                quantity,
+                size,
+                orderId,
+            });
             return res.json({ status: 'OK', data: newOrder });
         }
         catch (error) {
@@ -46,7 +51,10 @@ const updateOrderInfo = async (req, res) => {
     const { orderId } = req.body;
     try {
         await OrderService.updateOrder(orderId, req.body);
-        return res.json({ success: true, message: 'Order info has updated successfully.' });
+        return res.json({
+            success: true,
+            message: 'Order info has updated successfully.',
+        });
     }
     catch (error) {
         return res.json({ success: false, message: error.message });

@@ -1,5 +1,4 @@
 import { Request, Response } from 'express'
-//Todo: change to import from services
 import * as UserServices from '../services/userService'
 
 export const registerUserController = async (req: Request, res: Response) => {

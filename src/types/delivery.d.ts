@@ -1,11 +1,10 @@
-import { IUser } from './user'
-
 interface Coordinates {
   latitude: number
   longitude: number
 }
 
-interface AddDeliveryRequestBody {
+interface DeliveryRequestBody {
+  userId: string
   receiver: string
   phoneNumber: string
   pickupLocation: Coordinates
@@ -37,7 +36,7 @@ interface DeliveryItemDetails {
   dropOffCost: number
   pickUpCost: number
   deliveryCost: number
-  deliveryTime: string // Adding this property
+  deliveryTime: string
 }
 
 interface DeliveryDetailsFrom {
@@ -71,8 +70,12 @@ interface PartnerDeliveryItem {
   vendor: VendorItem
 }
 
-type DeliveryItem = /*unresolved*/ any // TODO: Replace with actual type
-type GetDeliveryIdsRequestBody = /*unresolved*/ any
+type DeliveryItem = {
+  name: string
+  parcel: string
+  quantity: number
+  size: string
+}
 
 interface RequestWithUser extends Request {
   user?: IUser
