@@ -15,6 +15,7 @@ const driver_1 = __importDefault(require("./routes/driver"));
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 const swaggerDef_1 = require("./documentation/swaggerDef");
 const index_1 = __importDefault(require("./websocket/index"));
+const cors_1 = __importDefault(require("cors"));
 // Swagger setup
 const swaggerSpec = (0, swagger_jsdoc_1.default)(swaggerDef_1.options);
 //Initializing Environment Variables for the whole codebase:
@@ -28,6 +29,9 @@ mongoose_1.default
     .connect(MONGODB_URL)
     .then(() => console.log('Database connected successfully...'))
     .catch((err) => console.log(err));
+app.use((0, cors_1.default)({
+    origin: ['http://localhost:5173'],
+}));
 // Implement the routes here:
 app.use(express_1.default.json());
 app.use(user_1.default);

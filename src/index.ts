@@ -11,7 +11,7 @@ import swaggerUi from 'swagger-ui-express'
 import swaggerJSDoc from 'swagger-jsdoc'
 import { options } from './documentation/swaggerDef'
 import websocket from './websocket/index'
-import socketIO from 'socket.io'
+import cors from 'cors'
 
 // Swagger setup
 const swaggerSpec = swaggerJSDoc(options)
@@ -31,6 +31,11 @@ mongoose
   .then(() => console.log('Database connected successfully...'))
   .catch((err: any) => console.log(err))
 
+app.use(
+  cors({
+    origin: ['http://localhost:5173'],
+  })
+)
 // Implement the routes here:
 app.use(express.json())
 app.use(userRouter)
