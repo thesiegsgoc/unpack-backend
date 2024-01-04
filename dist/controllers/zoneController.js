@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deliveryCostController = exports.assignHandlerController = exports.updateZoneHandlerAvailabilityController = exports.deleteZoneHandlerController = exports.addZoneHandlerController = exports.deleteZoneController = exports.updateZoneInfoController = exports.registerZoneController = void 0;
+exports.assignHandlerController = exports.updateZoneHandlerAvailabilityController = exports.deleteZoneHandlerController = exports.addZoneHandlerController = exports.deleteZoneController = exports.updateZoneInfoController = exports.registerZoneController = void 0;
 const zoneService_1 = require("../services/zoneService");
 const registerZoneController = async (req, res) => {
     try {
@@ -160,24 +160,3 @@ const assignHandlerController = async (req, res) => {
     }
 };
 exports.assignHandlerController = assignHandlerController;
-const deliveryCostController = async (req, res) => {
-    try {
-        const { pickUpLocation, dropOffLocation, deliveryType } = req.body;
-        if (!pickUpLocation || !dropOffLocation || !deliveryType) {
-            return res.status(400).json({
-                success: false,
-                message: `Can't pick-up nor drop a package at an unknown location.`,
-            });
-        }
-        const costDetails = await (0, zoneService_1.deliveryCostService)(pickUpLocation, dropOffLocation, deliveryType);
-        res.json({
-            success: true,
-            body: costDetails,
-            message: `Cost details calculated successfully.`,
-        });
-    }
-    catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
-exports.deliveryCostController = deliveryCostController;

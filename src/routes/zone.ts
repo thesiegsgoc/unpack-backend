@@ -11,7 +11,6 @@ import {
   deleteZoneHandlerController as deleteZoneHandler,
   updateZoneHandlerAvailabilityController as updateZoneHandlerAvailability,
   assignHandlerController as assignHandler,
-  deliveryCostController as deliveryCost,
 } from '../controllers/zoneController'
 
 // Implement the user routes:
@@ -25,6 +24,5 @@ router.put('/zone/update-handler-availability', updateZoneHandlerAvailability)
 router.put('/zone/update-zone-info', updateZoneInfo)
 router.delete('/zone/delete', deleteZone)
 router.put('/zone/assign-package-handler', assignHandler)
-router.post('/zone/deliveryCost', deliveryCost)
 
 export default router

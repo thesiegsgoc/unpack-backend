@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getHandlersLocationController = exports.pickupDeliveryController = exports.getDeliveryIdsController = exports.getPartnerDeliveryHistoryController = exports.getUserDeliveryHistoryController = exports.getAllDeliveriesController = exports.trackDeliveryController = exports.encryptDeliveryDetailsController = exports.updateDeliveryController = exports.createDeliveryController = void 0;
+exports.deliveryCostController = exports.getHandlersLocationController = exports.pickupDeliveryController = exports.getDeliveryIdsController = exports.getPartnerDeliveryHistoryController = exports.getUserDeliveryHistoryController = exports.getAllDeliveriesController = exports.trackDeliveryController = exports.encryptDeliveryDetailsController = exports.updateDeliveryController = exports.createDeliveryController = void 0;
 const DeliveryServices = __importStar(require("../services/deliveryService"));
 const createDeliveryController = async (req, res) => {
     try {
@@ -170,3 +170,28 @@ const getHandlersLocationController = async (req, res) => {
     }
 };
 exports.getHandlersLocationController = getHandlersLocationController;
+const deliveryCostController = async (req, res) => {
+    try {
+        const { pickUpLocation, dropOffLocation, deliveryType } = req.body;
+        if (!pickUpLocation || !dropOffLocation || !deliveryType) {
+            return res.status(400).json({
+                success: false,
+                message: `Can't pick-up nor drop a package at an unknown location.`,
+            });
+        }
+        // const costDetails = await deliveryCostService(
+        //   pickUpLocation,
+        //   dropOffLocation,
+        //   deliveryType
+        // )
+        res.json({
+            success: true,
+            // body: costDetails,
+            message: `Cost details calculated successfully.`,
+        });
+    }
+    catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+exports.deliveryCostController = deliveryCostController;

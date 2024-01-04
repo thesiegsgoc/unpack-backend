@@ -1,10 +1,10 @@
 import Cryptr from 'cryptr'
-import DeliveryModel from '../models/delivery'
+import DeliveryModel from '../models/Delivery'
 import UserModel from '../models/users/user'
 import scheduling from '../util/scheduling'
 import db from '../util/db'
-import OrderModel from '../models/order'
-import PartnerModel from '../models/partner'
+import OrderModel from '../models/Order'
+import PartnerModel from '../models/Partner'
 const cryptr = new Cryptr('myTotallySecretKey')
 
 type AddDeliveryRequestBody = /*unresolved*/ any // TODO: Define the type for AddDeliveryRequestBody in the types file
@@ -426,4 +426,27 @@ export const getHandlersLocationService = async (scheduledHandler: string) => {
   }
 
   return handler.location
+}
+
+export const deliveryCostService = async (
+  pickUpLocation: any,
+  dropOffLocation: any,
+  deliveryType: string
+) => {
+  // const zones = await Zone.find({})
+  // const pickUpCostDetails = getDeliveryCostDetails(zones, pickUpLocation)
+  // const dropOffCostDetails = getDeliveryCostDetails(zones, dropOffLocation)
+  // //@ts-ignore
+  // const zoneToZoneKey = `${pickUpCostDetails.zoneName}-${dropOffCostDetails.zoneName}`
+  // const interZoneCost = ZONE_TO_ZONE_COST[zoneToZoneKey] || 0
+  // //@ts-ignore
+  // const totalCost =
+  //   pickUpCostDetails.cost + dropOffCostDetails.cost + interZoneCost
+  // return {
+  //   //@ts-ignore
+  //   pickUpCost: pickUpCostDetails.cost,
+  //   //@ts-ignore
+  //   dropOffCost: dropOffCostDetails.cost,
+  //   totalCost,
+  // }
 }

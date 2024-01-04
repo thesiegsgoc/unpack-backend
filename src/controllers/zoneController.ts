@@ -7,7 +7,6 @@ import {
   deleteZoneHandlerService,
   updateZoneHandlerAvailabilityService,
   assignHandlerService,
-  deliveryCostService,
 } from '../services/zoneService'
 
 export const registerZoneController = async (req: Request, res: Response) => {
@@ -184,32 +183,6 @@ export const assignHandlerController = async (req: Request, res: Response) => {
       message: handlerId
         ? `Handler successfully scheduled to pick up a package.`
         : `No available handler found.`,
-    })
-  } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message })
-  }
-}
-
-export const deliveryCostController = async (req: Request, res: Response) => {
-  try {
-    const { pickUpLocation, dropOffLocation, deliveryType } = req.body
-
-    if (!pickUpLocation || !dropOffLocation || !deliveryType) {
-      return res.status(400).json({
-        success: false,
-        message: `Can't pick-up nor drop a package at an unknown location.`,
-      })
-    }
-
-    const costDetails = await deliveryCostService(
-      pickUpLocation,
-      dropOffLocation,
-      deliveryType
-    )
-    res.json({
-      success: true,
-      body: costDetails,
-      message: `Cost details calculated successfully.`,
     })
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message })

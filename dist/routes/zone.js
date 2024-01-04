@@ -19,5 +19,4 @@ router.put('/zone/update-handler-availability', zoneController_1.updateZoneHandl
 router.put('/zone/update-zone-info', zoneController_1.updateZoneInfoController);
 router.delete('/zone/delete', zoneController_1.deleteZoneController);
 router.put('/zone/assign-package-handler', zoneController_1.assignHandlerController);
-router.post('/zone/deliveryCost', zoneController_1.deliveryCostController);
 exports.default = router;
