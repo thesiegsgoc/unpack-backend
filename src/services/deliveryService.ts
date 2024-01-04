@@ -318,12 +318,12 @@ export const getPartnerDeliveryHistoryService = async (partnerId: string) => {
   return deliveryList
 }
 
-export const getDeliveryIdsService = async (userID: string) => {
-  if (!userID) {
+export const getDeliveryIdsService = async (userId: string) => {
+  if (!userId) {
     throw new Error('Provide user ID.')
   }
 
-  const user = await UserModel.findById({ _id: userID })
+  const user = await UserModel.findById({ _id: userId })
   if (!user) {
     throw new Error('User not found.')
   }
@@ -331,7 +331,7 @@ export const getDeliveryIdsService = async (userID: string) => {
   let deliveries: Delivery[] = []
 
   if (user.status === 'vendor' || user.status === 'consumer') {
-    deliveries = await DeliveryModel.find({ senderId: userID }).exec()
+    deliveries = await DeliveryModel.find({ senderId: userId }).exec()
   }
   // Include other conditions if necessary
 
@@ -344,7 +344,7 @@ export const getDeliveryIdsService = async (userID: string) => {
   const encryptedDeliveries = cryptr.encrypt(
     JSON.stringify({
       deliveryIds,
-      access: [userID, 'admin'],
+      access: [userId, 'admin'],
     })
   )
 

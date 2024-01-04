@@ -238,17 +238,17 @@ const getPartnerDeliveryHistoryService = async (partnerId) => {
     return deliveryList;
 };
 exports.getPartnerDeliveryHistoryService = getPartnerDeliveryHistoryService;
-const getDeliveryIdsService = async (userID) => {
-    if (!userID) {
+const getDeliveryIdsService = async (userId) => {
+    if (!userId) {
         throw new Error('Provide user ID.');
     }
-    const user = await user_1.default.findById({ _id: userID });
+    const user = await user_1.default.findById({ _id: userId });
     if (!user) {
         throw new Error('User not found.');
     }
     let deliveries = [];
     if (user.status === 'vendor' || user.status === 'consumer') {
-        deliveries = await delivery_1.default.find({ senderId: userID }).exec();
+        deliveries = await delivery_1.default.find({ senderId: userId }).exec();
     }
     // Include other conditions if necessary
     if (!deliveries || deliveries.length === 0) {
@@ -257,7 +257,7 @@ const getDeliveryIdsService = async (userID) => {
     let deliveryIds = deliveries.map((delivery) => delivery.deliveryId);
     const encryptedDeliveries = cryptr.encrypt(JSON.stringify({
         deliveryIds,
-        access: [userID, 'admin'],
+        access: [userId, 'admin'],
     }));
     return encryptedDeliveries;
 };

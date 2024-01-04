@@ -4,25 +4,39 @@ interface Coordinates {
 }
 
 interface DeliveryRequestBody {
-  userId: string
-  receiver: string
-  phoneNumber: string
-  pickupLocation: Coordinates
-  dropoffLocation: Coordinates
+  userId?: string
+  deliveryId?: string
+  deliveryId: string
+  receiverId?: string
   senderId: string
-  size: string
-  type: string
-  parcel: string
-  notes?: string
+  partnerId?: string
+  receiver?: string
   quantity: number
-  deliveryTime: string
-  deliveryDate: string
-  dropOffCost: number
-  pickUpCost: number
-  deliveryCost: number
+  phoneNumber?: string
+  size?: string
+  type?: string
+  parcel?: string
+  dropoffLocation: {
+    latitude: number
+    longitude: number
+  }
+  notes?: string
+  pickupLocation?: Array<any>
+  currentHandler?: any
+  scheduledHandler?: string | undefined
+  deliveryTime?: string
+  deliveryDate?: string
+  dropOffCost?: any
+  pickUpCost?: any
+  deliveryCost?: number
+  status?: any
+  orderId?: string
+  vendorId?: string
+  date?: Date
 }
 
 interface DeliveryItemDetails {
+  deliveryId: string
   pickup: string
   dropoff: string
   time: string

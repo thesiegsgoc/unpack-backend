@@ -134,7 +134,7 @@ export const getDeliveryIdsController = async (
   try {
     const { userId } = req.body
     const encryptedDeliveryIds = await DeliveryServices.getDeliveryIdsService(
-      userId
+      userId!
     )
 
     return res.json({
