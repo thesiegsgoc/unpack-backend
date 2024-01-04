@@ -14,11 +14,11 @@ const OrderSchema = new mongoose_1.default.Schema({
         required: true,
     },
     name: {
-        type: String
+        type: String,
     },
     quantity: {
         type: Number,
-        required: true
+        required: true,
     },
     size: {
         type: String,
@@ -29,5 +29,5 @@ const OrderSchema = new mongoose_1.default.Schema({
         default: Date.now,
     },
 });
-const OrderModel = mongoose_1.default.model("Order", OrderSchema);
+const OrderModel = mongoose_1.default.model('Order', OrderSchema);
 exports.default = OrderModel;
