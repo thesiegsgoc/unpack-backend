@@ -5,11 +5,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateDeliveryStatus = exports.updateDriversLocationService = exports.deliveryCostService = exports.getHandlersLocationService = exports.pickupDeliveryService = exports.getDeliveryIdsService = exports.getPartnerDeliveryHistoryService = exports.getUserDeliveryHistoryService = exports.getAllDeliveriesService = exports.trackDeliveryService = exports.encryptDeliveryDetailsService = exports.updateDeliveryService = exports.createDeliveryService = void 0;
 const cryptr_1 = __importDefault(require("cryptr"));
-const Delivery_1 = __importDefault(require("../models/Delivery"));
+const DeliveryOrderSchemal_1 = __importDefault(require("../models/DeliveryOrderSchemal"));
 const user_1 = __importDefault(require("../models/users/user"));
 const scheduling_1 = __importDefault(require("../util/scheduling"));
 const db_1 = __importDefault(require("../util/db"));
-const Order_1 = __importDefault(require("../models/Order"));
 const Partner_1 = __importDefault(require("../models/Partner"));
 const websocketService_1 = __importDefault(require("../websocket/websocketService"));
 const cryptr = new cryptr_1.default('myTotallySecretKey');
@@ -17,7 +16,7 @@ const createDeliveryService = async (deliveryData) => {
     const { receiver, phoneNumber, pickup, dropoffLocation, senderId, size, type, parcel, quantity, deliveryTime, deliveryDate, dropOffCost, } = deliveryData;
     const numCurrentDeliveries = await db_1.default.deliveries.countDocuments();
     const handler = await scheduling_1.default.assignHandler(pickup);
-    const newDelivery = new Delivery_1.default({
+    const newDelivery = new DeliveryOrderSchemal_1.default({
         receiver,
         phoneNumber,
         pickup,
@@ -49,12 +48,12 @@ const updateDeliveryService = async (deliveryData) => {
             throw new Error('Delivery ID is required for updating.');
         }
         // Find the existing delivery record in the database
-        const existingDelivery = await Delivery_1.default.findOne({ deliveryId });
+        const existingDelivery = await DeliveryOrderSchemal_1.default.findOne({ deliveryId });
         if (!existingDelivery) {
             throw new Error(`Delivery with ID ${deliveryId} not found.`);
         }
         // Update the existing delivery record with the new data
-        const updatedDelivery = await Delivery_1.default.findOneAndUpdate({ deliveryId }, { $set: deliveryData }, { new: true } // Return the updated document
+        const updatedDelivery = await DeliveryOrderSchemal_1.default.findOneAndUpdate({ deliveryId }, { $set: deliveryData }, { new: true } // Return the updated document
         );
         return updatedDelivery;
     }
@@ -70,7 +69,7 @@ const encryptDeliveryDetailsService = async (deliveryIds) => {
     }
     const deliveryDetails = [];
     await Promise.all(deliveryIds.map(async (deliveryId) => {
-        const delivery = await Delivery_1.default.findOne({ deliveryId });
+        const delivery = await DeliveryOrderSchemal_1.default.findOne({ deliveryId });
         const user = delivery?.senderId &&
             (await user_1.default.findOne({ userId: delivery.senderId }));
         if (!delivery || !user) {
@@ -131,7 +130,7 @@ const trackDeliveryService = async (trackingId) => {
 exports.trackDeliveryService = trackDeliveryService;
 const getAllDeliveriesService = async () => {
     try {
-        const deliveries = await Delivery_1.default.find({});
+        const deliveries = await DeliveryOrderSchemal_1.default.find({});
         if (!deliveries || deliveries.length === 0) {
             throw new Error('No deliveries found.');
         }
@@ -165,7 +164,7 @@ const getUserDeliveryHistoryService = async (userId) => {
     }
     const deliveryList = [];
     for (const delivery of user.deliveries) {
-        const deliveryItem = await Delivery_1.default.findById(delivery);
+        const deliveryItem = await DeliveryOrderSchemal_1.default.findById(delivery);
         if (!deliveryItem) {
             console.error(`Delivery data missing for ID: ${delivery}`);
             continue;
@@ -200,12 +199,12 @@ const getPartnerDeliveryHistoryService = async (partnerId) => {
     }
     const deliveryList = [];
     for (const delivery of partner.deliveries) {
-        const deliveryData = await Delivery_1.default.findById(delivery);
+        const deliveryData = await DeliveryOrderSchemal_1.default.findById(delivery);
         if (!deliveryData) {
             console.error(`Delivery data missing for ID: ${delivery}`);
             continue;
         }
-        const orderData = await Order_1.default.findById(deliveryData.orderId);
+        const orderData = await OrderModel.findById(deliveryData.orderId);
         const vendorData = await user_1.default.findById(deliveryData.vendorId);
         deliveryList.push({
             delivery: {
@@ -249,7 +248,7 @@ const getDeliveryIdsService = async (userId) => {
     }
     let deliveries = [];
     if (user.status === 'vendor' || user.status === 'consumer') {
-        deliveries = await Delivery_1.default.find({ senderId: userId }).exec();
+        deliveries = await DeliveryOrderSchemal_1.default.find({ senderId: userId }).exec();
     }
     // Include other conditions if necessary
     if (!deliveries || deliveries.length === 0) {
@@ -281,7 +280,7 @@ const pickupDeliveryService = async (encryptedData, partnerId) => {
     }
     let deliveryIds = [];
     for (const deliveryId of deliveryData.deliveryIds) {
-        const delivery = await Delivery_1.default.findOne({ deliveryId });
+        const delivery = await DeliveryOrderSchemal_1.default.findOne({ deliveryId });
         if (delivery && delivery.scheduledHandler === partnerId) {
             await db_1.default.deliveries.updateOne({ deliveryId }, {
                 $set: {
@@ -343,7 +342,7 @@ const deliveryCostService = async (pickUpLocation, dropOffLocation, deliveryType
 exports.deliveryCostService = deliveryCostService;
 const updateDriversLocationService = async (driverId, location) => {
     // Update the driver's location in the database
-    await Delivery_1.default.updateOne({ driverId }, { $set: { currentLocation: location } });
+    await DeliveryOrderSchemal_1.default.updateOne({ driverId }, { $set: { currentLocation: location } });
     // Use the WebSocket service to notify relevant users
     const webSocketService = websocketService_1.default.getInstance();
     webSocketService.updateDriverLocation(driverId, location);

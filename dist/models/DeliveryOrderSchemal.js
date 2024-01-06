@@ -3,17 +3,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DeliverySchema = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
-const DeliverySchema = new mongoose_1.default.Schema({
+exports.DeliverySchema = new mongoose_1.default.Schema({
     deliveryId: {
         type: String,
     },
     receiverId: {
-        type: String,
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: 'User',
     },
-    vendorId: {
-        //This is the sender ID, The person who requested the delivery
-        type: String,
+    senderId: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: 'User',
+    },
+    scheduledDriver: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: 'User',
     },
     packageSize: {
         type: String,
@@ -69,5 +75,5 @@ const DeliverySchema = new mongoose_1.default.Schema({
         },
     },
 });
-const DeliveryModel = mongoose_1.default.model('Delivery', DeliverySchema);
+const DeliveryModel = mongoose_1.default.model('Delivery', exports.DeliverySchema);
 exports.default = DeliveryModel;

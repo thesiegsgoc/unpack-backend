@@ -1,5 +1,5 @@
 import Cryptr from 'cryptr'
-import DeliveryModel from '../models/Delivery'
+import DeliveryModel from '../models/DeliveryOrderSchemal'
 import { Request, Response } from 'express'
 import * as DeliveryServices from '../services/deliveryService'
 import WebSocketService from '../websocket/websocketService'

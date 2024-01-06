@@ -8,7 +8,6 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const config_1 = __importDefault(require("./config"));
 const user_1 = __importDefault(require("./routes/user"));
-const order_1 = __importDefault(require("./routes/order"));
 const zone_1 = __importDefault(require("./routes/zone"));
 const delivery_1 = __importDefault(require("./routes/delivery"));
 const driver_1 = __importDefault(require("./routes/driver"));
@@ -36,7 +35,6 @@ app.use((0, cors_1.default)({
 app.use(express_1.default.json());
 app.use(user_1.default);
 app.use(zone_1.default);
-app.use(order_1.default);
 app.use(delivery_1.default);
 app.use(driver_1.default);
 // Default route

@@ -1,19 +1,11 @@
 import Cryptr from 'cryptr'
-import DeliveryModel from '../models/Delivery'
+import DeliveryModel from '../models/DeliveryOrderSchemal'
 import UserModel from '../models/users/user'
 import scheduling from '../util/scheduling'
 import db from '../util/db'
-import OrderModel from '../models/Order'
 import PartnerModel from '../models/Partner'
 import WebSocketService from '../websocket/websocketService'
 const cryptr = new Cryptr('myTotallySecretKey')
-
-type AddDeliveryRequestBody = /*unresolved*/ any // TODO: Define the type for AddDeliveryRequestBody in the types file
-type DeliveryDetailsFrom = /*unresolved*/ any
-type DeliveryDetailsTo = /*unresolved*/ any
-type DeliveryItem = /*unresolved*/ any
-type PartnerDeliveryItem = /*unresolved*/ any
-type Delivery = /*unresolved*/ any
 
 export const createDeliveryService = async (
   deliveryData: AddDeliveryRequestBody

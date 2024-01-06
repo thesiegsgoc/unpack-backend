@@ -1,7 +1,75 @@
 import mongoose, { Schema, Document } from 'mongoose'
-import { IUserModel } from './user'
+import { v4 as uuidv4 } from 'uuid'
+import IVendor from '../../types/users/vendor'
 
-const VendorSchema = new mongoose.Schema({
+export interface IVendorModel extends IVendor, Document {}
+
+const VendorSchema: Schema<IVendorModel> = new mongoose.Schema({
+  userId: {
+    type: String,
+    required: true,
+    default: uuidv4,
+    unique: true,
+  },
+  username: {
+    type: String,
+    required: true,
+  },
+  password: {
+    type: String,
+    maxLength: 100,
+    required: true,
+  },
+  fullname: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+  },
+  phone: {
+    type: String,
+  },
+  status: {
+    type: String,
+  },
+  avatar: {
+    type: Buffer,
+  },
+  location: {
+    type: Schema.Types.Mixed,
+    default: {},
+  },
+  address: {
+    street: String,
+    city: String,
+    state: String,
+    zipCode: String,
+    country: String,
+    coordinates: {},
+  },
+  userType: {
+    type: String,
+    enum: ['normal', 'vendor', 'zoneManager', 'driver', 'agent'],
+  },
+  expoPushToken: Schema.Types.Mixed,
+  profilePhoto: String,
+  canDeliver: String,
+  rating: Number,
+  securityCode: String,
+  securityAnswer: String,
+  preferredPickupLocation: String,
+  languagePreference: String,
+  dateOfBirth: Date,
+  emailVerified: Boolean,
+  paymentMethod: Schema.Types.Mixed,
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+  deliveries: [Schema.Types.Mixed],
+
+  // Original VendorSchema fields
   businessName: {
     type: String,
     required: true,
@@ -28,5 +96,5 @@ const VendorSchema = new mongoose.Schema({
   },
 })
 
-const VendorModel = mongoose.model<IVendor>('Vendor', VendorSchema)
+const VendorModel = mongoose.model<IVendorModel>('Vendor', VendorSchema)
 export default VendorModel

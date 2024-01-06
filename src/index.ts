@@ -3,7 +3,6 @@ import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import config from './config'
 import userRouter from './routes/user'
-import orderRouter from './routes/order'
 import zoneRouter from './routes/zone'
 import deliveryRouter from './routes/delivery'
 import driverRouter from './routes/driver'
@@ -40,7 +39,6 @@ app.use(
 app.use(express.json())
 app.use(userRouter)
 app.use(zoneRouter)
-app.use(orderRouter)
 app.use(deliveryRouter)
 app.use(driverRouter)
 

@@ -1,96 +1,44 @@
-interface Coordinates {
+import mongoose from 'mongoose'
+
+interface ILocation {
+  // Define the structure for location data, if you have specific fields
+  // Example:
   latitude: number
   longitude: number
 }
 
-interface DeliveryRequestBody {
-  userId?: string
+interface ICost {
+  // Define the structure for cost data, if you have specific fields
+  // Example:
+  amount: number
+  currency: string
+}
+
+interface IDeliveryStatus {
+  value: string // Represents the current status (e.g., 'In Process', 'Delivered', 'Cancelled')
+  updatedAt: Date // Timestamp of when the status was last updated
+  updatedBy?: mongoose.Types.ObjectId // ID of the user or system that updated the status, if applicable
+  reason?: string // Reason for the status change, particularly useful for cancellations or exceptions
+}
+
+interface IDeliveryOrder {
   deliveryId?: string
-  deliveryId: string
-  receiverId?: string
-  senderId: string
-  partnerId?: string
-  receiver?: string
+  receiverId: mongoose.Types.ObjectId
+  senderId: mongoose.Types.ObjectId
+  scheduledDriver: mongoose.Types.ObjectId
+  packageSize: string
   quantity: number
-  phoneNumber?: string
-  size?: string
   type?: string
-  parcel?: string
-  dropoffLocation: {
-    latitude: number
-    longitude: number
-  }
-  notes?: string
-  pickupLocation?: Array<any>
-  currentHandler?: any
-  scheduledHandler?: string | undefined
-  deliveryTime?: string
+  parcel: string
+  dropoffLocation: ILocation
+  pickupLocation?: ILocation
+  currentHandler?: mongoose.Types.ObjectId | IHandler // If IHandler is another interface
+  pickupDate?: string
   deliveryDate?: string
-  dropOffCost?: any
-  pickUpCost?: any
+  dropOffCost?: ICost
+  pickUpCost?: ICost
   deliveryCost?: number
-  status?: any
-  orderId?: string
-  vendorId?: string
-  date?: Date
-}
-
-interface DeliveryItemDetails {
-  deliveryId: string
-  pickup: string
-  dropoff: string
-  time: string
-  date: string
-  status: string
-  deliveryId: string
-  type: string
-  receiver: string
-  sendor: string
-  expoPushToken?: string | number
-  dropOffCost: number
-  pickUpCost: number
-  deliveryCost: number
-  deliveryTime: string
-}
-
-interface DeliveryDetailsFrom {
-  fullname: string
-  phone: string
-  email: string
-  pickup: string
-}
-
-interface DeliveryDetailsTo {
-  receiver: string
-  phonenumber: string
-  dropoff: string
-}
-
-interface OrderItem {
-  name: string
-  parcel: string
-  quantity: number
-  size: string
-}
-
-interface VendorItem {
-  fullname?: string
-  avatar?: string
-}
-
-interface PartnerDeliveryItem {
-  delivery: DeliveryItemDetails
-  order: OrderItem
-  vendor: VendorItem
-}
-
-type DeliveryItem = {
-  name: string
-  parcel: string
-  quantity: number
-  size: string
-}
-
-interface RequestWithUser extends Request {
-  user?: IUser
+  name?: string
+  notes?: string
+  status?: IDeliveryStatus
 }
