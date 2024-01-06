@@ -5,66 +5,102 @@ import scheduling from '../util/scheduling'
 import db from '../util/db'
 import PartnerModel from '../models/Partner'
 import WebSocketService from '../websocket/websocketService'
+import { IDeliveryOrder, ILocation } from '../types/delivery'
+import { Request, Response } from 'express'
+import { DeliverySession } from '../models/DeliverySessionSchema'
+
 const cryptr = new Cryptr('myTotallySecretKey')
 
-export const createDeliveryService = async (
-  deliveryData: AddDeliveryRequestBody
-) => {
+// Define additional interfaces if needed
+interface DeliveryDetailsFrom {
+  phone: string
+  email: string
+  pickup: ILocation
+}
+
+interface DeliveryDetailsTo {
+  receiver: string
+  phonenumber: string
+  dropoff: ILocation
+}
+
+interface DeliveryDetailsFrom {
+  phone: string
+  email: string
+  pickup: ILocation
+}
+
+interface DeliveryDetailsTo {
+  receiver: string
+  phonenumber: string
+  dropoff: ILocation
+}
+
+export const createDeliveryService = async (deliveryData: IDeliveryOrder) => {
   const {
-    receiver,
-    phoneNumber,
-    pickup,
-    dropoffLocation,
+    receiverId,
     senderId,
-    size,
+    scheduledDriver,
+    packageSize,
+    quantity,
     type,
     parcel,
-    quantity,
-    deliveryTime,
+    dropoffLocation,
+    pickupLocation,
+    currentHandler,
+    pickupDate,
     deliveryDate,
     dropOffCost,
+    pickUpCost,
+    deliveryCost,
+    name,
+    notes,
+    status,
   } = deliveryData
 
   const numCurrentDeliveries = await db.deliveries.countDocuments()
-  const handler = await scheduling.assignHandler(pickup)
 
   const newDelivery = new DeliveryModel({
-    receiver,
-    phoneNumber,
-    pickup,
-    dropoffLocation,
+    receiverId,
     senderId,
-    size,
+    scheduledDriver,
+    packageSize,
+    quantity,
     type,
     parcel,
-    quantity,
-    deliveryId: `D00${numCurrentDeliveries + 1}`,
-    scheduledHandler: handler.success ? handler.body.handler : undefined,
-    deliveryTime,
+    dropoffLocation,
+    pickupLocation,
+    currentHandler,
+    pickupDate,
     deliveryDate,
     dropOffCost,
+    pickUpCost,
+    deliveryCost,
+    name,
+    notes,
+    status,
+    deliveryId: `D00${numCurrentDeliveries + 1}`,
   })
 
   await newDelivery.save()
 
   await UserModel.updateOne(
     { _id: senderId },
-    { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } }
+    { $push: { deliveries: newDelivery._id } }
   )
-
-  if (handler.success && handler.body.handler) {
-    await UserModel.updateOne(
-      { _id: handler.body.handler },
-      { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } }
-    )
-  }
+  // if (handler.success && handler.body.handler) {
+  //   await UserModel.updateOne(
+  //     { _id: handler.body.handler },
+  //     { $push: { deliveries: newDelivery._id } }
+  //   )
+  // }
 
   return { trackingNumber: `D00${numCurrentDeliveries + 1}` }
 }
 
 export const updateDeliveryService = async (
-  deliveryData: Delivery
-): Promise<Delivery | null> => {
+  deliveryData: IDeliveryOrder
+): Promise<IDeliveryOrder | null> => {
   try {
     // Ensure the deliveryData includes the deliveryId
     const { deliveryId } = deliveryData
@@ -107,29 +143,32 @@ export const encryptDeliveryDetailsService = async (deliveryIds: string[]) => {
 
   await Promise.all(
     deliveryIds.map(async (deliveryId: string) => {
-      const delivery = await DeliveryModel.findOne({ deliveryId })
-      const user =
-        delivery?.senderId &&
-        (await UserModel.findOne({ userId: delivery.senderId }))
+      const delivery = await DeliveryModel.findById(deliveryId)
+        .populate('senderId')
+        .populate('receiverId')
+        .populate('scheduledDriver')
 
-      if (!delivery || !user) {
+      if (!delivery) {
         throw new Error(`Invalid delivery data for ID: ${deliveryId}`)
       }
 
-      deliveryDetails.push({
-        from: {
-          phone: user.phone,
-          email: user.email!,
-          pickup: delivery.pickupLocation,
-        },
-        to: {
-          receiver: delivery.receiver!,
-          phonenumber: delivery.phoneNumber!,
-          dropoff: delivery.dropoffLocation,
-        },
-        shipper: delivery.scheduledHandler!,
-        notes: delivery.notes,
-      })
+      const sender = delivery.senderId as IUser // Assuming IUser is the user interface
+      const receiver = delivery.receiverId as IUser // Similarly for receiver
+
+      // deliveryDetails.push({
+      //   from: {
+      //     phone: sender.phone,
+      //     email: sender.email,
+      //     pickup: delivery.pickupLocation,
+      //   },
+      //   to: {
+      //     receiver: receiver.fullname,
+      //     phonenumber: receiver.phone,
+      //     dropoff: delivery.dropoffLocation,
+      //   },
+      //   shipper: delivery.scheduledDriver.toString(),
+      //   notes: delivery.notes,
+      // })
     })
   )
 
@@ -148,62 +187,74 @@ export const encryptDeliveryDetailsService = async (deliveryIds: string[]) => {
 }
 
 export const trackDeliveryService = async (trackingId: string) => {
-  const delivery = await db.deliveries.findOne({ deliveryId: trackingId })
+  const delivery: IDeliveryOrder | null = await DeliveryModel.findOne({
+    deliveryId: trackingId,
+  })
 
   if (!delivery) {
     throw new Error('Provide a valid order ID.')
   }
 
-  const { scheduledHandler, status, pickup, dropoff } = delivery
-  const handlerDetails = await UserModel.findById(scheduledHandler)
+  const { scheduledDriver, status, pickupLocation, dropoffLocation } = delivery
+  const handlerDetails = await UserModel.findById(scheduledDriver)
 
   if (!handlerDetails) {
     throw new Error('Handler details not found.')
   }
 
-  const { fullname, username, rating, profilePhoto } = handlerDetails
+  const { fullname, rating, profilePhoto } = handlerDetails // assuming these fields exist in your user model
 
-  if (status.value === 'cancelled') {
+  // Check the delivery status
+  if (status?.value === 'cancelled') {
     throw new Error('This order was cancelled. Cannot track it.')
   }
 
-  if (status.value === 'delivered') {
+  if (status?.value === 'delivered') {
     throw new Error(
       'This order is already delivered. Cannot track it. Check your order history for more info.'
     )
   }
 
   return {
-    pickup,
-    dropoff,
-    handlerName: name,
+    pickupLocation,
+    dropoffLocation,
+    handlerName: fullname,
     handlerRating: rating,
     handlerProfilePhoto: profilePhoto,
-    scheduledHandler,
+    scheduledDriver,
   }
 }
 
 export const getAllDeliveriesService = async () => {
   try {
-    const deliveries = await DeliveryModel.find({})
+    const deliveries: IDeliveryOrder[] = await DeliveryModel.find({})
 
     if (!deliveries || deliveries.length === 0) {
       throw new Error('No deliveries found.')
     }
 
     // Mapping the deliveries to return a simplified or specific structure
-    // Modify this as per your application's requirements
     const mappedDeliveries = deliveries.map((delivery) => {
       return {
         deliveryId: delivery.deliveryId,
         senderId: delivery.senderId,
-        receiver: delivery.receiver,
-        status: delivery.status,
-        scheduledHandler: delivery.scheduledHandler,
-        pickupLocation: delivery.pickupLocation,
+        receiverId: delivery.receiverId,
+        scheduledDriver: delivery.scheduledDriver,
+        packageSize: delivery.packageSize,
+        quantity: delivery.quantity,
+        type: delivery.type,
+        parcel: delivery.parcel,
         dropoffLocation: delivery.dropoffLocation,
-        deliveryTime: delivery.deliveryTime,
+        pickupLocation: delivery.pickupLocation,
+        currentHandler: delivery.currentHandler,
+        pickupDate: delivery.pickupDate,
         deliveryDate: delivery.deliveryDate,
+        dropOffCost: delivery.dropOffCost,
+        pickUpCost: delivery.pickUpCost,
+        deliveryCost: delivery.deliveryCost,
+        name: delivery.name,
+        notes: delivery.notes,
+        status: delivery.status,
         // Add more fields as required
       }
     })
@@ -221,91 +272,46 @@ export const getUserDeliveryHistoryService = async (userId: string) => {
     throw new Error('User not found or has no delivery history.')
   }
 
-  const deliveryList: DeliveryItem[] = []
+  const deliveryList: IDeliveryOrder[] = []
 
-  for (const delivery of user.deliveries) {
-    const deliveryItem = await DeliveryModel.findById(delivery)
+  for (const deliveryId of user.deliveries) {
+    const deliveryItem = await DeliveryModel.findById(deliveryId)
 
     if (!deliveryItem) {
-      console.error(`Delivery data missing for ID: ${delivery}`)
+      console.error(`Delivery data missing for ID: ${deliveryId}`)
       continue
     }
 
     const sender = await UserModel.findById(deliveryItem.senderId)
 
-    deliveryList.push({
-      delivery: {
-        pickup: deliveryItem.pickupLocation,
-        dropoff: deliveryItem.dropoffLocation,
-        time: deliveryItem.deliveryTime!,
-        date: deliveryItem.deliveryDate!,
-        status: deliveryItem.status,
-        deliveryId: delivery,
-        type: deliveryItem.type!,
-        receiver: deliveryItem.receiver!,
-        sendor: sender?.fullname,
-        expoPushToken: sender?.expoPushToken!,
-        dropOffCost: deliveryItem.dropOffCost,
-        pickUpCost: deliveryItem.pickUpCost,
-        deliveryCost: deliveryItem.deliveryCost!,
-      },
-      // Additional details can be added here if needed
-    })
-  }
-
-  return deliveryList
-}
-
-export const getPartnerDeliveryHistoryService = async (partnerId: string) => {
-  const partner = await PartnerModel.findOne({ partnerId }).populate(
-    'deliveries'
-  )
-
-  if (!partner || !partner.deliveries?.length) {
-    throw new Error('Partner not found or has no delivery history.')
-  }
-
-  const deliveryList: PartnerDeliveryItem[] = []
-
-  for (const delivery of partner.deliveries) {
-    const deliveryData = await DeliveryModel.findById(delivery)
-
-    if (!deliveryData) {
-      console.error(`Delivery data missing for ID: ${delivery}`)
-      continue
-    }
-
-    const orderData = await OrderModel.findById(deliveryData.orderId)
-    const vendorData = await UserModel.findById(deliveryData.vendorId)
-
-    deliveryList.push({
-      delivery: {
-        pickup: deliveryData.pickupLocation,
-        dropoff: deliveryData.dropoffLocation,
-        time: deliveryData.deliveryTime!, // Assume deliveryTime is available
-        date: deliveryData.deliveryDate!, // Assume deliveryDate is available
-        status: deliveryData.status,
-        deliveryId: deliveryData.id!, // Assume _id is the deliveryId
-        type: deliveryData.type!, // Assume type is available
-        receiver: deliveryData.receiver!, // Assume receiver is available
-        sendor: deliveryData.senderId, // Assume senderId is available
-        expoPushToken: vendorData?.expoPushToken,
-        dropOffCost: deliveryData.dropOffCost,
-        pickUpCost: deliveryData.pickUpCost,
-        deliveryCost: deliveryData.deliveryCost!,
-        deliveryTime: deliveryData.deliveryTime!, // Include deliveryTime
-      },
-      order: {
-        name: orderData?.name!,
-        parcel: orderData?.parcel!,
-        quantity: orderData?.quantity!,
-        size: orderData?.size!,
-      },
-      vendor: {
-        fullname: vendorData?.fullname,
-        avatar: vendorData?.avatar!,
-      },
-    })
+    // deliveryList.push({
+    //   deliveryId: deliveryItem.deliveryId,
+    //   receiverId: deliveryItem.receiverId,
+    //   senderId: deliveryItem.senderId,
+    //   scheduledDriver: deliveryItem.scheduledDriver,
+    //   packageSize: deliveryItem.packageSize,
+    //   quantity: deliveryItem.quantity,
+    //   type: deliveryItem.type,
+    //   parcel: deliveryItem.parcel,
+    //   dropoffLocation: deliveryItem.dropoffLocation,
+    //   pickupLocation: deliveryItem.pickupLocation,
+    //   currentHandler: deliveryItem.currentHandler,
+    //   pickupDate: deliveryItem.pickupDate,
+    //   deliveryDate: deliveryItem.deliveryDate,
+    //   dropOffCost: deliveryItem.dropOffCost,
+    //   pickUpCost: deliveryItem.pickUpCost,
+    //   deliveryCost: deliveryItem.deliveryCost,
+    //   name: deliveryItem.name,
+    //   notes: deliveryItem.notes,
+    //   status: deliveryItem.status,
+    //   // Additional fields from IDeliveryOrder
+    //   senderInfo: sender
+    //     ? {
+    //         fullname: sender.fullname,
+    //         expoPushToken: sender.expoPushToken,
+    //       }
+    //     : undefined,
+    // })
   }
 
   return deliveryList
@@ -321,7 +327,7 @@ export const getDeliveryIdsService = async (userId: string) => {
     throw new Error('User not found.')
   }
 
-  let deliveries: Delivery[] = []
+  let deliveries: IDeliveryOrder[] = []
 
   if (user.status === 'vendor' || user.status === 'consumer') {
     deliveries = await DeliveryModel.find({ senderId: userId }).exec()
@@ -369,40 +375,40 @@ export const pickupDeliveryService = async (
     return { success: true, message: 'No package to pick up.' }
   }
 
-  let deliveryIds = []
+  // let deliveryIds = []
 
-  for (const deliveryId of deliveryData.deliveryIds) {
-    const delivery = await DeliveryModel.findOne({ deliveryId })
+  // for (const deliveryId of deliveryData.deliveryIds) {
+  //   const delivery = await DeliveryModel.findOne({ deliveryId })
 
-    if (delivery && delivery.scheduledHandler === partnerId) {
-      await db.deliveries.updateOne(
-        { deliveryId },
-        {
-          $set: {
-            currentHandler: {
-              id: partnerId,
-              time: `${new Date().toISOString()}`,
-            },
-          },
-          $push: {
-            pickedUpFrom: {
-              $each: [
-                {
-                  id: deliveryData.access[0],
-                  time: `${new Date().toISOString()}`,
-                },
-              ],
-            },
-          },
-        }
-      )
-      deliveryIds.push(deliveryId)
-    }
-  }
+  //   if (delivery && delivery.scheduledHandler === partnerId) {
+  //     await db.deliveries.updateOne(
+  //       { deliveryId },
+  //       {
+  //         $set: {
+  //           currentHandler: {
+  //             id: partnerId,
+  //             time: `${new Date().toISOString()}`,
+  //           },
+  //         },
+  //         $push: {
+  //           pickedUpFrom: {
+  //             $each: [
+  //               {
+  //                 id: deliveryData.access[0],
+  //                 time: `${new Date().toISOString()}`,
+  //               },
+  //             ],
+  //           },
+  //         },
+  //       }
+  //     )
+  //     deliveryIds.push(deliveryId)
+  //   }
+  // }
 
   return {
     success: true,
-    deliveryIds,
+    // deliveryIds,
     message: 'Package pickup process finished successfully.',
   }
 }
@@ -463,7 +469,7 @@ export const updateDriversLocationService = async (
 export const updateDeliveryStatus = async (req: Request, res: Response) => {
   const { sessionId } = req.body
 
-  const updatedSession = await Session.findByIdAndUpdate(
+  const updatedSession = await DeliverySession.findByIdAndUpdate(
     sessionId,
     { status: 'completed', endTime: new Date() },
     { new: true }

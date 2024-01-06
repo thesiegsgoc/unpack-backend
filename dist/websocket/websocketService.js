@@ -28,6 +28,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ws_1 = __importStar(require("ws"));
 const driver_1 = __importDefault(require("../models/users/driver"));
+const DeliverySessionSchema_1 = require("../models/DeliverySessionSchema");
 class WebSocketService {
     static instance;
     wss;
@@ -66,24 +67,31 @@ class WebSocketService {
             }
         });
     }
-    notifyUsersAboutDriverLocation(driverId, location) {
-        // Logic to determine which users should be notified
-        // For simplicity, let's assume you have a method that returns an array of user IDs
-        const userIdsToNotify = this.getUserIdsToNotify(driverId);
-        userIdsToNotify.forEach((userId) => {
-            const userSocket = this.clients.get(userId);
-            if (userSocket && userSocket.readyState === ws_1.default.OPEN) {
-                userSocket.send(JSON.stringify({
-                    type: 'driverLocationUpdate',
-                    driverId,
-                    location,
-                }));
-            }
-        });
-    }
+    //   private async notifyUsersAboutDriverLocation(
+    //     driverId: string,
+    //     userID: string,
+    //     location: { latitude: number; longitude: number }
+    //   ) {
+    //     // Assuming getUserIdsToNotify is an async function returning a Promise<string[]>
+    //     const userIdsToNotify = await this.getUserIdsToNotify(driverId)
+    //     if (userIdsToNotify) {
+    //       userIdsToNotify.forEach((userId) => {
+    //         const userSocket = this.clients.get(userId)
+    //         if (userSocket && userSocket.readyState === WebSocket.OPEN) {
+    //           userSocket.send(
+    //             JSON.stringify({
+    //               type: 'driverLocationUpdate',
+    //               driverId,
+    //               location,
+    //             })
+    //           )
+    //         }
+    //       })
+    //     }
+    //   }
     async getUserIdsToNotify(driverId) {
         // Query the database for active sessions involving this driver
-        const activeSessions = await SessionModel.find({
+        const activeSessions = await DeliverySessionSchema_1.DeliverySession.find({
             driverId: driverId,
             status: 'active', // assuming 'active' is a status of an ongoing session
         });
@@ -94,7 +102,7 @@ class WebSocketService {
         // Update driver's location in the database
         await driver_1.default.updateOne({ _id: driverId }, { $set: { currentLocation: location } });
         // Notify relevant users
-        this.notifyUsersAboutDriverLocation(driverId, location);
+        // this.notifyUsersAboutDriverLocation(driverId, location)
     }
 }
 exports.default = WebSocketService;

@@ -7,6 +7,10 @@ const DeliverySessionSchema = new mongoose.Schema({
   },
   currentHandler: {
     type: mongoose.Schema.Types.ObjectId,
+    ref: 'Driver',
+  },
+  senderId: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
   currentLocation: {
@@ -21,4 +25,7 @@ const DeliverySessionSchema = new mongoose.Schema({
   endTime: Date,
 })
 
-const DeliverySession = mongoose.model('DeliverySession', DeliverySessionSchema)
+export const DeliverySession = mongoose.model(
+  'DeliverySession',
+  DeliverySessionSchema
+)

@@ -3,40 +3,46 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateDeliveryStatus = exports.updateDriversLocationService = exports.deliveryCostService = exports.getHandlersLocationService = exports.pickupDeliveryService = exports.getDeliveryIdsService = exports.getPartnerDeliveryHistoryService = exports.getUserDeliveryHistoryService = exports.getAllDeliveriesService = exports.trackDeliveryService = exports.encryptDeliveryDetailsService = exports.updateDeliveryService = exports.createDeliveryService = void 0;
+exports.updateDeliveryStatus = exports.updateDriversLocationService = exports.deliveryCostService = exports.getHandlersLocationService = exports.pickupDeliveryService = exports.getDeliveryIdsService = exports.getUserDeliveryHistoryService = exports.getAllDeliveriesService = exports.trackDeliveryService = exports.encryptDeliveryDetailsService = exports.updateDeliveryService = exports.createDeliveryService = void 0;
 const cryptr_1 = __importDefault(require("cryptr"));
 const DeliveryOrderSchemal_1 = __importDefault(require("../models/DeliveryOrderSchemal"));
 const user_1 = __importDefault(require("../models/users/user"));
-const scheduling_1 = __importDefault(require("../util/scheduling"));
 const db_1 = __importDefault(require("../util/db"));
-const Partner_1 = __importDefault(require("../models/Partner"));
 const websocketService_1 = __importDefault(require("../websocket/websocketService"));
+const DeliverySessionSchema_1 = require("../models/DeliverySessionSchema");
 const cryptr = new cryptr_1.default('myTotallySecretKey');
 const createDeliveryService = async (deliveryData) => {
-    const { receiver, phoneNumber, pickup, dropoffLocation, senderId, size, type, parcel, quantity, deliveryTime, deliveryDate, dropOffCost, } = deliveryData;
+    const { receiverId, senderId, scheduledDriver, packageSize, quantity, type, parcel, dropoffLocation, pickupLocation, currentHandler, pickupDate, deliveryDate, dropOffCost, pickUpCost, deliveryCost, name, notes, status, } = deliveryData;
     const numCurrentDeliveries = await db_1.default.deliveries.countDocuments();
-    const handler = await scheduling_1.default.assignHandler(pickup);
     const newDelivery = new DeliveryOrderSchemal_1.default({
-        receiver,
-        phoneNumber,
-        pickup,
-        dropoffLocation,
+        receiverId,
         senderId,
-        size,
+        scheduledDriver,
+        packageSize,
+        quantity,
         type,
         parcel,
-        quantity,
-        deliveryId: `D00${numCurrentDeliveries + 1}`,
-        scheduledHandler: handler.success ? handler.body.handler : undefined,
-        deliveryTime,
+        dropoffLocation,
+        pickupLocation,
+        currentHandler,
+        pickupDate,
         deliveryDate,
         dropOffCost,
+        pickUpCost,
+        deliveryCost,
+        name,
+        notes,
+        status,
+        deliveryId: `D00${numCurrentDeliveries + 1}`,
     });
     await newDelivery.save();
-    await user_1.default.updateOne({ _id: senderId }, { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } });
-    if (handler.success && handler.body.handler) {
-        await user_1.default.updateOne({ _id: handler.body.handler }, { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } });
-    }
+    await user_1.default.updateOne({ _id: senderId }, { $push: { deliveries: newDelivery._id } });
+    // if (handler.success && handler.body.handler) {
+    //   await UserModel.updateOne(
+    //     { _id: handler.body.handler },
+    //     { $push: { deliveries: newDelivery._id } }
+    //   )
+    // }
     return { trackingNumber: `D00${numCurrentDeliveries + 1}` };
 };
 exports.createDeliveryService = createDeliveryService;
@@ -69,26 +75,29 @@ const encryptDeliveryDetailsService = async (deliveryIds) => {
     }
     const deliveryDetails = [];
     await Promise.all(deliveryIds.map(async (deliveryId) => {
-        const delivery = await DeliveryOrderSchemal_1.default.findOne({ deliveryId });
-        const user = delivery?.senderId &&
-            (await user_1.default.findOne({ userId: delivery.senderId }));
-        if (!delivery || !user) {
+        const delivery = await DeliveryOrderSchemal_1.default.findById(deliveryId)
+            .populate('senderId')
+            .populate('receiverId')
+            .populate('scheduledDriver');
+        if (!delivery) {
             throw new Error(`Invalid delivery data for ID: ${deliveryId}`);
         }
-        deliveryDetails.push({
-            from: {
-                phone: user.phone,
-                email: user.email,
-                pickup: delivery.pickupLocation,
-            },
-            to: {
-                receiver: delivery.receiver,
-                phonenumber: delivery.phoneNumber,
-                dropoff: delivery.dropoffLocation,
-            },
-            shipper: delivery.scheduledHandler,
-            notes: delivery.notes,
-        });
+        const sender = delivery.senderId; // Assuming IUser is the user interface
+        const receiver = delivery.receiverId; // Similarly for receiver
+        // deliveryDetails.push({
+        //   from: {
+        //     phone: sender.phone,
+        //     email: sender.email,
+        //     pickup: delivery.pickupLocation,
+        //   },
+        //   to: {
+        //     receiver: receiver.fullname,
+        //     phonenumber: receiver.phone,
+        //     dropoff: delivery.dropoffLocation,
+        //   },
+        //   shipper: delivery.scheduledDriver.toString(),
+        //   notes: delivery.notes,
+        // })
     }));
     const encryptedDetails = cryptr.encrypt(JSON.stringify({
         deliveryDetails,
@@ -102,29 +111,32 @@ const encryptDeliveryDetailsService = async (deliveryIds) => {
 };
 exports.encryptDeliveryDetailsService = encryptDeliveryDetailsService;
 const trackDeliveryService = async (trackingId) => {
-    const delivery = await db_1.default.deliveries.findOne({ deliveryId: trackingId });
+    const delivery = await DeliveryOrderSchemal_1.default.findOne({
+        deliveryId: trackingId,
+    });
     if (!delivery) {
         throw new Error('Provide a valid order ID.');
     }
-    const { scheduledHandler, status, pickup, dropoff } = delivery;
-    const handlerDetails = await user_1.default.findById(scheduledHandler);
+    const { scheduledDriver, status, pickupLocation, dropoffLocation } = delivery;
+    const handlerDetails = await user_1.default.findById(scheduledDriver);
     if (!handlerDetails) {
         throw new Error('Handler details not found.');
     }
-    const { fullname, username, rating, profilePhoto } = handlerDetails;
-    if (status.value === 'cancelled') {
+    const { fullname, rating, profilePhoto } = handlerDetails; // assuming these fields exist in your user model
+    // Check the delivery status
+    if (status?.value === 'cancelled') {
         throw new Error('This order was cancelled. Cannot track it.');
     }
-    if (status.value === 'delivered') {
+    if (status?.value === 'delivered') {
         throw new Error('This order is already delivered. Cannot track it. Check your order history for more info.');
     }
     return {
-        pickup,
-        dropoff,
-        handlerName: name,
+        pickupLocation,
+        dropoffLocation,
+        handlerName: fullname,
         handlerRating: rating,
         handlerProfilePhoto: profilePhoto,
-        scheduledHandler,
+        scheduledDriver,
     };
 };
 exports.trackDeliveryService = trackDeliveryService;
@@ -135,18 +147,27 @@ const getAllDeliveriesService = async () => {
             throw new Error('No deliveries found.');
         }
         // Mapping the deliveries to return a simplified or specific structure
-        // Modify this as per your application's requirements
         const mappedDeliveries = deliveries.map((delivery) => {
             return {
                 deliveryId: delivery.deliveryId,
                 senderId: delivery.senderId,
-                receiver: delivery.receiver,
-                status: delivery.status,
-                scheduledHandler: delivery.scheduledHandler,
-                pickupLocation: delivery.pickupLocation,
+                receiverId: delivery.receiverId,
+                scheduledDriver: delivery.scheduledDriver,
+                packageSize: delivery.packageSize,
+                quantity: delivery.quantity,
+                type: delivery.type,
+                parcel: delivery.parcel,
                 dropoffLocation: delivery.dropoffLocation,
-                deliveryTime: delivery.deliveryTime,
+                pickupLocation: delivery.pickupLocation,
+                currentHandler: delivery.currentHandler,
+                pickupDate: delivery.pickupDate,
                 deliveryDate: delivery.deliveryDate,
+                dropOffCost: delivery.dropOffCost,
+                pickUpCost: delivery.pickUpCost,
+                deliveryCost: delivery.deliveryCost,
+                name: delivery.name,
+                notes: delivery.notes,
+                status: delivery.status,
                 // Add more fields as required
             };
         });
@@ -163,81 +184,45 @@ const getUserDeliveryHistoryService = async (userId) => {
         throw new Error('User not found or has no delivery history.');
     }
     const deliveryList = [];
-    for (const delivery of user.deliveries) {
-        const deliveryItem = await DeliveryOrderSchemal_1.default.findById(delivery);
+    for (const deliveryId of user.deliveries) {
+        const deliveryItem = await DeliveryOrderSchemal_1.default.findById(deliveryId);
         if (!deliveryItem) {
-            console.error(`Delivery data missing for ID: ${delivery}`);
+            console.error(`Delivery data missing for ID: ${deliveryId}`);
             continue;
         }
         const sender = await user_1.default.findById(deliveryItem.senderId);
-        deliveryList.push({
-            delivery: {
-                pickup: deliveryItem.pickupLocation,
-                dropoff: deliveryItem.dropoffLocation,
-                time: deliveryItem.deliveryTime,
-                date: deliveryItem.deliveryDate,
-                status: deliveryItem.status,
-                deliveryId: delivery,
-                type: deliveryItem.type,
-                receiver: deliveryItem.receiver,
-                sendor: sender?.fullname,
-                expoPushToken: sender?.expoPushToken,
-                dropOffCost: deliveryItem.dropOffCost,
-                pickUpCost: deliveryItem.pickUpCost,
-                deliveryCost: deliveryItem.deliveryCost,
-            },
-            // Additional details can be added here if needed
-        });
+        // deliveryList.push({
+        //   deliveryId: deliveryItem.deliveryId,
+        //   receiverId: deliveryItem.receiverId,
+        //   senderId: deliveryItem.senderId,
+        //   scheduledDriver: deliveryItem.scheduledDriver,
+        //   packageSize: deliveryItem.packageSize,
+        //   quantity: deliveryItem.quantity,
+        //   type: deliveryItem.type,
+        //   parcel: deliveryItem.parcel,
+        //   dropoffLocation: deliveryItem.dropoffLocation,
+        //   pickupLocation: deliveryItem.pickupLocation,
+        //   currentHandler: deliveryItem.currentHandler,
+        //   pickupDate: deliveryItem.pickupDate,
+        //   deliveryDate: deliveryItem.deliveryDate,
+        //   dropOffCost: deliveryItem.dropOffCost,
+        //   pickUpCost: deliveryItem.pickUpCost,
+        //   deliveryCost: deliveryItem.deliveryCost,
+        //   name: deliveryItem.name,
+        //   notes: deliveryItem.notes,
+        //   status: deliveryItem.status,
+        //   // Additional fields from IDeliveryOrder
+        //   senderInfo: sender
+        //     ? {
+        //         fullname: sender.fullname,
+        //         expoPushToken: sender.expoPushToken,
+        //       }
+        //     : undefined,
+        // })
     }
     return deliveryList;
 };
 exports.getUserDeliveryHistoryService = getUserDeliveryHistoryService;
-const getPartnerDeliveryHistoryService = async (partnerId) => {
-    const partner = await Partner_1.default.findOne({ partnerId }).populate('deliveries');
-    if (!partner || !partner.deliveries?.length) {
-        throw new Error('Partner not found or has no delivery history.');
-    }
-    const deliveryList = [];
-    for (const delivery of partner.deliveries) {
-        const deliveryData = await DeliveryOrderSchemal_1.default.findById(delivery);
-        if (!deliveryData) {
-            console.error(`Delivery data missing for ID: ${delivery}`);
-            continue;
-        }
-        const orderData = await OrderModel.findById(deliveryData.orderId);
-        const vendorData = await user_1.default.findById(deliveryData.vendorId);
-        deliveryList.push({
-            delivery: {
-                pickup: deliveryData.pickupLocation,
-                dropoff: deliveryData.dropoffLocation,
-                time: deliveryData.deliveryTime,
-                date: deliveryData.deliveryDate,
-                status: deliveryData.status,
-                deliveryId: deliveryData.id,
-                type: deliveryData.type,
-                receiver: deliveryData.receiver,
-                sendor: deliveryData.senderId,
-                expoPushToken: vendorData?.expoPushToken,
-                dropOffCost: deliveryData.dropOffCost,
-                pickUpCost: deliveryData.pickUpCost,
-                deliveryCost: deliveryData.deliveryCost,
-                deliveryTime: deliveryData.deliveryTime, // Include deliveryTime
-            },
-            order: {
-                name: orderData?.name,
-                parcel: orderData?.parcel,
-                quantity: orderData?.quantity,
-                size: orderData?.size,
-            },
-            vendor: {
-                fullname: vendorData?.fullname,
-                avatar: vendorData?.avatar,
-            },
-        });
-    }
-    return deliveryList;
-};
-exports.getPartnerDeliveryHistoryService = getPartnerDeliveryHistoryService;
 const getDeliveryIdsService = async (userId) => {
     if (!userId) {
         throw new Error('Provide user ID.');
@@ -278,34 +263,37 @@ const pickupDeliveryService = async (encryptedData, partnerId) => {
     if (deliveryData.length === 0) {
         return { success: true, message: 'No package to pick up.' };
     }
-    let deliveryIds = [];
-    for (const deliveryId of deliveryData.deliveryIds) {
-        const delivery = await DeliveryOrderSchemal_1.default.findOne({ deliveryId });
-        if (delivery && delivery.scheduledHandler === partnerId) {
-            await db_1.default.deliveries.updateOne({ deliveryId }, {
-                $set: {
-                    currentHandler: {
-                        id: partnerId,
-                        time: `${new Date().toISOString()}`,
-                    },
-                },
-                $push: {
-                    pickedUpFrom: {
-                        $each: [
-                            {
-                                id: deliveryData.access[0],
-                                time: `${new Date().toISOString()}`,
-                            },
-                        ],
-                    },
-                },
-            });
-            deliveryIds.push(deliveryId);
-        }
-    }
+    // let deliveryIds = []
+    // for (const deliveryId of deliveryData.deliveryIds) {
+    //   const delivery = await DeliveryModel.findOne({ deliveryId })
+    //   if (delivery && delivery.scheduledHandler === partnerId) {
+    //     await db.deliveries.updateOne(
+    //       { deliveryId },
+    //       {
+    //         $set: {
+    //           currentHandler: {
+    //             id: partnerId,
+    //             time: `${new Date().toISOString()}`,
+    //           },
+    //         },
+    //         $push: {
+    //           pickedUpFrom: {
+    //             $each: [
+    //               {
+    //                 id: deliveryData.access[0],
+    //                 time: `${new Date().toISOString()}`,
+    //               },
+    //             ],
+    //           },
+    //         },
+    //       }
+    //     )
+    //     deliveryIds.push(deliveryId)
+    //   }
+    // }
     return {
         success: true,
-        deliveryIds,
+        // deliveryIds,
         message: 'Package pickup process finished successfully.',
     };
 };
@@ -351,7 +339,7 @@ exports.updateDriversLocationService = updateDriversLocationService;
 //update delivery status once driver completed the session
 const updateDeliveryStatus = async (req, res) => {
     const { sessionId } = req.body;
-    const updatedSession = await Session.findByIdAndUpdate(sessionId, { status: 'completed', endTime: new Date() }, { new: true });
+    const updatedSession = await DeliverySessionSchema_1.DeliverySession.findByIdAndUpdate(sessionId, { status: 'completed', endTime: new Date() }, { new: true });
     res.status(200).json(updatedSession);
 };
 exports.updateDeliveryStatus = updateDeliveryStatus;

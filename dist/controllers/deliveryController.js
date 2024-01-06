@@ -117,10 +117,11 @@ exports.getUserDeliveryHistoryController = getUserDeliveryHistoryController;
 const getPartnerDeliveryHistoryController = async (req, res) => {
     try {
         const { partnerId } = req.body;
-        const deliveryHistory = await DeliveryServices.getPartnerDeliveryHistoryService(partnerId);
+        // const deliveryHistory =
+        //   await DeliveryServices.getPartnerDeliveryHistoryService(partnerId)
         return res.json({
             success: true,
-            body: deliveryHistory,
+            // body: deliveryHistory,
             message: 'Delivery history retrieved successfully.',
         });
     }
@@ -131,8 +132,8 @@ const getPartnerDeliveryHistoryController = async (req, res) => {
 exports.getPartnerDeliveryHistoryController = getPartnerDeliveryHistoryController;
 const getDeliveryIdsController = async (req, res) => {
     try {
-        const { userId } = req.body;
-        const encryptedDeliveryIds = await DeliveryServices.getDeliveryIdsService(userId);
+        const { deliveryId } = req.body;
+        const encryptedDeliveryIds = await DeliveryServices.getDeliveryIdsService(deliveryId);
         return res.json({
             success: true,
             body: encryptedDeliveryIds,

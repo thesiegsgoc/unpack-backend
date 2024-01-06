@@ -3,9 +3,10 @@ import DeliveryModel from '../models/DeliveryOrderSchemal'
 import { Request, Response } from 'express'
 import * as DeliveryServices from '../services/deliveryService'
 import WebSocketService from '../websocket/websocketService'
+import { IDeliveryOrder } from '../types/delivery'
 
 export const createDeliveryController = async (
-  req: Request<{}, {}, DeliveryRequestBody>,
+  req: Request<{}, {}, IDeliveryOrder>,
   res: Response
 ) => {
   try {
@@ -22,7 +23,7 @@ export const createDeliveryController = async (
 }
 
 export const updateDeliveryController = async (
-  req: Request<{}, {}, DeliveryRequestBody>,
+  req: Request<{}, {}, IDeliveryOrder>,
   res: Response
 ) => {
   try {
@@ -115,12 +116,12 @@ export const getPartnerDeliveryHistoryController = async (
 ) => {
   try {
     const { partnerId } = req.body
-    const deliveryHistory =
-      await DeliveryServices.getPartnerDeliveryHistoryService(partnerId)
+    // const deliveryHistory =
+    //   await DeliveryServices.getPartnerDeliveryHistoryService(partnerId)
 
     return res.json({
       success: true,
-      body: deliveryHistory,
+      // body: deliveryHistory,
       message: 'Delivery history retrieved successfully.',
     })
   } catch (error: any) {
@@ -129,13 +130,13 @@ export const getPartnerDeliveryHistoryController = async (
 }
 
 export const getDeliveryIdsController = async (
-  req: Request<{}, {}, DeliveryRequestBody>,
+  req: Request<{}, {}, IDeliveryOrder>,
   res: Response
 ) => {
   try {
-    const { userId } = req.body
+    const { deliveryId } = req.body
     const encryptedDeliveryIds = await DeliveryServices.getDeliveryIdsService(
-      userId!
+      deliveryId!
     )
 
     return res.json({
