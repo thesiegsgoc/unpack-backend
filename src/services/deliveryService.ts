@@ -35,66 +35,53 @@ interface DeliveryDetailsTo {
   dropoff: ILocation
 }
 
-export const createDeliveryService = async (deliveryData: IDeliveryOrder) => {
-  const {
-    receiverId,
-    senderId,
-    scheduledDriver,
-    packageSize,
-    quantity,
-    type,
-    parcel,
-    dropoffLocation,
-    pickupLocation,
-    currentHandler,
-    pickupDate,
-    deliveryDate,
-    dropOffCost,
-    pickUpCost,
-    deliveryCost,
-    name,
-    notes,
-    status,
-  } = deliveryData
+export const createDeliveryOrderService = async (
+  deliveryOrderData: IDeliveryOrder,
+  senderId: string
+) => {
+  try {
+    const numbCurrentDeliveries = await db.deliveries.countDocuments()
+    // Create a new delivery order
+    const newDeliveryOrder = new DeliveryModel({
+      ...deliveryOrderData,
+      deliveryId: `D00${numbCurrentDeliveries + 1}`,
+      senderId,
+      status: 'pending',
+    })
 
-  const numCurrentDeliveries = await db.deliveries.countDocuments()
+    // Save the delivery order to the database
+    const savedDeliveryOrder = await newDeliveryOrder.save()
 
-  const newDelivery = new DeliveryModel({
-    receiverId,
-    senderId,
-    scheduledDriver,
-    packageSize,
-    quantity,
-    type,
-    parcel,
-    dropoffLocation,
-    pickupLocation,
-    currentHandler,
-    pickupDate,
-    deliveryDate,
-    dropOffCost,
-    pickUpCost,
-    deliveryCost,
-    name,
-    notes,
-    status,
-    deliveryId: `D00${numCurrentDeliveries + 1}`,
-  })
+    // Return the saved delivery order
+    return savedDeliveryOrder
+  } catch (error: any) {
+    console.error('Error creating delivery order:', error.message)
+    throw error
+  }
+}
 
-  await newDelivery.save()
+export const updateDeliveryOrderStatuService = async (
+  deliveryId: string,
+  newStatus: string
+) => {
+  try {
+    const delivery = await DeliveryModel.findOne({ deliveryId })
+    if (!delivery) {
+      throw new Error(`Delivery with ID ${deliveryId} not found.`)
+    }
 
-  await UserModel.updateOne(
-    { _id: senderId },
-    { $push: { deliveries: newDelivery._id } }
-  )
-  // if (handler.success && handler.body.handler) {
-  //   await UserModel.updateOne(
-  //     { _id: handler.body.handler },
-  //     { $push: { deliveries: newDelivery._id } }
-  //   )
-  // }
+    //TODO: Additional business logic can be implemented here
+    // - Checking if the status transition is valid.
+    // - Notifying users or drivers about the status change.
 
-  return { trackingNumber: `D00${numCurrentDeliveries + 1}` }
+    delivery.status = { value: newStatus, updatedAt: new Date() }
+    await delivery.save()
+
+    return delivery
+  } catch (error: any) {
+    console.error('Error updating delivery status:', error.message)
+    throw error
+  }
 }
 
 export const updateDeliveryService = async (
@@ -120,7 +107,6 @@ export const updateDeliveryService = async (
       { $set: deliveryData },
       { new: true } // Return the updated document
     )
-
     return updatedDelivery
   } catch (error: any) {
     console.error('Error updating delivery:', error.message)

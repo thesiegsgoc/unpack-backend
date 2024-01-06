@@ -8,16 +8,16 @@ export const DeliverySchema: Schema<IDeliveryOrder> = new mongoose.Schema({
     type: String,
   },
   receiverId: {
-    type: mongoose.Schema.Types.ObjectId, // Reference to User or Driver model
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
   senderId: {
-    type: mongoose.Schema.Types.ObjectId, // Reference to User or Driver model
-    ref: 'User',
+    type: String,
+    required: true,
   },
   scheduledDriver: {
     type: mongoose.Schema.Types.ObjectId, // Reference to User or Driver model
-    ref: 'User',
+    ref: 'Driver',
   },
   packageSize: {
     type: String,
@@ -65,7 +65,7 @@ export const DeliverySchema: Schema<IDeliveryOrder> = new mongoose.Schema({
   status: {
     type: Object,
     default: {
-      value: 'In Process',
+      value: 'pending',
     },
   },
   startTime: Date,

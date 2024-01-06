@@ -17,6 +17,7 @@ import {
   getHandlersLocationController as getHandlersLocation,
   getAllDeliveriesController,
   currentDriversLocationController,
+  updateDeliveryStatusController,
 } from '../controllers/deliveryController'
 
 // TODO: return the isUserAuth middleware to the route above as bellow
@@ -26,9 +27,10 @@ import {
 
 // Versioning and plural nouns
 router.get('/deliveries', getAllDeliveriesController)
-router.post('/deliveries/create', createDelivery)
+router.post('/deliveries/create/:senderId', createDelivery)
 router.post('/deliveries/pickup', pickupDelivery)
 router.post('/deliveries/decrypt', decryptDeliveryDetails)
+router.put('/deliveries/updatestatus', updateDeliveryStatusController)
 
 // Secure endpoint with isUserAuth middleware
 router.post(

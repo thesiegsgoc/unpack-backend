@@ -3,6 +3,21 @@
     {
       "type": "aws-sam",
       "request": "direct-invoke",
+      "name": "unpack-backend:src/controllers/deliveryController.encryptDeliveryDetailsController (nodejs18.x)",
+      "invokeTarget": {
+        "target": "code",
+        "projectRoot": "${workspaceFolder}/",
+        "lambdaHandler": "src/controllers/deliveryController.encryptDeliveryDetailsController"
+      },
+      "lambda": {
+        "runtime": "nodejs18.x",
+        "payload": {},
+        "environmentVariables": {}
+      }
+    },
+    {
+      "type": "aws-sam",
+      "request": "direct-invoke",
       "name": "Invoke Lambda with API Gateway",
       "invokeTarget": {
         "target": "api",

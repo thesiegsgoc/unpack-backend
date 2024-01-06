@@ -3,48 +3,53 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateDeliveryStatus = exports.updateDriversLocationService = exports.deliveryCostService = exports.getHandlersLocationService = exports.pickupDeliveryService = exports.getDeliveryIdsService = exports.getUserDeliveryHistoryService = exports.getAllDeliveriesService = exports.trackDeliveryService = exports.encryptDeliveryDetailsService = exports.updateDeliveryService = exports.createDeliveryService = void 0;
+exports.updateDeliveryStatus = exports.updateDriversLocationService = exports.deliveryCostService = exports.getHandlersLocationService = exports.pickupDeliveryService = exports.getDeliveryIdsService = exports.getUserDeliveryHistoryService = exports.getAllDeliveriesService = exports.trackDeliveryService = exports.encryptDeliveryDetailsService = exports.updateDeliveryService = exports.updateDeliveryOrderStatuService = exports.createDeliveryOrderService = void 0;
 const cryptr_1 = __importDefault(require("cryptr"));
 const user_1 = __importDefault(require("../models/users/user"));
 const db_1 = __importDefault(require("../util/db"));
 const websocketService_1 = __importDefault(require("../websocket/websocketService"));
 const DeliveryOrderSchemal_1 = __importDefault(require("../models/DeliveryOrderSchemal"));
 const cryptr = new cryptr_1.default('myTotallySecretKey');
-const createDeliveryService = async (deliveryData) => {
-    const { receiverId, senderId, scheduledDriver, packageSize, quantity, type, parcel, dropoffLocation, pickupLocation, currentHandler, pickupDate, deliveryDate, dropOffCost, pickUpCost, deliveryCost, name, notes, status, } = deliveryData;
-    const numCurrentDeliveries = await db_1.default.deliveries.countDocuments();
-    const newDelivery = new DeliveryOrderSchemal_1.default({
-        receiverId,
-        senderId,
-        scheduledDriver,
-        packageSize,
-        quantity,
-        type,
-        parcel,
-        dropoffLocation,
-        pickupLocation,
-        currentHandler,
-        pickupDate,
-        deliveryDate,
-        dropOffCost,
-        pickUpCost,
-        deliveryCost,
-        name,
-        notes,
-        status,
-        deliveryId: `D00${numCurrentDeliveries + 1}`,
-    });
-    await newDelivery.save();
-    await user_1.default.updateOne({ _id: senderId }, { $push: { deliveries: newDelivery._id } });
-    // if (handler.success && handler.body.handler) {
-    //   await UserModel.updateOne(
-    //     { _id: handler.body.handler },
-    //     { $push: { deliveries: newDelivery._id } }
-    //   )
-    // }
-    return { trackingNumber: `D00${numCurrentDeliveries + 1}` };
+const createDeliveryOrderService = async (deliveryOrderData, senderId) => {
+    try {
+        const numbCurrentDeliveries = await db_1.default.deliveries.countDocuments();
+        // Create a new delivery order
+        const newDeliveryOrder = new DeliveryOrderSchemal_1.default({
+            ...deliveryOrderData,
+            deliveryId: `D00${numbCurrentDeliveries + 1}`,
+            senderId,
+            status: 'pending',
+        });
+        // Save the delivery order to the database
+        const savedDeliveryOrder = await newDeliveryOrder.save();
+        // Return the saved delivery order
+        return savedDeliveryOrder;
+    }
+    catch (error) {
+        console.error('Error creating delivery order:', error.message);
+        throw error;
+    }
 };
-exports.createDeliveryService = createDeliveryService;
+exports.createDeliveryOrderService = createDeliveryOrderService;
+const updateDeliveryOrderStatuService = async (deliveryId, newStatus) => {
+    try {
+        const delivery = await DeliveryOrderSchemal_1.default.findOne({ deliveryId });
+        if (!delivery) {
+            throw new Error(`Delivery with ID ${deliveryId} not found.`);
+        }
+        //TODO: Additional business logic can be implemented here
+        // - Checking if the status transition is valid.
+        // - Notifying users or drivers about the status change.
+        delivery.status = { value: newStatus, updatedAt: new Date() };
+        await delivery.save();
+        return delivery;
+    }
+    catch (error) {
+        console.error('Error updating delivery status:', error.message);
+        throw error;
+    }
+};
+exports.updateDeliveryOrderStatuService = updateDeliveryOrderStatuService;
 const updateDeliveryService = async (deliveryData) => {
     try {
         // Ensure the deliveryData includes the deliveryId

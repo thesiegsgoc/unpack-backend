@@ -14,12 +14,12 @@ exports.DeliverySchema = new mongoose_1.default.Schema({
         ref: 'User',
     },
     senderId: {
-        type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: 'User',
+        type: String,
+        required: true,
     },
     scheduledDriver: {
         type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Driver',
     },
     packageSize: {
         type: String,
@@ -67,7 +67,7 @@ exports.DeliverySchema = new mongoose_1.default.Schema({
     status: {
         type: Object,
         default: {
-            value: 'In Process',
+            value: 'pending',
         },
     },
     startTime: Date,

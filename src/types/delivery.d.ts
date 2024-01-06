@@ -24,7 +24,7 @@ interface IDeliveryStatus {
 interface IDeliveryOrder {
   deliveryId?: string
   receiverId: mongoose.Types.ObjectId
-  senderId: mongoose.Types.ObjectId
+  senderId: string
   scheduledDriver: mongoose.Types.ObjectId
   packageSize: string
   quantity: number
@@ -44,11 +44,12 @@ interface IDeliveryOrder {
   currentHandler?: mongoose.Types.ObjectId // Optional reference to User model
   currentLocation?: ICurrentLocation
   status:
-    | 'Initialised'
-    | 'AcceptedByDriver'
-    | 'Intransit'
-    | 'Delivered'
-    | 'Cancelled' // Enum-like definition for status
+    | 'pending'
+    | 'accepted'
+    | 'dispatched'
+    | 'delivered'
+    | 'completed'
+    | 'cancelled' // Enum-like definition for status
   startTime?: Date
   endTime?: Date
 }

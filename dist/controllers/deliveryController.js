@@ -23,16 +23,18 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.currentDriversLocationController = exports.deliveryCostController = exports.getHandlersLocationController = exports.pickupDeliveryController = exports.getDeliveryIdsController = exports.getPartnerDeliveryHistoryController = exports.getUserDeliveryHistoryController = exports.getAllDeliveriesController = exports.trackDeliveryController = exports.encryptDeliveryDetailsController = exports.updateDeliveryController = exports.createDeliveryController = void 0;
+exports.currentDriversLocationController = exports.deliveryCostController = exports.getHandlersLocationController = exports.pickupDeliveryController = exports.getDeliveryIdsController = exports.getPartnerDeliveryHistoryController = exports.getUserDeliveryHistoryController = exports.getAllDeliveriesController = exports.trackDeliveryController = exports.encryptDeliveryDetailsController = exports.updateDeliveryStatusController = exports.updateDeliveryController = exports.createDeliveryController = void 0;
 const DeliveryServices = __importStar(require("../services/deliveryService"));
 const createDeliveryController = async (req, res) => {
     try {
         const deliveryData = req.body;
-        const result = await DeliveryServices.createDeliveryService(deliveryData);
+        const senderId = req.params.senderId;
+        const result = await DeliveryServices.createDeliveryOrderService(deliveryData, senderId);
         return res.json({
             success: true,
             message: 'Delivery ordered successfully',
-            trackingNumber: result.trackingNumber,
+            delivery: result,
+            trackingNumber: result.deliveryId,
         });
     }
     catch (error) {
@@ -55,6 +57,22 @@ const updateDeliveryController = async (req, res) => {
     }
 };
 exports.updateDeliveryController = updateDeliveryController;
+const updateDeliveryStatusController = async (req, res) => {
+    try {
+        const { deliveryId, newStatus } = req.body; // Assuming newStatus is sent in the request body
+        // Additional validations can be performed here
+        const result = await DeliveryServices.updateDeliveryOrderStatuService(deliveryId, newStatus);
+        return res.json({
+            success: true,
+            delivery: result,
+            message: 'Delivery status updated successfully',
+        });
+    }
+    catch (error) {
+        return res.json({ success: false, message: error.message });
+    }
+};
+exports.updateDeliveryStatusController = updateDeliveryStatusController;
 const encryptDeliveryDetailsController = async (req, res) => {
     try {
         const { deliveryIds } = req.body;

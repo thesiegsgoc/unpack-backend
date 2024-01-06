@@ -6,16 +6,21 @@ import WebSocketService from '../websocket/websocketService'
 import { IDeliveryOrder } from '../types/delivery'
 
 export const createDeliveryController = async (
-  req: Request<{}, {}, IDeliveryOrder>,
+  req: Request<{ senderId: string }, {}, IDeliveryOrder>,
   res: Response
 ) => {
   try {
     const deliveryData = req.body
-    const result = await DeliveryServices.createDeliveryService(deliveryData)
+    const senderId = req.params.senderId
+    const result = await DeliveryServices.createDeliveryOrderService(
+      deliveryData,
+      senderId
+    )
     return res.json({
       success: true,
       message: 'Delivery ordered successfully',
-      trackingNumber: result.trackingNumber,
+      delivery: result,
+      trackingNumber: result.deliveryId,
     })
   } catch (error: any) {
     return res.json({ success: false, message: error.message })
@@ -33,6 +38,29 @@ export const updateDeliveryController = async (
       success: true,
       delivery: result,
       message: 'Delivery updated successfully',
+    })
+  } catch (error: any) {
+    return res.json({ success: false, message: error.message })
+  }
+}
+
+export const updateDeliveryStatusController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { deliveryId, newStatus } = req.body // Assuming newStatus is sent in the request body
+
+    // Additional validations can be performed here
+
+    const result = await DeliveryServices.updateDeliveryOrderStatuService(
+      deliveryId,
+      newStatus
+    )
+    return res.json({
+      success: true,
+      delivery: result,
+      message: 'Delivery status updated successfully',
     })
   } catch (error: any) {
     return res.json({ success: false, message: error.message })
