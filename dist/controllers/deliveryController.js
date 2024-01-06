@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deliveryCostController = exports.getHandlersLocationController = exports.pickupDeliveryController = exports.getDeliveryIdsController = exports.getPartnerDeliveryHistoryController = exports.getUserDeliveryHistoryController = exports.getAllDeliveriesController = exports.trackDeliveryController = exports.encryptDeliveryDetailsController = exports.updateDeliveryController = exports.createDeliveryController = void 0;
+exports.currentDriversLocationController = exports.deliveryCostController = exports.getHandlersLocationController = exports.pickupDeliveryController = exports.getDeliveryIdsController = exports.getPartnerDeliveryHistoryController = exports.getUserDeliveryHistoryController = exports.getAllDeliveriesController = exports.trackDeliveryController = exports.encryptDeliveryDetailsController = exports.updateDeliveryController = exports.createDeliveryController = void 0;
 const DeliveryServices = __importStar(require("../services/deliveryService"));
 const createDeliveryController = async (req, res) => {
     try {
@@ -195,3 +195,14 @@ const deliveryCostController = async (req, res) => {
     }
 };
 exports.deliveryCostController = deliveryCostController;
+const currentDriversLocationController = async (req, res) => {
+    const { driverId, location } = req.body;
+    try {
+        await DeliveryServices.updateDriversLocationService(driverId, location);
+        res.status(200).send('Location updated successfully');
+    }
+    catch (error) {
+        res.status(500).send(error.message);
+    }
+};
+exports.currentDriversLocationController = currentDriversLocationController;

@@ -5,6 +5,7 @@ import scheduling from '../util/scheduling'
 import db from '../util/db'
 import OrderModel from '../models/Order'
 import PartnerModel from '../models/Partner'
+import WebSocketService from '../websocket/websocketService'
 const cryptr = new Cryptr('myTotallySecretKey')
 
 type AddDeliveryRequestBody = /*unresolved*/ any // TODO: Define the type for AddDeliveryRequestBody in the types file
@@ -449,4 +450,32 @@ export const deliveryCostService = async (
   //   dropOffCost: dropOffCostDetails.cost,
   //   totalCost,
   // }
+}
+
+export const updateDriversLocationService = async (
+  driverId: string,
+  location: { latitude: number; longitude: number }
+) => {
+  // Update the driver's location in the database
+  await DeliveryModel.updateOne(
+    { driverId },
+    { $set: { currentLocation: location } }
+  )
+
+  // Use the WebSocket service to notify relevant users
+  const webSocketService = WebSocketService.getInstance()
+  webSocketService.updateDriverLocation(driverId, location)
+}
+
+//update delivery status once driver completed the session
+export const updateDeliveryStatus = async (req: Request, res: Response) => {
+  const { sessionId } = req.body
+
+  const updatedSession = await Session.findByIdAndUpdate(
+    sessionId,
+    { status: 'completed', endTime: new Date() },
+    { new: true }
+  )
+
+  res.status(200).json(updatedSession)
 }

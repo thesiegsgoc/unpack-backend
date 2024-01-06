@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deliveryCostService = exports.getHandlersLocationService = exports.pickupDeliveryService = exports.getDeliveryIdsService = exports.getPartnerDeliveryHistoryService = exports.getUserDeliveryHistoryService = exports.getAllDeliveriesService = exports.trackDeliveryService = exports.encryptDeliveryDetailsService = exports.updateDeliveryService = exports.createDeliveryService = void 0;
+exports.updateDeliveryStatus = exports.updateDriversLocationService = exports.deliveryCostService = exports.getHandlersLocationService = exports.pickupDeliveryService = exports.getDeliveryIdsService = exports.getPartnerDeliveryHistoryService = exports.getUserDeliveryHistoryService = exports.getAllDeliveriesService = exports.trackDeliveryService = exports.encryptDeliveryDetailsService = exports.updateDeliveryService = exports.createDeliveryService = void 0;
 const cryptr_1 = __importDefault(require("cryptr"));
 const Delivery_1 = __importDefault(require("../models/Delivery"));
 const user_1 = __importDefault(require("../models/users/user"));
@@ -11,6 +11,7 @@ const scheduling_1 = __importDefault(require("../util/scheduling"));
 const db_1 = __importDefault(require("../util/db"));
 const Order_1 = __importDefault(require("../models/Order"));
 const Partner_1 = __importDefault(require("../models/Partner"));
+const websocketService_1 = __importDefault(require("../websocket/websocketService"));
 const cryptr = new cryptr_1.default('myTotallySecretKey');
 const createDeliveryService = async (deliveryData) => {
     const { receiver, phoneNumber, pickup, dropoffLocation, senderId, size, type, parcel, quantity, deliveryTime, deliveryDate, dropOffCost, } = deliveryData;
@@ -340,3 +341,18 @@ const deliveryCostService = async (pickUpLocation, dropOffLocation, deliveryType
     // }
 };
 exports.deliveryCostService = deliveryCostService;
+const updateDriversLocationService = async (driverId, location) => {
+    // Update the driver's location in the database
+    await Delivery_1.default.updateOne({ driverId }, { $set: { currentLocation: location } });
+    // Use the WebSocket service to notify relevant users
+    const webSocketService = websocketService_1.default.getInstance();
+    webSocketService.updateDriverLocation(driverId, location);
+};
+exports.updateDriversLocationService = updateDriversLocationService;
+//update delivery status once driver completed the session
+const updateDeliveryStatus = async (req, res) => {
+    const { sessionId } = req.body;
+    const updatedSession = await Session.findByIdAndUpdate(sessionId, { status: 'completed', endTime: new Date() }, { new: true });
+    res.status(200).json(updatedSession);
+};
+exports.updateDeliveryStatus = updateDeliveryStatus;

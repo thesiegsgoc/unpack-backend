@@ -16,6 +16,7 @@ import {
   pickupDeliveryController as pickupDelivery,
   getHandlersLocationController as getHandlersLocation,
   getAllDeliveriesController,
+  currentDriversLocationController,
 } from '../controllers/deliveryController'
 
 // TODO: return the isUserAuth middleware to the route above as bellow

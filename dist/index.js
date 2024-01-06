@@ -14,8 +14,8 @@ const delivery_1 = __importDefault(require("./routes/delivery"));
 const driver_1 = __importDefault(require("./routes/driver"));
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 const swaggerDef_1 = require("./documentation/swaggerDef");
-const index_1 = __importDefault(require("./websocket/index"));
 const cors_1 = __importDefault(require("cors"));
+const websocketService_1 = __importDefault(require("./websocket/websocketService"));
 // Swagger setup
 const swaggerSpec = (0, swagger_jsdoc_1.default)(swaggerDef_1.options);
 //Initializing Environment Variables for the whole codebase:
@@ -53,4 +53,4 @@ app.use('*', (req, res) => {
 });
 // Serving port details:
 const server = app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
-(0, index_1.default)(server);
+const webSocketService = websocketService_1.default.getInstance({ server });

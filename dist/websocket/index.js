@@ -9,7 +9,7 @@ exports.default = (expressServer) => {
     //Create instance of webscoket server with noServer true which means we use the http server port
     const websocketServer = new ws_1.default.Server({
         noServer: true,
-        path: '/websockets',
+        path: '/websocket',
     });
     //Handling request to upgrade from http to ws sever
     expressServer.on('upgrade', (request, socket, head) => {
@@ -25,7 +25,7 @@ exports.default = (expressServer) => {
         console.log('Connection ', JSON.stringify(connectionParams));
         websocketConnection.on('message', (message) => {
             const parsedMessage = JSON.stringify(message.toString());
-            console.log(parsedMessage);
+            console.log('Incoming message: ', parsedMessage);
         });
     });
 };

@@ -2,6 +2,7 @@ import Cryptr from 'cryptr'
 import DeliveryModel from '../models/Delivery'
 import { Request, Response } from 'express'
 import * as DeliveryServices from '../services/deliveryService'
+import WebSocketService from '../websocket/websocketService'
 
 export const createDeliveryController = async (
   req: Request<{}, {}, DeliveryRequestBody>,
@@ -204,5 +205,18 @@ export const deliveryCostController = async (req: Request, res: Response) => {
     })
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message })
+  }
+}
+
+export const currentDriversLocationController = async (
+  req: Request,
+  res: Response
+) => {
+  const { driverId, location } = req.body
+  try {
+    await DeliveryServices.updateDriversLocationService(driverId, location)
+    res.status(200).send('Location updated successfully')
+  } catch (error: any) {
+    res.status(500).send(error.message)
   }
 }
