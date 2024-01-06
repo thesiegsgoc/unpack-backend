@@ -30,10 +30,6 @@ export const DeliverySchema: Schema<IDeliveryOrder> = new mongoose.Schema({
   type: {
     type: String,
   },
-  parcel: {
-    type: String,
-    required: true, // Based on the new fields
-  },
   dropoffLocation: {
     type: Object, // Consider defining a more specific schema or type for locations
     required: true,
@@ -72,6 +68,8 @@ export const DeliverySchema: Schema<IDeliveryOrder> = new mongoose.Schema({
       value: 'In Process',
     },
   },
+  startTime: Date,
+  endTime: Date,
 })
 
 const DeliveryModel = mongoose.model('Delivery', DeliverySchema)

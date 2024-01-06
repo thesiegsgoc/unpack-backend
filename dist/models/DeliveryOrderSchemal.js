@@ -32,10 +32,6 @@ exports.DeliverySchema = new mongoose_1.default.Schema({
     type: {
         type: String,
     },
-    parcel: {
-        type: String,
-        required: true, // Based on the new fields
-    },
     dropoffLocation: {
         type: Object,
         required: true,
@@ -74,6 +70,8 @@ exports.DeliverySchema = new mongoose_1.default.Schema({
             value: 'In Process',
         },
     },
+    startTime: Date,
+    endTime: Date,
 });
 const DeliveryModel = mongoose_1.default.model('Delivery', exports.DeliverySchema);
 exports.default = DeliveryModel;

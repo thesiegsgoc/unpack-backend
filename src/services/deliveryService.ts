@@ -1,5 +1,4 @@
 import Cryptr from 'cryptr'
-import DeliveryModel from '../models/DeliveryOrderSchemal'
 import UserModel from '../models/users/user'
 import scheduling from '../util/scheduling'
 import db from '../util/db'
@@ -7,7 +6,7 @@ import PartnerModel from '../models/Partner'
 import WebSocketService from '../websocket/websocketService'
 import { IDeliveryOrder, ILocation } from '../types/delivery'
 import { Request, Response } from 'express'
-import { DeliverySession } from '../models/DeliverySessionSchema'
+import DeliveryModel from '../models/DeliveryOrderSchemal'
 
 const cryptr = new Cryptr('myTotallySecretKey')
 
@@ -469,7 +468,7 @@ export const updateDriversLocationService = async (
 export const updateDeliveryStatus = async (req: Request, res: Response) => {
   const { sessionId } = req.body
 
-  const updatedSession = await DeliverySession.findByIdAndUpdate(
+  const updatedSession = await DeliveryModel.findByIdAndUpdate(
     sessionId,
     { status: 'completed', endTime: new Date() },
     { new: true }

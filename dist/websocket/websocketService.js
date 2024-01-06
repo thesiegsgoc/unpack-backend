@@ -28,7 +28,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ws_1 = __importStar(require("ws"));
 const driver_1 = __importDefault(require("../models/users/driver"));
-const DeliverySessionSchema_1 = require("../models/DeliverySessionSchema");
+const DeliveryOrderSchemal_1 = __importDefault(require("../models/DeliveryOrderSchemal"));
 class WebSocketService {
     static instance;
     wss;
@@ -91,7 +91,7 @@ class WebSocketService {
     //   }
     async getUserIdsToNotify(driverId) {
         // Query the database for active sessions involving this driver
-        const activeSessions = await DeliverySessionSchema_1.DeliverySession.find({
+        const activeSessions = await DeliveryOrderSchemal_1.default.find({
             driverId: driverId,
             status: 'active', // assuming 'active' is a status of an ongoing session
         });

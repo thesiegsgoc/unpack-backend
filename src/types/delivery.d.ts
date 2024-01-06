@@ -41,4 +41,14 @@ interface IDeliveryOrder {
   name?: string
   notes?: string
   status?: IDeliveryStatus
+  currentHandler?: mongoose.Types.ObjectId // Optional reference to User model
+  currentLocation?: ICurrentLocation
+  status:
+    | 'Initialised'
+    | 'AcceptedByDriver'
+    | 'Intransit'
+    | 'Delivered'
+    | 'Cancelled' // Enum-like definition for status
+  startTime?: Date
+  endTime?: Date
 }

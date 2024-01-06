@@ -1,7 +1,6 @@
 import WebSocket, { Server as WebSocketServer } from 'ws'
 import DriverModel from '../models/users/driver'
-import { DeliverySession } from '../models/DeliverySessionSchema'
-
+import DeliveryModel from '../models/DeliveryOrderSchemal'
 class WebSocketService {
   private static instance: WebSocketService
   private wss: WebSocketServer
@@ -75,7 +74,7 @@ class WebSocketService {
 
   private async getUserIdsToNotify(driverId: string): Promise<string[]> {
     // Query the database for active sessions involving this driver
-    const activeSessions = await DeliverySession.find({
+    const activeSessions = await DeliveryModel.find({
       driverId: driverId,
       status: 'active', // assuming 'active' is a status of an ongoing session
     })

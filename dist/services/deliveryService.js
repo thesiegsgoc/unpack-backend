@@ -5,11 +5,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateDeliveryStatus = exports.updateDriversLocationService = exports.deliveryCostService = exports.getHandlersLocationService = exports.pickupDeliveryService = exports.getDeliveryIdsService = exports.getUserDeliveryHistoryService = exports.getAllDeliveriesService = exports.trackDeliveryService = exports.encryptDeliveryDetailsService = exports.updateDeliveryService = exports.createDeliveryService = void 0;
 const cryptr_1 = __importDefault(require("cryptr"));
-const DeliveryOrderSchemal_1 = __importDefault(require("../models/DeliveryOrderSchemal"));
 const user_1 = __importDefault(require("../models/users/user"));
 const db_1 = __importDefault(require("../util/db"));
 const websocketService_1 = __importDefault(require("../websocket/websocketService"));
-const DeliverySessionSchema_1 = require("../models/DeliverySessionSchema");
+const DeliveryOrderSchemal_1 = __importDefault(require("../models/DeliveryOrderSchemal"));
 const cryptr = new cryptr_1.default('myTotallySecretKey');
 const createDeliveryService = async (deliveryData) => {
     const { receiverId, senderId, scheduledDriver, packageSize, quantity, type, parcel, dropoffLocation, pickupLocation, currentHandler, pickupDate, deliveryDate, dropOffCost, pickUpCost, deliveryCost, name, notes, status, } = deliveryData;
@@ -339,7 +338,7 @@ exports.updateDriversLocationService = updateDriversLocationService;
 //update delivery status once driver completed the session
 const updateDeliveryStatus = async (req, res) => {
     const { sessionId } = req.body;
-    const updatedSession = await DeliverySessionSchema_1.DeliverySession.findByIdAndUpdate(sessionId, { status: 'completed', endTime: new Date() }, { new: true });
+    const updatedSession = await DeliveryOrderSchemal_1.default.findByIdAndUpdate(sessionId, { status: 'completed', endTime: new Date() }, { new: true });
     res.status(200).json(updatedSession);
 };
 exports.updateDeliveryStatus = updateDeliveryStatus;
