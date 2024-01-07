@@ -32,25 +32,35 @@ const DeliveryOrderSchemal_1 = __importDefault(require("../models/DeliveryOrderS
 class WebSocketService {
     static instance;
     wss;
+    userConnections;
+    // Private constructor to enforce singleton pattern
     constructor(server) {
         this.wss = new ws_1.Server(server);
+        this.userConnections = new Map(); // Initialize map to track user connections
+        // Handle new connections
         this.wss.on('connection', (ws) => {
             console.log('New client connected');
+            // Handle incoming messages
             ws.on('message', (message) => {
-                console.log(`Received message => ${message}`);
-                this.broadcast(message);
-            });
-            ws.on('message', (message) => {
+                console.log(`Received message: ${message}`);
                 const data = JSON.parse(message);
+                // Associate the WebSocket connection with the user ID
+                if (data.userId) {
+                    this.userConnections.set(data.userId, ws);
+                }
+                // Update driver location if the message is a location update
                 if (data.type === 'locationUpdate' && data.driverId) {
                     this.updateDriverLocation(data.driverId, data.location);
                 }
             });
+            // Handle disconnection
             ws.on('close', () => {
                 console.log('Client has disconnected');
+                // Optionally, remove the user from userConnections here
             });
         });
     }
+    // Singleton instance accessor
     static getInstance(server) {
         if (!WebSocketService.instance) {
             if (!server) {
@@ -60,49 +70,34 @@ class WebSocketService {
         }
         return WebSocketService.instance;
     }
-    broadcast(message) {
-        this.wss.clients.forEach((client) => {
-            if (client.readyState === ws_1.default.OPEN) {
-                client.send(message);
+    // Update the driver's location in the database
+    async updateDriverLocation(driverId, location) {
+        await driver_1.default.updateOne({ _id: driverId }, { $set: { currentLocation: location } });
+        // Notify relevant users about the location update
+        this.notifyUsersAboutDriverLocation(driverId, location);
+    }
+    // Notify users who are tracking this driver
+    async notifyUsersAboutDriverLocation(driverId, location) {
+        const userIdsToNotify = await this.getUserIdsToNotify(driverId);
+        userIdsToNotify.forEach((userId) => {
+            const userSocket = this.userConnections.get(userId);
+            if (userSocket && userSocket.readyState === ws_1.default.OPEN) {
+                userSocket.send(JSON.stringify({
+                    type: 'driverLocationUpdate',
+                    driverId,
+                    location,
+                }));
             }
         });
     }
-    //   private async notifyUsersAboutDriverLocation(
-    //     driverId: string,
-    //     userID: string,
-    //     location: { latitude: number; longitude: number }
-    //   ) {
-    //     // Assuming getUserIdsToNotify is an async function returning a Promise<string[]>
-    //     const userIdsToNotify = await this.getUserIdsToNotify(driverId)
-    //     if (userIdsToNotify) {
-    //       userIdsToNotify.forEach((userId) => {
-    //         const userSocket = this.clients.get(userId)
-    //         if (userSocket && userSocket.readyState === WebSocket.OPEN) {
-    //           userSocket.send(
-    //             JSON.stringify({
-    //               type: 'driverLocationUpdate',
-    //               driverId,
-    //               location,
-    //             })
-    //           )
-    //         }
-    //       })
-    //     }
-    //   }
+    // Find users who need to be notified based on active delivery sessions
     async getUserIdsToNotify(driverId) {
-        // Query the database for active sessions involving this driver
         const activeSessions = await DeliveryOrderSchemal_1.default.find({
             driverId: driverId,
-            status: 'active', // assuming 'active' is a status of an ongoing session
+            status: 'accepted', // Assuming 'accepted' represents an active session
         });
-        // Extract and return user IDs from these sessions
-        return activeSessions.map((session) => session.userId);
-    }
-    async updateDriverLocation(driverId, location) {
-        // Update driver's location in the database
-        await driver_1.default.updateOne({ _id: driverId }, { $set: { currentLocation: location } });
-        // Notify relevant users
-        // this.notifyUsersAboutDriverLocation(driverId, location)
+        // Extract user IDs from these sessions
+        return activeSessions.map((session) => session.senderId.toString());
     }
 }
 exports.default = WebSocketService;
