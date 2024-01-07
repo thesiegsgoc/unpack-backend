@@ -28,8 +28,7 @@ const DeliveryServices = __importStar(require("../services/deliveryService"));
 const createDeliveryController = async (req, res) => {
     try {
         const deliveryData = req.body;
-        const senderId = req.params.senderId;
-        const result = await DeliveryServices.createDeliveryOrderService(deliveryData, senderId);
+        const result = await DeliveryServices.createDeliveryOrderService(deliveryData);
         return res.json({
             success: true,
             message: 'Delivery ordered successfully',
@@ -59,9 +58,9 @@ const updateDeliveryController = async (req, res) => {
 exports.updateDeliveryController = updateDeliveryController;
 const updateDeliveryStatusController = async (req, res) => {
     try {
-        const { deliveryId, newStatus } = req.body; // Assuming newStatus is sent in the request body
-        // Additional validations can be performed here
-        const result = await DeliveryServices.updateDeliveryOrderStatuService(deliveryId, newStatus);
+        const { deliveryId, newStatus, driverID } = req.body;
+        console.log(newStatus);
+        const result = await DeliveryServices.updateDeliveryOrderStatusService(deliveryId, driverID, newStatus);
         return res.json({
             success: true,
             delivery: result,

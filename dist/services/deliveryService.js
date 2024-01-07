@@ -3,21 +3,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateDeliveryStatus = exports.updateDriversLocationService = exports.deliveryCostService = exports.getHandlersLocationService = exports.pickupDeliveryService = exports.getDeliveryIdsService = exports.getUserDeliveryHistoryService = exports.getAllDeliveriesService = exports.trackDeliveryService = exports.encryptDeliveryDetailsService = exports.updateDeliveryService = exports.updateDeliveryOrderStatuService = exports.createDeliveryOrderService = void 0;
+exports.updateDeliveryStatus = exports.updateDriversLocationService = exports.deliveryCostService = exports.getHandlersLocationService = exports.pickupDeliveryService = exports.getDeliveryIdsService = exports.getUserDeliveryHistoryService = exports.getAllDeliveriesService = exports.trackDeliveryService = exports.encryptDeliveryDetailsService = exports.updateDeliveryService = exports.updateDeliveryOrderStatusService = exports.createDeliveryOrderService = void 0;
 const cryptr_1 = __importDefault(require("cryptr"));
 const user_1 = __importDefault(require("../models/users/user"));
 const db_1 = __importDefault(require("../util/db"));
 const websocketService_1 = __importDefault(require("../websocket/websocketService"));
 const DeliveryOrderSchemal_1 = __importDefault(require("../models/DeliveryOrderSchemal"));
 const cryptr = new cryptr_1.default('myTotallySecretKey');
-const createDeliveryOrderService = async (deliveryOrderData, senderId) => {
+var DeliveryStatus;
+(function (DeliveryStatus) {
+    DeliveryStatus["Pending"] = "Pending";
+    DeliveryStatus["Accepted"] = "Accepted";
+    DeliveryStatus["InTransit"] = "In Transit";
+    DeliveryStatus["Delivered"] = "Delivered";
+    DeliveryStatus["Cancelled"] = "Cancelled";
+})(DeliveryStatus || (DeliveryStatus = {}));
+const createDeliveryOrderService = async (deliveryOrderData) => {
     try {
         const numbCurrentDeliveries = await db_1.default.deliveries.countDocuments();
         // Create a new delivery order
         const newDeliveryOrder = new DeliveryOrderSchemal_1.default({
             ...deliveryOrderData,
             deliveryId: `D00${numbCurrentDeliveries + 1}`,
-            senderId,
             status: 'pending',
         });
         // Save the delivery order to the database
@@ -31,16 +38,19 @@ const createDeliveryOrderService = async (deliveryOrderData, senderId) => {
     }
 };
 exports.createDeliveryOrderService = createDeliveryOrderService;
-const updateDeliveryOrderStatuService = async (deliveryId, newStatus) => {
+const updateDeliveryOrderStatusService = async (deliveryId, newStatus, // Assuming this comes as a string
+driverID) => {
     try {
         const delivery = await DeliveryOrderSchemal_1.default.findOne({ deliveryId });
-        if (!delivery) {
-            throw new Error(`Delivery with ID ${deliveryId} not found.`);
+        if (!delivery || !delivery.status) {
+            throw new Error(`Delivery with ID ${deliveryId} not found or status is undefined.`);
         }
-        //TODO: Additional business logic can be implemented here
-        // - Checking if the status transition is valid.
-        // - Notifying users or drivers about the status change.
-        delivery.status = { value: newStatus, updatedAt: new Date() };
+        // Update status and driverId
+        delivery.status = {
+            value: newStatus,
+            updatedAt: new Date(),
+        };
+        delivery.driverId = driverID;
         await delivery.save();
         return delivery;
     }
@@ -49,7 +59,7 @@ const updateDeliveryOrderStatuService = async (deliveryId, newStatus) => {
         throw error;
     }
 };
-exports.updateDeliveryOrderStatuService = updateDeliveryOrderStatuService;
+exports.updateDeliveryOrderStatusService = updateDeliveryOrderStatusService;
 const updateDeliveryService = async (deliveryData) => {
     try {
         // Ensure the deliveryData includes the deliveryId
@@ -121,8 +131,8 @@ const trackDeliveryService = async (trackingId) => {
     if (!delivery) {
         throw new Error('Provide a valid order ID.');
     }
-    const { scheduledDriver, status, pickupLocation, dropoffLocation } = delivery;
-    const handlerDetails = await user_1.default.findById(scheduledDriver);
+    const { driverId, status, pickupLocation, dropoffLocation } = delivery;
+    const handlerDetails = await user_1.default.findById(driverId);
     if (!handlerDetails) {
         throw new Error('Handler details not found.');
     }
@@ -140,7 +150,7 @@ const trackDeliveryService = async (trackingId) => {
         handlerName: fullname,
         handlerRating: rating,
         handlerProfilePhoto: profilePhoto,
-        scheduledDriver,
+        driverId,
     };
 };
 exports.trackDeliveryService = trackDeliveryService;
@@ -156,7 +166,7 @@ const getAllDeliveriesService = async () => {
                 deliveryId: delivery.deliveryId,
                 senderId: delivery.senderId,
                 receiverId: delivery.receiverId,
-                scheduledDriver: delivery.scheduledDriver,
+                scheduledDriver: delivery.driverId,
                 packageSize: delivery.packageSize,
                 quantity: delivery.quantity,
                 type: delivery.type,

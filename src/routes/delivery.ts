@@ -27,7 +27,7 @@ import {
 
 // Versioning and plural nouns
 router.get('/deliveries', getAllDeliveriesController)
-router.post('/deliveries/create/:senderId', createDelivery)
+router.post('/deliveries/create', createDelivery)
 router.post('/deliveries/pickup', pickupDelivery)
 router.post('/deliveries/decrypt', decryptDeliveryDetails)
 router.put('/deliveries/updatestatus', updateDeliveryStatusController)

@@ -35,9 +35,16 @@ interface DeliveryDetailsTo {
   dropoff: ILocation
 }
 
+enum DeliveryStatus {
+  Pending = 'Pending',
+  Accepted = 'Accepted',
+  InTransit = 'In Transit',
+  Delivered = 'Delivered',
+  Cancelled = 'Cancelled',
+}
+
 export const createDeliveryOrderService = async (
-  deliveryOrderData: IDeliveryOrder,
-  senderId: string
+  deliveryOrderData: IDeliveryOrder
 ) => {
   try {
     const numbCurrentDeliveries = await db.deliveries.countDocuments()
@@ -45,7 +52,6 @@ export const createDeliveryOrderService = async (
     const newDeliveryOrder = new DeliveryModel({
       ...deliveryOrderData,
       deliveryId: `D00${numbCurrentDeliveries + 1}`,
-      senderId,
       status: 'pending',
     })
 
@@ -60,21 +66,25 @@ export const createDeliveryOrderService = async (
   }
 }
 
-export const updateDeliveryOrderStatuService = async (
+export const updateDeliveryOrderStatusService = async (
   deliveryId: string,
-  newStatus: string
+  newStatus: string, // Assuming this comes as a string
+  driverID: string
 ) => {
   try {
     const delivery = await DeliveryModel.findOne({ deliveryId })
-    if (!delivery) {
-      throw new Error(`Delivery with ID ${deliveryId} not found.`)
+    if (!delivery || !delivery.status) {
+      throw new Error(
+        `Delivery with ID ${deliveryId} not found or status is undefined.`
+      )
     }
 
-    //TODO: Additional business logic can be implemented here
-    // - Checking if the status transition is valid.
-    // - Notifying users or drivers about the status change.
-
-    delivery.status = { value: newStatus, updatedAt: new Date() }
+    // Update status and driverId
+    delivery.status = {
+      value: newStatus as DeliveryStatus,
+      updatedAt: new Date(),
+    }
+    delivery.driverId = driverID
     await delivery.save()
 
     return delivery
@@ -180,8 +190,8 @@ export const trackDeliveryService = async (trackingId: string) => {
     throw new Error('Provide a valid order ID.')
   }
 
-  const { scheduledDriver, status, pickupLocation, dropoffLocation } = delivery
-  const handlerDetails = await UserModel.findById(scheduledDriver)
+  const { driverId, status, pickupLocation, dropoffLocation } = delivery
+  const handlerDetails = await UserModel.findById(driverId)
 
   if (!handlerDetails) {
     throw new Error('Handler details not found.')
@@ -206,7 +216,7 @@ export const trackDeliveryService = async (trackingId: string) => {
     handlerName: fullname,
     handlerRating: rating,
     handlerProfilePhoto: profilePhoto,
-    scheduledDriver,
+    driverId,
   }
 }
 
@@ -224,7 +234,7 @@ export const getAllDeliveriesService = async () => {
         deliveryId: delivery.deliveryId,
         senderId: delivery.senderId,
         receiverId: delivery.receiverId,
-        scheduledDriver: delivery.scheduledDriver,
+        scheduledDriver: delivery.driverId,
         packageSize: delivery.packageSize,
         quantity: delivery.quantity,
         type: delivery.type,

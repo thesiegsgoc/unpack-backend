@@ -11,10 +11,8 @@ export const createDeliveryController = async (
 ) => {
   try {
     const deliveryData = req.body
-    const senderId = req.params.senderId
     const result = await DeliveryServices.createDeliveryOrderService(
-      deliveryData,
-      senderId
+      deliveryData
     )
     return res.json({
       success: true,
@@ -49,12 +47,13 @@ export const updateDeliveryStatusController = async (
   res: Response
 ) => {
   try {
-    const { deliveryId, newStatus } = req.body // Assuming newStatus is sent in the request body
+    const { deliveryId, newStatus, driverID } = req.body
 
-    // Additional validations can be performed here
+    console.log(newStatus)
 
-    const result = await DeliveryServices.updateDeliveryOrderStatuService(
+    const result = await DeliveryServices.updateDeliveryOrderStatusService(
       deliveryId,
+      driverID,
       newStatus
     )
     return res.json({

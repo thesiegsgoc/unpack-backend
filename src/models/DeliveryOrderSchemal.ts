@@ -15,9 +15,8 @@ export const DeliverySchema: Schema<IDeliveryOrder> = new mongoose.Schema({
     type: String,
     required: true,
   },
-  scheduledDriver: {
-    type: mongoose.Schema.Types.ObjectId, // Reference to User or Driver model
-    ref: 'Driver',
+  driverId: {
+    type: String,
   },
   packageSize: {
     type: String,

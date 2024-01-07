@@ -17,9 +17,8 @@ exports.DeliverySchema = new mongoose_1.default.Schema({
         type: String,
         required: true,
     },
-    scheduledDriver: {
-        type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: 'Driver',
+    driverId: {
+        type: String,
     },
     packageSize: {
         type: String,
