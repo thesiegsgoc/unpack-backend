@@ -12,11 +12,7 @@ const order_1 = __importDefault(require("./routes/order"));
 const zone_1 = __importDefault(require("./routes/zone"));
 const delivery_1 = __importDefault(require("./routes/delivery"));
 const driver_1 = __importDefault(require("./routes/driver"));
-const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
-const swaggerDef_1 = require("./documentation/swaggerDef");
 const index_1 = __importDefault(require("./websocket/index"));
-// Swagger setup
-const swaggerSpec = (0, swagger_jsdoc_1.default)(swaggerDef_1.options);
 //Initializing Environment Variables for the whole codebase:
 dotenv_1.default.config();
 // Initializing express

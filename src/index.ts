@@ -13,9 +13,6 @@ import { options } from './documentation/swaggerDef'
 import websocket from './websocket/index'
 import socketIO from 'socket.io'
 
-// Swagger setup
-const swaggerSpec = swaggerJSDoc(options)
-
 //Initializing Environment Variables for the whole codebase:
 dotenv.config()
 
