@@ -1,5 +1,5 @@
 import Cryptr from 'cryptr'
-import DeliveryModel from '../models/delivery'
+import DeliveryModel from '../models/Delivery'
 import { Request, Response } from 'express'
 import * as DeliveryServices from '../services/deliveryService'
 

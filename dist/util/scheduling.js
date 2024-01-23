@@ -31,7 +31,7 @@ exports.getDeliveryCostDetails = exports.assignHandler = exports.getHandler = ex
 const isGeoPointInPolygon = __importStar(require("geo-point-in-polygon"));
 const geolocation_utils_1 = require("geolocation-utils");
 const user_1 = __importDefault(require("../models/users/user"));
-const zone_1 = __importDefault(require("../models/zone"));
+const Zone_1 = __importDefault(require("../models/Zone"));
 const db_1 = __importDefault(require("./db"));
 const ZONES = [];
 const PARTNERS = [];
@@ -84,10 +84,10 @@ const assignHandler = async (location) => {
     if (!location) {
         return {
             success: false,
-            message: `Can't pick-up nor drop a package at an unknown location.`
+            message: `Can't pick-up nor drop a package at an unknown location.`,
         };
     }
-    const zones = await zone_1.default.find({});
+    const zones = await Zone_1.default.find({});
     let distanceToLocationFromZoneCenter;
     let prevDistance;
     let zoneHandlers;
@@ -95,8 +95,12 @@ const assignHandler = async (location) => {
     let handlerId;
     for (const zone of zones) {
         try {
-            distanceToLocationFromZoneCenter = (0, geolocation_utils_1.distanceTo)({ lat: zone.centralLocation.latitude, lon: zone.centralLocation.longitude }, { lat: location.latitude, lon: location.longitude });
-            if (prevDistance === undefined || distanceToLocationFromZoneCenter <= prevDistance) {
+            distanceToLocationFromZoneCenter = (0, geolocation_utils_1.distanceTo)({
+                lat: zone.centralLocation.latitude,
+                lon: zone.centralLocation.longitude,
+            }, { lat: location.latitude, lon: location.longitude });
+            if (prevDistance === undefined ||
+                distanceToLocationFromZoneCenter <= prevDistance) {
                 prevDistance = distanceToLocationFromZoneCenter;
                 zoneName = zone.zoneName;
                 zoneHandlers = zone.zoneHandlers;
@@ -105,14 +109,14 @@ const assignHandler = async (location) => {
         catch (error) {
             return {
                 success: false,
-                message: error.message
+                message: error.message,
             };
         }
     }
     if (!zoneHandlers) {
         return {
             success: false,
-            message: `Can't deliver to your location.`
+            message: `Can't deliver to your location.`,
         };
     }
     try {
@@ -133,9 +137,9 @@ const assignHandler = async (location) => {
     return {
         success: true,
         body: {
-            handlerId: handlerId ? handlerId : undefined
+            handlerId: handlerId ? handlerId : undefined,
         },
-        message: `Handler successfully scheduled to pick up a package.`
+        message: `Handler successfully scheduled to pick up a package.`,
     };
 };
 exports.assignHandler = assignHandler;
@@ -147,22 +151,31 @@ const getDeliveryCostDetails = async (zones, location) => {
     for (const zone of zones) {
         distanceToLocationFromZoneCenter = (0, geolocation_utils_1.distanceTo)({
             lat: zone.centralLocation.latitude,
-            lon: zone.centralLocation.longitude
+            lon: zone.centralLocation.longitude,
         }, {
             lat: location.latitude,
-            lon: location.longitude
+            lon: location.longitude,
         });
-        if (prevDistance === undefined || distanceToLocationFromZoneCenter <= prevDistance) {
+        if (prevDistance === undefined ||
+            distanceToLocationFromZoneCenter <= prevDistance) {
             prevDistance = distanceToLocationFromZoneCenter;
             zoneName = zone.zoneName;
-            cost = Math.round((zone.rate * distanceToLocationFromZoneCenter) / 1000000) * 1000;
+            cost =
+                Math.round((zone.rate * distanceToLocationFromZoneCenter) / 1000000) *
+                    1000;
         }
     }
     return {
         zoneName,
-        cost
+        cost,
     };
 };
 exports.getDeliveryCostDetails = getDeliveryCostDetails;
-const scheduling = { getZone: exports.getZone, getPartner: exports.getPartner, getHandler: exports.getHandler, assignHandler: exports.assignHandler, getDeliveryCostDetails: exports.getDeliveryCostDetails };
+const scheduling = {
+    getZone: exports.getZone,
+    getPartner: exports.getPartner,
+    getHandler: exports.getHandler,
+    assignHandler: exports.assignHandler,
+    getDeliveryCostDetails: exports.getDeliveryCostDetails,
+};
 exports.default = scheduling;

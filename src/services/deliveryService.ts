@@ -1,10 +1,10 @@
 import Cryptr from 'cryptr'
-import DeliveryModel from '../models/delivery'
+import DeliveryModel from '../models/Delivery'
 import UserModel from '../models/users/user'
 import scheduling from '../util/scheduling'
 import db from '../util/db'
-import OrderModel from '../models/order'
-import PartnerModel from '../models/partner'
+import OrderModel from '../models/Order'
+import PartnerModel from '../models/Partner'
 const cryptr = new Cryptr('myTotallySecretKey')
 
 type AddDeliveryRequestBody = /*unresolved*/ any // TODO: Define the type for AddDeliveryRequestBody in the types file

@@ -4,36 +4,35 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deliveryCostService = exports.assignHandlerService = exports.updateZoneHandlerAvailabilityService = exports.deleteZoneHandlerService = exports.addZoneHandlerService = exports.deleteZoneService = exports.updateZoneInfoService = exports.registerZoneService = void 0;
-const zone_1 = __importDefault(require("../models/zone"));
+const Zone_1 = __importDefault(require("../models/Zone"));
 const db_1 = __importDefault(require("../util/db"));
 const geolocation_utils_1 = require("geolocation-utils");
 const scheduling_1 = require("../util/scheduling");
-//TODO: Create a costs Model/Schema and CRUD operations for it
 const ZONE_TO_ZONE_COST = {
     'Temeke-Ilala': 2000,
     'Temeke-Bunju': 5000,
     'Bunju-Ilala': 8000,
     'Ilala-Temeke': 2000,
     'Bunju-Temeke': 5000,
-    'Ilala-Bunju': 8000
+    'Ilala-Bunju': 8000,
 };
 const registerZoneService = async (zoneName, rate, centralLocation) => {
     const existingZone = await db_1.default.zones.findOne({ zoneName: zoneName });
     if (existingZone) {
         throw new Error(`Zone ${zoneName} already exists.`);
     }
-    const zone = new zone_1.default({
+    const zone = new Zone_1.default({
         zoneName,
         rate,
         zoneHandlers: [],
-        centralLocation
+        centralLocation,
     });
     await zone.save();
     return zoneName;
 };
 exports.registerZoneService = registerZoneService;
 const updateZoneInfoService = async (zoneName, rate) => {
-    const zone = await zone_1.default.findOne({ zoneName });
+    const zone = await Zone_1.default.findOne({ zoneName });
     if (!zone) {
         throw new Error(`Invalid zone name: No zone is named ${zoneName}.`);
     }
@@ -57,15 +56,16 @@ const addZoneHandlerService = async (zoneName, handlerUsername) => {
     if (!user) {
         throw new Error(`${handlerUsername} is not a registered user.`);
     }
-    if (user.status.toLowerCase() === 'vendor' || user.status.toLowerCase() === 'consumer') {
+    if (user.status.toLowerCase() === 'vendor' ||
+        user.status.toLowerCase() === 'consumer') {
         throw new Error(`${handlerUsername} is not registered as a driver nor CPP.`);
     }
     await db_1.default.zones.updateOne({ zoneName }, {
         $push: {
             zoneHandlers: {
-                $each: [{ id: user._id, available: false }]
-            }
-        }
+                $each: [{ id: user._id, available: false }],
+            },
+        },
     });
 };
 exports.addZoneHandlerService = addZoneHandlerService;
@@ -86,18 +86,21 @@ const updateZoneHandlerAvailabilityService = async (handlerUsername, available) 
     if (!user || !user._id) {
         throw new Error(`${handlerUsername} is not a registered--can't update availability of an unregistered user.`);
     }
-    await db_1.default.zones.updateMany({ "zoneHandlers.id": user._id }, { $set: { "zoneHandlers.$.available": available } });
+    await db_1.default.zones.updateMany({ 'zoneHandlers.id': user._id }, { $set: { 'zoneHandlers.$.available': available } });
 };
 exports.updateZoneHandlerAvailabilityService = updateZoneHandlerAvailabilityService;
 const assignHandlerService = async (location) => {
     if (!location) {
         throw new Error(`Can't pick-up nor drop a package at an unknown location.`);
     }
-    const zones = await zone_1.default.find({});
+    const zones = await Zone_1.default.find({});
     let closestZone = null; //TODO: Fix this type
     let minimumDistance = Number.MAX_VALUE;
     zones.forEach((zone) => {
-        const distance = (0, geolocation_utils_1.distanceTo)({ lat: zone.centralLocation.latitude, lon: zone.centralLocation.longitude }, location);
+        const distance = (0, geolocation_utils_1.distanceTo)({
+            lat: zone.centralLocation.latitude,
+            lon: zone.centralLocation.longitude,
+        }, location);
         if (distance < minimumDistance) {
             closestZone = zone;
             minimumDistance = distance;
@@ -121,7 +124,7 @@ const assignHandlerService = async (location) => {
 };
 exports.assignHandlerService = assignHandlerService;
 const deliveryCostService = async (pickUpLocation, dropOffLocation, deliveryType) => {
-    const zones = await zone_1.default.find({});
+    const zones = await Zone_1.default.find({});
     const pickUpCostDetails = (0, scheduling_1.getDeliveryCostDetails)(zones, pickUpLocation);
     const dropOffCostDetails = (0, scheduling_1.getDeliveryCostDetails)(zones, dropOffLocation);
     //@ts-ignore
@@ -134,7 +137,7 @@ const deliveryCostService = async (pickUpLocation, dropOffLocation, deliveryType
         pickUpCost: pickUpCostDetails.cost,
         //@ts-ignore
         dropOffCost: dropOffCostDetails.cost,
-        totalCost
+        totalCost,
     };
 };
 exports.deliveryCostService = deliveryCostService;
