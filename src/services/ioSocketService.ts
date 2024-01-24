@@ -58,6 +58,7 @@ export class SocketService {
   private handleUserLocationUpdate(locationData: LocationData): void {
     // Save user location data to the database
     saveLocationToDatabase(locationData)
+    this.io.emit('userLocationUpdate', locationData)
     // Handle user-specific location logic
     // Example: Emit to specific driver or to a group of drivers
     // this.io.to(someDriverId).emit('userLocationUpdate', locationData);
