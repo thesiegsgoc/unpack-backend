@@ -17,6 +17,10 @@ const LocationSchema = new mongoose_1.default.Schema({
         type: Number,
         required: true,
     },
+    usertype: {
+        type: String,
+        required: true,
+    },
     timestamp: {
         type: Date,
         default: Date.now,

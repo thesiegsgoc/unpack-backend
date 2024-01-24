@@ -14,6 +14,7 @@ export class SocketService {
 
   constructor(server: any) {
     this.io = new Server(server)
+
     this.initializeSocketEvents()
   }
 
@@ -62,3 +63,25 @@ function saveLocationToDatabase(locationData: LocationData) {
   console.log('Saving location to database:', locationData)
   // Implement the actual database saving logic here
 }
+
+/**
+
+How to send location For a Driver: Assuming this code is running on the driver's app
+
+1. Get the driver's current location
+2. Save the location to the database
+3. Broadcast the location update to all other drivers
+function sendLocationUpdate(latitude, longitude) {
+  const locationData = { latitude, longitude };
+  socket.emit('driverLocationUpdate', locationData);
+}
+4. After the delivery is over delete the location history from database and save the starting point to destination only
+
+
+How to send location For a User: Assuming this code is running on the user's app
+function sendLocationUpdate(latitude, longitude) {
+  const locationData = { latitude, longitude };
+  socket.emit('userLocationUpdate', locationData);
+}
+
+ */

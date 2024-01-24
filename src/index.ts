@@ -8,23 +8,43 @@ import zoneRouter from './routes/zone'
 import deliveryRouter from './routes/delivery'
 import driverRouter from './routes/driver'
 import { Server as SocketServer, Socket } from 'socket.io'
+import { createServer } from 'http'
+import cors from 'cors'
 
-//Initializing Environment Variables for the whole codebase:
 dotenv.config()
 
-// Initializing express
 const app = express()
+// Configure CORS for Express
+app.use(
+  cors({
+    origin: '*', // Your client's URL
+    credentials: true,
+  })
+)
 
-// Destructuring the config object
+const httpServer = createServer(app)
+
+const ioServer = new SocketServer(httpServer, {
+  cors: {
+    origin: '*', // Your client's URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
+  },
+})
+
 const { MONGODB_URL, PORT } = config
 
-// MongoDB connection:
 mongoose
   .connect(MONGODB_URL)
   .then(() => console.log('Database connected successfully...'))
   .catch((err: any) => console.log(err))
 
-// Implement the routes here:
+app.all('*', function (req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Headers', 'X-Requested-With')
+  next()
+})
+
 app.use(express.json())
 app.use(userRouter)
 app.use(zoneRouter)
@@ -32,26 +52,16 @@ app.use(orderRouter)
 app.use(deliveryRouter)
 app.use(driverRouter)
 
-// Default route
 app.get('/', (req: Request, res: Response) => {
   res.send('Server is ready')
 })
 
-// Error when a route is not on the server
 app.use('*', (req: Request, res: Response) => {
   res.status(404).json({
     message:
       'The Route you requested was not found, please check your routes and try again',
   })
 })
-
-// Serving port details:
-
-const server = app.listen(PORT, () =>
-  console.log(`Server is running on port ${PORT}`)
-)
-
-const ioServer = new SocketServer(server)
 
 ioServer.on('connection', (socket: Socket) => {
   console.log('A user connected')
@@ -60,3 +70,5 @@ ioServer.on('connection', (socket: Socket) => {
     console.log('A user disconnected')
   })
 })
+
+httpServer.listen(PORT, () => console.log(`Server is running on port ${PORT}`))
