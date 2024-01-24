@@ -11,7 +11,13 @@ function getUserType(userId) {
 class SocketService {
     io;
     constructor(server) {
-        this.io = new socket_io_1.Server(server);
+        this.io = new socket_io_1.Server(server, {
+            cors: {
+                origin: '*',
+                methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+                credentials: true,
+            },
+        });
         this.initializeSocketEvents();
     }
     initializeSocketEvents() {

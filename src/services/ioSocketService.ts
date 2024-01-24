@@ -13,7 +13,13 @@ export class SocketService {
   private io: Server
 
   constructor(server: any) {
-    this.io = new Server(server)
+    this.io = new Server(server, {
+      cors: {
+        origin: '*', // Your client's URL
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        credentials: true,
+      },
+    })
 
     this.initializeSocketEvents()
   }
