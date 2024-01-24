@@ -12,7 +12,7 @@ const order_1 = __importDefault(require("./routes/order"));
 const zone_1 = __importDefault(require("./routes/zone"));
 const delivery_1 = __importDefault(require("./routes/delivery"));
 const driver_1 = __importDefault(require("./routes/driver"));
-const index_1 = __importDefault(require("./websocket/index"));
+const socket_io_1 = require("socket.io");
 //Initializing Environment Variables for the whole codebase:
 dotenv_1.default.config();
 // Initializing express
@@ -35,8 +35,6 @@ app.use(driver_1.default);
 app.get('/', (req, res) => {
     res.send('Server is ready');
 });
-// Swagger setup
-// app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 // Error when a route is not on the server
 app.use('*', (req, res) => {
     res.status(404).json({
@@ -45,4 +43,10 @@ app.use('*', (req, res) => {
 });
 // Serving port details:
 const server = app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
-(0, index_1.default)(server);
+const ioServer = new socket_io_1.Server(server);
+ioServer.on('connection', (socket) => {
+    console.log('A user connected');
+    socket.on('disconnect', () => {
+        console.log('A user disconnected');
+    });
+});

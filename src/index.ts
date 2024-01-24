@@ -7,11 +7,7 @@ import orderRouter from './routes/order'
 import zoneRouter from './routes/zone'
 import deliveryRouter from './routes/delivery'
 import driverRouter from './routes/driver'
-import swaggerUi from 'swagger-ui-express'
-import swaggerJSDoc from 'swagger-jsdoc'
-import { options } from './documentation/swaggerDef'
-import websocket from './websocket/index'
-import socketIO from 'socket.io'
+import { Server as SocketServer, Socket } from 'socket.io'
 
 //Initializing Environment Variables for the whole codebase:
 dotenv.config()
@@ -41,9 +37,6 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Server is ready')
 })
 
-// Swagger setup
-// app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
-
 // Error when a route is not on the server
 app.use('*', (req: Request, res: Response) => {
   res.status(404).json({
@@ -58,4 +51,12 @@ const server = app.listen(PORT, () =>
   console.log(`Server is running on port ${PORT}`)
 )
 
-websocket(server)
+const ioServer = new SocketServer(server)
+
+ioServer.on('connection', (socket: Socket) => {
+  console.log('A user connected')
+
+  socket.on('disconnect', () => {
+    console.log('A user disconnected')
+  })
+})
