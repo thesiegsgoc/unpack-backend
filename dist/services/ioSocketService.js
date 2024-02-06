@@ -42,9 +42,8 @@ class SocketService {
         //   }
         // })
         this.io.on('connection', (socket) => {
-            // console.log(`New connection: ${socket.id}, User ID: ${socket.user.id}`)
             // Listen to location updates and handle based on user type
-            socket.on('updateLocation', (locationData) => {
+            socket.on('updateLocation', (locationData, ackCallback) => {
                 console.log(`Location update from ${locationData.userId}:`, locationData);
                 const userType = getUserType(locationData.userId);
                 if (userType === 'driver') {
@@ -53,10 +52,15 @@ class SocketService {
                 else if (userType === 'user') {
                     this.handleUserLocationUpdate(locationData);
                 }
+                // Once processing is complete, call the acknowledgment callback
+                // You can send back any data as a response, here just sending a simple message
+                ackCallback({
+                    status: 'success',
+                    message: 'Location update received',
+                });
             });
             socket.on('disconnect', () => {
-                // console.log(`User disconnected: ${socket.id}`)
-                console.log(`User disconnected: `);
+                console.log(`User disconnected`);
             });
         });
     }
