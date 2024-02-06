@@ -18,7 +18,7 @@ export class SocketService {
   constructor(server: any) {
     this.io = new Server(server, {
       cors: {
-        origin: '*', // Your client's URL
+        origin: '*',
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         credentials: true,
       },
@@ -46,7 +46,7 @@ export class SocketService {
     // })
 
     this.io.on('connection', (socket: Socket) => {
-      console.log(`New connection: ${socket.id}, User ID: ${socket.user.id}`)
+      // console.log(`New connection: ${socket.id}, User ID: ${socket.user.id}`)
 
       // Listen to location updates and handle based on user type
       socket.on('updateLocation', (locationData: LocationData) => {
@@ -63,7 +63,8 @@ export class SocketService {
       })
 
       socket.on('disconnect', () => {
-        console.log(`User disconnected: ${socket.id}`)
+        // console.log(`User disconnected: ${socket.id}`)
+        console.log(`User disconnected: `)
       })
     })
   }

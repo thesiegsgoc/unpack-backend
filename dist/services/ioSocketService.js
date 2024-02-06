@@ -42,7 +42,7 @@ class SocketService {
         //   }
         // })
         this.io.on('connection', (socket) => {
-            console.log(`New connection: ${socket.id}, User ID: ${socket.user.id}`);
+            // console.log(`New connection: ${socket.id}, User ID: ${socket.user.id}`)
             // Listen to location updates and handle based on user type
             socket.on('updateLocation', (locationData) => {
                 console.log(`Location update from ${locationData.userId}:`, locationData);
@@ -55,7 +55,8 @@ class SocketService {
                 }
             });
             socket.on('disconnect', () => {
-                console.log(`User disconnected: ${socket.id}`);
+                // console.log(`User disconnected: ${socket.id}`)
+                console.log(`User disconnected: `);
             });
         });
     }
