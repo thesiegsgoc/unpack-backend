@@ -1,7 +1,13 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SocketService = void 0;
 const socket_io_1 = require("socket.io");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const config_1 = __importDefault(require("../config"));
+const { JWT_SECRET_CODE } = config_1.default;
 // Mock function to get user type
 function getUserType(userId) {
     // Implement logic to determine if a user is a 'user' or 'driver'
@@ -21,8 +27,24 @@ class SocketService {
         this.initializeSocketEvents();
     }
     initializeSocketEvents() {
+        this.io.use((socket, next) => {
+            const token = socket.handshake.query.token;
+            if (typeof token === 'string') {
+                jsonwebtoken_1.default.verify(token, JWT_SECRET_CODE, (err, decoded) => {
+                    if (err) {
+                        return next(new Error('Authentication error'));
+                    }
+                    // Token is valid, store decoded information in the socket for later use
+                    socket.user = decoded; // Attach the user's decoded token data to the socket
+                    next();
+                });
+            }
+            else {
+                return next(new Error('Token is not a string'));
+            }
+        });
         this.io.on('connection', (socket) => {
-            console.log(`New connection: ${socket.id}`);
+            console.log(`New connection: ${socket.id}, User ID: ${socket.user.id}`);
             // Listen to location updates and handle based on user type
             socket.on('updateLocation', (locationData) => {
                 console.log(`Location update from ${locationData.userId}:`, locationData);

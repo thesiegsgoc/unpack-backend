@@ -1,5 +1,8 @@
 import { Server, Socket } from 'socket.io'
+import jwt from 'jsonwebtoken'
+import config from '../config'
 
+const { JWT_SECRET_CODE } = config
 type UserType = 'user' | 'driver'
 
 // Mock function to get user type
@@ -25,8 +28,25 @@ export class SocketService {
   }
 
   private initializeSocketEvents(): void {
+    this.io.use((socket: Socket, next) => {
+      const token = socket.handshake.query.token
+
+      if (typeof token === 'string') {
+        jwt.verify(token, JWT_SECRET_CODE, (err, decoded) => {
+          if (err) {
+            return next(new Error('Authentication error'))
+          }
+          // Token is valid, store decoded information in the socket for later use
+          socket.user = decoded // Attach the user's decoded token data to the socket
+          next()
+        })
+      } else {
+        return next(new Error('Token is not a string'))
+      }
+    })
+
     this.io.on('connection', (socket: Socket) => {
-      console.log(`New connection: ${socket.id}`)
+      console.log(`New connection: ${socket.id}, User ID: ${socket.user.id}`)
 
       // Listen to location updates and handle based on user type
       socket.on('updateLocation', (locationData: LocationData) => {

@@ -28,6 +28,13 @@ router.get('/deliveries', getAllDeliveriesController)
 router.post('/deliveries/create', createDelivery)
 router.post('/deliveries/pickup', pickupDelivery)
 router.post('/deliveries/decrypt', decryptDeliveryDetails)
+router.post('/deliveries/match-pickupto-delivery', () =>
+  console.log('match-pickupto-delivery')
+)
+
+router.post('/deliveries/calculate-delivery-cost', () =>
+  console.log('calculate-delivery-cost')
+)
 
 // Secure endpoint with isUserAuth middleware
 router.post(
