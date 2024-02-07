@@ -7,12 +7,6 @@ exports.SocketService = void 0;
 const socket_io_1 = require("socket.io");
 const config_1 = __importDefault(require("../config"));
 const { JWT_SECRET_CODE } = config_1.default;
-// Mock function to get user type
-function getUserType(userId) {
-    // Implement logic to determine if a user is a 'user' or 'driver'
-    // based on the userId in the location data coming from the client
-    return 'user'; // or 'driver'
-}
 class SocketService {
     io;
     constructor(server) {
@@ -43,32 +37,20 @@ class SocketService {
         // })
         this.io.on('connection', (socket) => {
             // Listen to location updates and handle based on user type
-            // socket.on(
-            //   'updateLocation',
-            //   (locationData: LocationData, ackCallback: Function) => {
-            //     console.log(
-            //       `Location update from ${locationData.userId}:`,
-            //       locationData
-            //     )
-            //     const userType = getUserType(locationData.userId)
-            //     if (userType === 'driver') {
-            //       this.handleDriverLocationUpdate(locationData)
-            //     } else if (userType === 'user') {
-            //       this.handleUserLocationUpdate(locationData)
-            //     }
-            //     // Once processing is complete, call the acknowledgment callback
-            //     // You can send back any data as a response, here just sending a simple message
-            //     ackCallback({
-            //       status: 'success',
-            //       message: 'Location update received',
-            //     })
-            //   }
-            // )
             socket.on('updateLocation', (locationData, ackCallback) => {
-                console.log('Received location update:', locationData);
+                console.log(`Location update from ${locationData.userId}:`, locationData);
+                const userType = locationData.usertype;
+                if (userType === 'driver') {
+                    this.handleDriverLocationUpdate(locationData);
+                }
+                else if (userType === 'user') {
+                    this.handleUserLocationUpdate(locationData);
+                }
+                // Once processing is complete, call the acknowledgment callback
+                // You can send back any data as a response, here just sending a simple message
                 ackCallback({
                     status: 'success',
-                    message: 'Echo back - location received',
+                    message: 'Location update received',
                 });
             });
             socket.on('disconnect', () => {
