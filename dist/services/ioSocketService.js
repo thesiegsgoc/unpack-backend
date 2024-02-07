@@ -43,20 +43,32 @@ class SocketService {
         // })
         this.io.on('connection', (socket) => {
             // Listen to location updates and handle based on user type
+            // socket.on(
+            //   'updateLocation',
+            //   (locationData: LocationData, ackCallback: Function) => {
+            //     console.log(
+            //       `Location update from ${locationData.userId}:`,
+            //       locationData
+            //     )
+            //     const userType = getUserType(locationData.userId)
+            //     if (userType === 'driver') {
+            //       this.handleDriverLocationUpdate(locationData)
+            //     } else if (userType === 'user') {
+            //       this.handleUserLocationUpdate(locationData)
+            //     }
+            //     // Once processing is complete, call the acknowledgment callback
+            //     // You can send back any data as a response, here just sending a simple message
+            //     ackCallback({
+            //       status: 'success',
+            //       message: 'Location update received',
+            //     })
+            //   }
+            // )
             socket.on('updateLocation', (locationData, ackCallback) => {
-                console.log(`Location update from ${locationData.userId}:`, locationData);
-                const userType = getUserType(locationData.userId);
-                if (userType === 'driver') {
-                    this.handleDriverLocationUpdate(locationData);
-                }
-                else if (userType === 'user') {
-                    this.handleUserLocationUpdate(locationData);
-                }
-                // Once processing is complete, call the acknowledgment callback
-                // You can send back any data as a response, here just sending a simple message
+                console.log('Received location update:', locationData);
                 ackCallback({
                     status: 'success',
-                    message: 'Location update received',
+                    message: 'Echo back - location received',
                 });
             });
             socket.on('disconnect', () => {
