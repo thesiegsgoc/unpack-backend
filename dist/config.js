@@ -11,6 +11,7 @@ const config = {
     CLOUDINARY_USER_NAME: process.env.CLOUDINARY_USER_NAME,
     CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
     CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
-    PORT: process.env.PORT
+    GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
+    PORT: process.env.PORT,
 };
 exports.default = config;

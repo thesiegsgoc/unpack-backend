@@ -1,7 +1,13 @@
 type LocationData = {
-  userId: string // Unique identifier for the user (driver or rider)
-  latitude: number
-  longitude: number
-  usertype: string // 'user' or 'driver'
-  timestamp?: Date
+  userId?: string
+  usertype?: 'driver' | 'user'
+  geometry: Geometry
+  address: string
+}
+
+interface Geometry {
+  location: {
+    lat: number
+    lng: number
+  }
 }

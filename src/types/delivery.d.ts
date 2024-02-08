@@ -1,35 +1,25 @@
-interface Coordinates {
-  latitude: number
-  longitude: number
-}
-
 interface DeliveryRequestBody {
-  userId?: string
-  deliveryId?: string
+  userId: string
   deliveryId: string
   receiverId?: string
-  senderId: string
   partnerId?: string
   receiver?: string
   quantity: number
   phoneNumber?: string
-  size?: string
-  type?: string
+  package_size: 'small' | 'medium' | 'large'
+  delivery_type: 'standard' | 'express'
   parcel?: string
-  dropoffLocation: {
-    latitude: number
-    longitude: number
-  }
+  dropoffLocation: LocationData
+  pickupLocation: LocationData
   notes?: string
-  pickupLocation?: Array<any>
-  currentHandler?: any
+  currentHandler?: any // Consider defining a more specific type
   scheduledHandler?: string | undefined
   deliveryTime?: string
   deliveryDate?: string
-  dropOffCost?: any
-  pickUpCost?: any
-  deliveryCost?: number
-  status?: any
+  dropOffCost?: number // Consider using number if costs are numeric
+  pickUpCost?: number // Same as above
+  delivery_cost: number
+  status?: any // Consider defining a specific type for status
   orderId?: string
   vendorId?: string
   date?: Date
@@ -42,10 +32,9 @@ interface DeliveryItemDetails {
   time: string
   date: string
   status: string
-  deliveryId: string
   type: string
   receiver: string
-  sendor: string
+  sender: string // Corrected typo 'sendor' to 'sender'
   expoPushToken?: string | number
   dropOffCost: number
   pickUpCost: number
@@ -92,5 +81,5 @@ type DeliveryItem = {
 }
 
 interface RequestWithUser extends Request {
-  user?: IUser
+  user?: IUser // Ensure IUser is defined elsewhere in your code
 }

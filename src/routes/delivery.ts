@@ -16,6 +16,7 @@ import {
   pickupDeliveryController as pickupDelivery,
   getHandlersLocationController as getHandlersLocation,
   getAllDeliveriesController,
+  calculateDeliveryCostController,
 } from '../controllers/deliveryController'
 
 // TODO: return the isUserAuth middleware to the route above as bellow
@@ -25,15 +26,15 @@ import {
 
 // Versioning and plural nouns
 router.get('/deliveries', getAllDeliveriesController)
+router.post(
+  '/deliveries/calculate-delivery-cost',
+  calculateDeliveryCostController
+)
 router.post('/deliveries/create', createDelivery)
 router.post('/deliveries/pickup', pickupDelivery)
 router.post('/deliveries/decrypt', decryptDeliveryDetails)
 router.post('/deliveries/match-pickupto-delivery', () =>
   console.log('match-pickupto-delivery')
-)
-
-router.post('/deliveries/calculate-delivery-cost', () =>
-  console.log('calculate-delivery-cost')
 )
 
 // Secure endpoint with isUserAuth middleware
