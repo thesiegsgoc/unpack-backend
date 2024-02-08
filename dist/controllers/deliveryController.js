@@ -29,10 +29,10 @@ const pricingService_1 = require("../services/pricingService");
 const calculateDeliveryCostController = async (req, res) => {
     try {
         const deliveryData = req.body;
-        const deliveryCost = await (0, pricingService_1.calculateDeliveryCostService)(deliveryData);
+        const delivery_cost = await (0, pricingService_1.calculateDeliveryCostService)(deliveryData);
         return res.json({
             success: true,
-            deliveryCost,
+            delivery_cost,
             message: 'Delivery cost calculated successfully',
         });
     }

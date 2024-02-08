@@ -10,10 +10,10 @@ export const calculateDeliveryCostController = async (
 ) => {
   try {
     const deliveryData = req.body
-    const deliveryCost = await calculateDeliveryCostService(deliveryData)
+    const delivery_cost = await calculateDeliveryCostService(deliveryData)
     return res.json({
       success: true,
-      deliveryCost,
+      delivery_cost,
       message: 'Delivery cost calculated successfully',
     })
   } catch (error: any) {
