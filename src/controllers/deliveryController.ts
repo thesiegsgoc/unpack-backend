@@ -4,18 +4,30 @@ import { Request, Response } from 'express'
 import * as DeliveryServices from '../services/deliveryService'
 import { calculateDeliveryCostService } from '../services/pricingService'
 
-export const createDeliveryController = async (
+export const calculateDeliveryCostController = async (
   req: Request<{}, {}, DeliveryRequestBody>,
   res: Response
 ) => {
   try {
     const deliveryData = req.body
     const deliveryCost = await calculateDeliveryCostService(deliveryData)
-    const updatedDataWithCost = { ...deliveryData, delivery_cost: deliveryCost }
-    console.log(updatedDataWithCost)
-    const result = await DeliveryServices.createDeliveryService(
-      updatedDataWithCost
-    )
+    return res.json({
+      success: true,
+      deliveryCost,
+      message: 'Delivery cost calculated successfully',
+    })
+  } catch (error: any) {
+    return res.json({ success: false, message: error.message })
+  }
+}
+
+export const createDeliveryController = async (
+  req: Request<{}, {}, DeliveryRequestBody>,
+  res: Response
+) => {
+  try {
+    const deliveryData = req.body
+    const result = await DeliveryServices.createDeliveryService(deliveryData)
     console.log(result)
     return res.json({
       success: true,
@@ -33,16 +45,7 @@ export const updateDeliveryController = async (
 ) => {
   try {
     const deliveryData = req.body
-    // Recalculate delivery cost in case any relevant details (like locations or package size) have changed
-    const updatedDeliveryCost = await calculateDeliveryCostService(deliveryData)
-    // Update delivery data with the new cost
-    const updatedDataWithCost = {
-      ...deliveryData,
-      deliveryCost: updatedDeliveryCost,
-    }
-    const result = await DeliveryServices.updateDeliveryService(
-      updatedDataWithCost
-    )
+    const result = await DeliveryServices.updateDeliveryService(deliveryData)
     return res.json({
       success: true,
       delivery: result,

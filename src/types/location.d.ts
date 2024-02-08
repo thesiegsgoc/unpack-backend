@@ -1,14 +1,13 @@
 type LocationData = {
   userId?: string
   usertype?: 'driver' | 'user'
-  location: {
-    latitude: number
-    longitude: number
-  }
+  geometry: Geometry
   address: string
 }
 
-type Location = {
-  latitude: number
-  longitude: number
+interface Geometry {
+  location: {
+    lat: number
+    lng: number
+  }
 }

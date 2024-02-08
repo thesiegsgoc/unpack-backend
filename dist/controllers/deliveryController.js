@@ -23,16 +23,28 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getHandlersLocationController = exports.pickupDeliveryController = exports.getDeliveryIdsController = exports.getPartnerDeliveryHistoryController = exports.getUserDeliveryHistoryController = exports.getAllDeliveriesController = exports.trackDeliveryController = exports.encryptDeliveryDetailsController = exports.updateDeliveryController = exports.createDeliveryController = void 0;
+exports.getHandlersLocationController = exports.pickupDeliveryController = exports.getDeliveryIdsController = exports.getPartnerDeliveryHistoryController = exports.getUserDeliveryHistoryController = exports.getAllDeliveriesController = exports.trackDeliveryController = exports.encryptDeliveryDetailsController = exports.updateDeliveryController = exports.createDeliveryController = exports.calculateDeliveryCostController = void 0;
 const DeliveryServices = __importStar(require("../services/deliveryService"));
 const pricingService_1 = require("../services/pricingService");
-const createDeliveryController = async (req, res) => {
+const calculateDeliveryCostController = async (req, res) => {
     try {
         const deliveryData = req.body;
         const deliveryCost = await (0, pricingService_1.calculateDeliveryCostService)(deliveryData);
-        const updatedDataWithCost = { ...deliveryData, delivery_cost: deliveryCost };
-        console.log(updatedDataWithCost);
-        const result = await DeliveryServices.createDeliveryService(updatedDataWithCost);
+        return res.json({
+            success: true,
+            deliveryCost,
+            message: 'Delivery cost calculated successfully',
+        });
+    }
+    catch (error) {
+        return res.json({ success: false, message: error.message });
+    }
+};
+exports.calculateDeliveryCostController = calculateDeliveryCostController;
+const createDeliveryController = async (req, res) => {
+    try {
+        const deliveryData = req.body;
+        const result = await DeliveryServices.createDeliveryService(deliveryData);
         console.log(result);
         return res.json({
             success: true,
@@ -48,14 +60,7 @@ exports.createDeliveryController = createDeliveryController;
 const updateDeliveryController = async (req, res) => {
     try {
         const deliveryData = req.body;
-        // Recalculate delivery cost in case any relevant details (like locations or package size) have changed
-        const updatedDeliveryCost = await (0, pricingService_1.calculateDeliveryCostService)(deliveryData);
-        // Update delivery data with the new cost
-        const updatedDataWithCost = {
-            ...deliveryData,
-            deliveryCost: updatedDeliveryCost,
-        };
-        const result = await DeliveryServices.updateDeliveryService(updatedDataWithCost);
+        const result = await DeliveryServices.updateDeliveryService(deliveryData);
         return res.json({
             success: true,
             delivery: result,
