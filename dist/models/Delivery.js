@@ -7,11 +7,12 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const DeliverySchema = new mongoose_1.default.Schema({
     deliveryId: {
         type: String,
+        required: true,
     },
     receiverId: {
         type: String,
     },
-    senderId: {
+    userId: {
         type: String,
         required: true,
     },
@@ -21,55 +22,51 @@ const DeliverySchema = new mongoose_1.default.Schema({
     receiver: {
         type: String,
     },
-    quantity: {
+    delivery_quantity: {
         type: Number,
         required: true,
     },
     phoneNumber: {
         type: String,
     },
-    size: {
+    package_size: {
         type: String,
     },
-    type: {
-        type: String,
-    },
-    parcel: {
+    delivery_type: {
         type: String,
     },
     dropoffLocation: {
         type: Object,
-        required: true,
     },
-    notes: {
+    delivery_notes: {
         type: String,
-        maxLength: 255,
     },
     pickupLocation: {
-        type: Array,
-    },
-    currentHandler: {
         type: Object,
     },
-    scheduledHandler: {
+    current_handler: {
+        type: Object,
+    },
+    scheduled_handler: {
         type: String || undefined,
     },
-    deliveryTime: {
+    delivery_time: {
         type: String,
     },
-    deliveryDate: {
+    delivery_date: {
         type: String,
     },
-    dropOffCost: {
+    drop_off_cost: {
         type: Object,
     },
-    pickUpCost: {
+    pick_up_cost: {
         type: Object,
     },
-    deliveryCost: {
+    delivery_cost: {
         type: Number,
+        required: true,
     },
-    status: {
+    delivery_status: {
         type: Object,
         default: {
             value: 'In Process',

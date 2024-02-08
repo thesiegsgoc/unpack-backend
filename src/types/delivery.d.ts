@@ -8,27 +8,24 @@ interface DeliveryRequestBody {
   deliveryId?: string
   deliveryId: string
   receiverId?: string
-  senderId: string
+  userId: string
   partnerId?: string
   receiver?: string
   quantity: number
   phoneNumber?: string
-  size?: string
-  type?: string
+  package_size?: string
+  delivery_type?: string
   parcel?: string
-  dropoffLocation: {
-    latitude: number
-    longitude: number
-  }
+  dropoffLocation: LocationData
   notes?: string
-  pickupLocation?: Array<any>
+  pickupLocation: LocationData
   currentHandler?: any
   scheduledHandler?: string | undefined
   deliveryTime?: string
   deliveryDate?: string
   dropOffCost?: any
   pickUpCost?: any
-  deliveryCost?: number
+  delivery_cost: number
   status?: any
   orderId?: string
   vendorId?: string

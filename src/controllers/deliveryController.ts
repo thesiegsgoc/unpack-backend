@@ -2,6 +2,7 @@ import Cryptr from 'cryptr'
 import DeliveryModel from '../models/Delivery'
 import { Request, Response } from 'express'
 import * as DeliveryServices from '../services/deliveryService'
+import { calculateDeliveryCostService } from '../services/pricingService'
 
 export const createDeliveryController = async (
   req: Request<{}, {}, DeliveryRequestBody>,
@@ -9,7 +10,13 @@ export const createDeliveryController = async (
 ) => {
   try {
     const deliveryData = req.body
-    const result = await DeliveryServices.createDeliveryService(deliveryData)
+    const deliveryCost = await calculateDeliveryCostService(deliveryData)
+    const updatedDataWithCost = { ...deliveryData, delivery_cost: deliveryCost }
+    console.log(updatedDataWithCost)
+    const result = await DeliveryServices.createDeliveryService(
+      updatedDataWithCost
+    )
+    console.log(result)
     return res.json({
       success: true,
       message: 'Delivery ordered successfully',
@@ -26,7 +33,16 @@ export const updateDeliveryController = async (
 ) => {
   try {
     const deliveryData = req.body
-    const result = await DeliveryServices.updateDeliveryService(deliveryData)
+    // Recalculate delivery cost in case any relevant details (like locations or package size) have changed
+    const updatedDeliveryCost = await calculateDeliveryCostService(deliveryData)
+    // Update delivery data with the new cost
+    const updatedDataWithCost = {
+      ...deliveryData,
+      deliveryCost: updatedDeliveryCost,
+    }
+    const result = await DeliveryServices.updateDeliveryService(
+      updatedDataWithCost
+    )
     return res.json({
       success: true,
       delivery: result,

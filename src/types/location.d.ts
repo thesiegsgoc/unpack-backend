@@ -1,7 +1,14 @@
 type LocationData = {
-  userId: string // Unique identifier for the user (driver or rider)
+  userId?: string
+  usertype?: 'driver' | 'user'
+  location: {
+    latitude: number
+    longitude: number
+  }
+  address: string
+}
+
+type Location = {
   latitude: number
   longitude: number
-  usertype: string // 'user' or 'driver'
-  timestamp?: Date
 }
