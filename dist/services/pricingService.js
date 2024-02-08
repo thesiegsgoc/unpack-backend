@@ -8,7 +8,7 @@ const axios_1 = __importDefault(require("axios"));
 const config_1 = __importDefault(require("../config"));
 const googleMapsApiKey = config_1.default.GOOGLE_MAPS_API_KEY;
 const calculateDistanceService = async (pickupLocation, dropoffLocation) => {
-    // Extract latitude and longitude from the location details
+    console.log(pickupLocation);
     const pickupLat = pickupLocation.geometry.location.lat;
     const pickupLng = pickupLocation.geometry.location.lng;
     const deliveryLat = dropoffLocation.geometry.location.lat;
@@ -33,6 +33,7 @@ const calculateDistanceService = async (pickupLocation, dropoffLocation) => {
 exports.calculateDistanceService = calculateDistanceService;
 const calculateDeliveryCostService = async (deliveryRequest) => {
     const { pickupLocation, dropoffLocation, package_size, delivery_type } = deliveryRequest;
+    console.log(deliveryRequest);
     const distance = await (0, exports.calculateDistanceService)(pickupLocation, dropoffLocation);
     let cost = 10; // Base cost
     cost += distance * 0.5; // Add cost based on distance

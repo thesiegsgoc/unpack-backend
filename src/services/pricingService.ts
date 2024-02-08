@@ -19,7 +19,7 @@ export const calculateDistanceService = async (
   pickupLocation: LocationDetails,
   dropoffLocation: LocationDetails
 ): Promise<number> => {
-  // Extract latitude and longitude from the location details
+  console.log(pickupLocation)
   const pickupLat = pickupLocation.geometry.location.lat
   const pickupLng = pickupLocation.geometry.location.lng
   const deliveryLat = dropoffLocation.geometry.location.lat
@@ -57,6 +57,7 @@ export const calculateDeliveryCostService = async (
   const { pickupLocation, dropoffLocation, package_size, delivery_type } =
     deliveryRequest
 
+  console.log(deliveryRequest)
   const distance = await calculateDistanceService(
     pickupLocation,
     dropoffLocation
