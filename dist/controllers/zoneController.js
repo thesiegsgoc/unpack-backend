@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deliveryCostController = exports.assignHandlerController = exports.updateZoneHandlerAvailabilityController = exports.deleteZoneHandlerController = exports.addZoneHandlerController = exports.deleteZoneController = exports.updateZoneInfoController = exports.registerZoneController = exports.getAllZonesController = void 0;
+exports.deliveryCostController = exports.assignHandlerController = exports.updateZoneHandlerAvailabilityController = exports.deleteZoneHandlerController = exports.addZoneHandlerController = exports.deleteZoneController = exports.updateZoneInfoController = exports.registerZoneController = exports.getClosestZoneController = exports.getAllZonesController = void 0;
 const zoneService_1 = require("../services/zoneService");
 const getAllZonesController = async (req, res) => {
     try {
@@ -16,6 +16,47 @@ const getAllZonesController = async (req, res) => {
     }
 };
 exports.getAllZonesController = getAllZonesController;
+const getClosestZoneController = async (req, res) => {
+    try {
+        // Assuming the request body has a structure { location: { latitude: number, longitude: number } }
+        const { location } = req.body;
+        // Validate the presence of latitude and longitude in the request
+        if (!location ||
+            typeof location.latitude !== 'number' ||
+            typeof location.longitude !== 'number') {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid location data. Please provide latitude and longitude.',
+            });
+        }
+        // Convert the request's location data into the format expected by the service
+        const coordinates = [
+            location.latitude,
+            location.longitude,
+        ];
+        // Fetch all zones to pass their centers to the service
+        const zones = await (0, zoneService_1.getAllZonesService)();
+        const zoneCenters = zones.reduce((acc, zone) => {
+            acc[zone.zoneName] = [
+                zone.centralLocation.latitude,
+                zone.centralLocation.longitude,
+            ];
+            return acc;
+        }, {});
+        // Determine the closest zone
+        const closestZone = await (0, zoneService_1.determineClosestZoneService)(coordinates, zoneCenters);
+        // Respond with the closest zone name
+        res.json({
+            success: true,
+            closestZone: closestZone,
+            message: 'Closest zone determined successfully.',
+        });
+    }
+    catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+exports.getClosestZoneController = getClosestZoneController;
 const registerZoneController = async (req, res) => {
     try {
         const { zoneName, rate, centralLocation } = req.body;

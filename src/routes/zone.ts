@@ -13,10 +13,12 @@ import {
   assignHandlerController as assignHandler,
   deliveryCostController as deliveryCost,
   getAllZonesController,
+  getClosestZoneController,
 } from '../controllers/zoneController'
 
 // Implement the user routes:
 router.get('/zones', getAllZonesController)
+router.get('/zone/get-closest-zone', getClosestZoneController)
 router.post('/zone/register', registerZone)
 router.post('/zone/add-zone-handler', addZoneHandler)
 router.put('/zone/delete-zone-handler', deleteZoneHandler)

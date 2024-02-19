@@ -9,6 +9,7 @@ import {
   updateZoneHandlerAvailabilityService,
   assignHandlerService,
   deliveryCostService,
+  determineClosestZoneService,
 } from '../services/zoneService'
 
 export const getAllZonesController = async (req: Request, res: Response) => {
@@ -18,6 +19,60 @@ export const getAllZonesController = async (req: Request, res: Response) => {
       success: true,
       body: zones,
       message: 'All zones retrieved successfully.',
+    })
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+}
+
+export const getClosestZoneController = async (req: Request, res: Response) => {
+  try {
+    // Assuming the request body has a structure { location: { latitude: number, longitude: number } }
+    const { location } = req.body
+
+    // Validate the presence of latitude and longitude in the request
+    if (
+      !location ||
+      typeof location.latitude !== 'number' ||
+      typeof location.longitude !== 'number'
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'Invalid location data. Please provide latitude and longitude.',
+      })
+    }
+
+    // Convert the request's location data into the format expected by the service
+    const coordinates: [number, number] = [
+      location.latitude,
+      location.longitude,
+    ]
+
+    // Fetch all zones to pass their centers to the service
+    const zones = await getAllZonesService()
+    const zoneCenters: Record<string, [number, number]> = zones.reduce(
+      (acc: any, zone: any) => {
+        acc[zone.zoneName] = [
+          zone.centralLocation.latitude,
+          zone.centralLocation.longitude,
+        ]
+        return acc
+      },
+      {}
+    )
+
+    // Determine the closest zone
+    const closestZone = await determineClosestZoneService(
+      coordinates,
+      zoneCenters
+    )
+
+    // Respond with the closest zone name
+    res.json({
+      success: true,
+      closestZone: closestZone,
+      message: 'Closest zone determined successfully.',
     })
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message })
