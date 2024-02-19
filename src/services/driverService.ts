@@ -142,3 +142,43 @@ export const getAllAvailableDriversService = async (): Promise<any[]> => {
     throw new Error(`Failed to fetch available drivers: ${error.message}`)
   }
 }
+
+/**
+ * Asynchronously assigns an available driver within a specified zone.
+ * @param pickupZone The zone from which a driver is to be assigned.
+ * @returns A promise that resolves with the assigned driver or undefined if no available driver is found.
+ */
+export const assignDriverService = async (
+  pickupZone: string
+): Promise<IDriver | undefined | any> => {
+  try {
+    // Find all available drivers in the specified zone
+    const availableDrivers = await DriverModel.find({
+      zone: pickupZone,
+      availability: 'available', // Adjust based on how availability is tracked
+    })
+
+    if (availableDrivers.length === 0) {
+      // No available drivers found
+      return undefined
+    }
+
+    // For simplicity, assign the first available driver
+    // In a real application, you might want to use more sophisticated logic here
+    const assignedDriver = availableDrivers[0]
+
+    // Update the assigned driver's availability or any other relevant status in the database
+    // For example, marking them as not available
+    await DriverModel.updateOne(
+      { _id: assignedDriver._id },
+      {
+        availability: 'unavailable', // Adjust based on your model
+      }
+    )
+
+    return assignedDriver
+  } catch (error) {
+    console.error('Failed to assign a driver:', error)
+    throw error // Or handle it according to your application's error handling policy
+  }
+}

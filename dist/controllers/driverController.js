@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllAvailableDriversController = exports.isDriverAvailableController = exports.deleteDriverController = exports.updateDriverController = exports.getAllDriversController = exports.getDriverDetailsController = exports.loginDriverController = exports.createDriverController = void 0;
+exports.assignDriverController = exports.getAllAvailableDriversController = exports.isDriverAvailableController = exports.deleteDriverController = exports.updateDriverController = exports.getAllDriversController = exports.getDriverDetailsController = exports.loginDriverController = exports.createDriverController = void 0;
 const DriverServices = __importStar(require("../services/driverService"));
 const createDriverController = async (req, res) => {
     try {
@@ -163,3 +163,40 @@ const getAllAvailableDriversController = async (req, res) => {
     }
 };
 exports.getAllAvailableDriversController = getAllAvailableDriversController;
+const assignDriverController = async (req, res) => {
+    try {
+        // Extract pickupZone from request body or query
+        // This depends on how the client is expected to send the pickup zone information
+        const { pickupZone } = req.body; // Or req.query if using query parameters
+        // Validate the pickupZone if necessary
+        if (!pickupZone) {
+            return res.status(400).json({
+                success: false,
+                message: 'Pickup zone is required.',
+            });
+        }
+        // Call the service to assign a driver
+        const assignedDriver = await DriverServices.assignDriverService(pickupZone);
+        if (!assignedDriver) {
+            // If no driver could be assigned
+            return res.status(404).json({
+                success: false,
+                message: 'No available drivers found for the specified zone.',
+            });
+        }
+        // Respond with the assigned driver
+        res.json({
+            success: true,
+            message: 'Driver assigned successfully.',
+            driver: assignedDriver,
+        });
+    }
+    catch (error) {
+        // Handling errors from the service call
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+exports.assignDriverController = assignDriverController;

@@ -152,3 +152,43 @@ export const getAllAvailableDriversController = async (
     res.status(500).json({ success: false, message: error.message })
   }
 }
+
+export const assignDriverController = async (req: Request, res: Response) => {
+  try {
+    // Extract pickupZone from request body or query
+    // This depends on how the client is expected to send the pickup zone information
+    const { pickupZone } = req.body // Or req.query if using query parameters
+
+    // Validate the pickupZone if necessary
+    if (!pickupZone) {
+      return res.status(400).json({
+        success: false,
+        message: 'Pickup zone is required.',
+      })
+    }
+
+    // Call the service to assign a driver
+    const assignedDriver = await DriverServices.assignDriverService(pickupZone)
+
+    if (!assignedDriver) {
+      // If no driver could be assigned
+      return res.status(404).json({
+        success: false,
+        message: 'No available drivers found for the specified zone.',
+      })
+    }
+
+    // Respond with the assigned driver
+    res.json({
+      success: true,
+      message: 'Driver assigned successfully.',
+      driver: assignedDriver,
+    })
+  } catch (error: any) {
+    // Handling errors from the service call
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    })
+  }
+}

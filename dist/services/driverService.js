@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllAvailableDriversService = exports.isDriverAvailableService = exports.deleteDriverService = exports.updateDriverService = exports.getAllDriversService = exports.getDriverService = exports.loginDriverService = exports.registerDriverService = void 0;
+exports.assignDriverService = exports.getAllAvailableDriversService = exports.isDriverAvailableService = exports.deleteDriverService = exports.updateDriverService = exports.getAllDriversService = exports.getDriverService = exports.loginDriverService = exports.registerDriverService = void 0;
 //CRUD Driver
 const db_1 = __importDefault(require("../util/db"));
 const argon2_1 = __importDefault(require("argon2"));
@@ -126,3 +126,35 @@ const getAllAvailableDriversService = async () => {
     }
 };
 exports.getAllAvailableDriversService = getAllAvailableDriversService;
+/**
+ * Asynchronously assigns an available driver within a specified zone.
+ * @param pickupZone The zone from which a driver is to be assigned.
+ * @returns A promise that resolves with the assigned driver or undefined if no available driver is found.
+ */
+const assignDriverService = async (pickupZone) => {
+    try {
+        // Find all available drivers in the specified zone
+        const availableDrivers = await driver_1.default.find({
+            zone: pickupZone,
+            availability: 'available', // Adjust based on how availability is tracked
+        });
+        if (availableDrivers.length === 0) {
+            // No available drivers found
+            return undefined;
+        }
+        // For simplicity, assign the first available driver
+        // In a real application, you might want to use more sophisticated logic here
+        const assignedDriver = availableDrivers[0];
+        // Update the assigned driver's availability or any other relevant status in the database
+        // For example, marking them as not available
+        await driver_1.default.updateOne({ _id: assignedDriver._id }, {
+            availability: 'unavailable', // Adjust based on your model
+        });
+        return assignedDriver;
+    }
+    catch (error) {
+        console.error('Failed to assign a driver:', error);
+        throw error; // Or handle it according to your application's error handling policy
+    }
+};
+exports.assignDriverService = assignDriverService;

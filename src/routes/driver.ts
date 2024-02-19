@@ -18,4 +18,6 @@ router.get(
   DriverController.isDriverAvailableController
 )
 
+router.post('/driver/assign', DriverController.assignDriverController)
+
 export default router

@@ -37,4 +37,5 @@ router.get('/drivers', DriverController.getAllDriversController);
 router.get('/driver/:userId', DriverController.getDriverDetailsController);
 router.get('/drivers/available', DriverController.getAllAvailableDriversController);
 router.get('/driver/availability/:driverId', DriverController.isDriverAvailableController);
+router.post('/driver/assign', DriverController.assignDriverController);
 exports.default = router;
