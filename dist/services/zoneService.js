@@ -3,11 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deliveryCostService = exports.assignHandlerService = exports.updateZoneHandlerAvailabilityService = exports.deleteZoneHandlerService = exports.addZoneHandlerService = exports.deleteZoneService = exports.updateZoneInfoService = exports.registerZoneService = exports.getAllZonesService = void 0;
+exports.determineClosestZoneService = exports.deliveryCostService = exports.assignHandlerService = exports.updateZoneHandlerAvailabilityService = exports.deleteZoneHandlerService = exports.addZoneHandlerService = exports.deleteZoneService = exports.updateZoneInfoService = exports.registerZoneService = exports.getAllZonesService = void 0;
 const Zone_1 = __importDefault(require("../models/Zone"));
 const db_1 = __importDefault(require("../util/db"));
 const geolocation_utils_1 = require("geolocation-utils");
 const scheduling_1 = require("../util/scheduling");
+const pricingService_1 = require("./pricingService");
 const ZONE_TO_ZONE_COST = {
     'Temeke-Ilala': 2000,
     'Temeke-Bunju': 5000,
@@ -151,3 +152,36 @@ const deliveryCostService = async (pickUpLocation, dropOffLocation, deliveryType
     };
 };
 exports.deliveryCostService = deliveryCostService;
+// Revised determineClosestZoneService function that uses calculateDistanceService
+async function determineClosestZoneService(coordinates, zoneCenters) {
+    let minDistance = Infinity;
+    let closestZone = '';
+    // Convert coordinates to the expected LocationDetails format
+    const locationDetails = {
+        geometry: {
+            location: {
+                lat: coordinates[0],
+                lng: coordinates[1],
+            },
+        },
+    };
+    for (const [zone, center] of Object.entries(zoneCenters)) {
+        // Convert each zone center to the expected LocationDetails format
+        const centerDetails = {
+            geometry: {
+                location: {
+                    lat: center[0],
+                    lng: center[1],
+                },
+            },
+        };
+        // Since calculateDistanceService is async, use await to get the result
+        const distance = await (0, pricingService_1.calculateDistanceService)(locationDetails, centerDetails);
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestZone = zone;
+        }
+    }
+    return closestZone;
+}
+exports.determineClosestZoneService = determineClosestZoneService;

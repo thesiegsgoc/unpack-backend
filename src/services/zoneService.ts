@@ -2,6 +2,7 @@ import Zone from '../models/Zone'
 import db from '../util/db'
 import { distanceTo } from 'geolocation-utils'
 import { getDeliveryCostDetails } from '../util/scheduling'
+import { calculateDistanceService } from './pricingService'
 
 const ZONE_TO_ZONE_COST: Record<string, number> = {
   'Temeke-Ilala': 2000,
@@ -214,4 +215,56 @@ export const deliveryCostService = async (
     dropOffCost: dropOffCostDetails.cost,
     totalCost,
   }
+}
+
+// Revised determineClosestZoneService function that uses calculateDistanceService
+export async function determineClosestZoneService(
+  coordinates: [number, number],
+  zoneCenters: Record<string, [number, number]>
+): Promise<string> {
+  let minDistance = Infinity
+  let closestZone = ''
+
+  type LocationDetails = {
+    geometry: {
+      location: {
+        lat: number
+        lng: number
+      }
+    }
+  }
+
+  // Convert coordinates to the expected LocationDetails format
+  const locationDetails: LocationDetails = {
+    geometry: {
+      location: {
+        lat: coordinates[0],
+        lng: coordinates[1],
+      },
+    },
+  }
+
+  for (const [zone, center] of Object.entries(zoneCenters)) {
+    // Convert each zone center to the expected LocationDetails format
+    const centerDetails: LocationDetails = {
+      geometry: {
+        location: {
+          lat: center[0],
+          lng: center[1],
+        },
+      },
+    }
+
+    // Since calculateDistanceService is async, use await to get the result
+    const distance = await calculateDistanceService(
+      locationDetails,
+      centerDetails
+    )
+    if (distance < minDistance) {
+      minDistance = distance
+      closestZone = zone
+    }
+  }
+
+  return closestZone
 }

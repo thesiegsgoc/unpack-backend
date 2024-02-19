@@ -43,7 +43,6 @@ const PARTNERS = [];
        when there is no handler, set it to the admin. S/he should look for one
        and assign it to the delivery.
     4. Determine the people in the list and move them in order.
-       
 */
 const getZone = async (location) => {
     const latitude = location.latitude || location.lat;
