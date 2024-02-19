@@ -1,5 +1,3 @@
-import Cryptr from 'cryptr'
-import DeliveryModel from '../models/Delivery'
 import { Request, Response } from 'express'
 import * as DeliveryServices from '../services/deliveryService'
 import { calculateDeliveryCostService } from '../services/pricingService'

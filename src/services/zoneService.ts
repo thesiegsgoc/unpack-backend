@@ -12,6 +12,15 @@ const ZONE_TO_ZONE_COST: Record<string, number> = {
   'Ilala-Bunju': 8000,
 }
 
+export const getAllZonesService = async () => {
+  try {
+    const zones = await Zone.find()
+    return zones
+  } catch (error: any) {
+    throw new Error('Failed to retrieve zone', error.message)
+  }
+}
+
 export const registerZoneService = async (
   zoneName: string,
   rate: number,

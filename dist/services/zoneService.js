@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deliveryCostService = exports.assignHandlerService = exports.updateZoneHandlerAvailabilityService = exports.deleteZoneHandlerService = exports.addZoneHandlerService = exports.deleteZoneService = exports.updateZoneInfoService = exports.registerZoneService = void 0;
+exports.deliveryCostService = exports.assignHandlerService = exports.updateZoneHandlerAvailabilityService = exports.deleteZoneHandlerService = exports.addZoneHandlerService = exports.deleteZoneService = exports.updateZoneInfoService = exports.registerZoneService = exports.getAllZonesService = void 0;
 const Zone_1 = __importDefault(require("../models/Zone"));
 const db_1 = __importDefault(require("../util/db"));
 const geolocation_utils_1 = require("geolocation-utils");
@@ -16,6 +16,16 @@ const ZONE_TO_ZONE_COST = {
     'Bunju-Temeke': 5000,
     'Ilala-Bunju': 8000,
 };
+const getAllZonesService = async () => {
+    try {
+        const zones = await Zone_1.default.find();
+        return zones;
+    }
+    catch (error) {
+        throw new Error('Failed to retrieve zone', error.message);
+    }
+};
+exports.getAllZonesService = getAllZonesService;
 const registerZoneService = async (zoneName, rate, centralLocation) => {
     const existingZone = await db_1.default.zones.findOne({ zoneName: zoneName });
     if (existingZone) {

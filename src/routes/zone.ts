@@ -12,12 +12,11 @@ import {
   updateZoneHandlerAvailabilityController as updateZoneHandlerAvailability,
   assignHandlerController as assignHandler,
   deliveryCostController as deliveryCost,
+  getAllZonesController,
 } from '../controllers/zoneController'
 
 // Implement the user routes:
-router.get('/zones', (req: Request, res: Response) => {
-  res.send('Get all zones')
-})
+router.get('/zones', getAllZonesController)
 router.post('/zone/register', registerZone)
 router.post('/zone/add-zone-handler', addZoneHandler)
 router.put('/zone/delete-zone-handler', deleteZoneHandler)

@@ -57,7 +57,7 @@ export const calculateDeliveryCostService = async (
   const { pickupLocation, dropoffLocation, package_size, delivery_type } =
     deliveryRequest
 
-  console.log(deliveryRequest)
+  //TODO: Replace this with the formular for calculating distance from the demo
   const distance = await calculateDistanceService(
     pickupLocation,
     dropoffLocation

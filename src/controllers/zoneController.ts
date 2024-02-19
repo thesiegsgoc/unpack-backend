@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import {
+  getAllZonesService,
   registerZoneService,
   updateZoneInfoService,
   deleteZoneService,
@@ -9,6 +10,19 @@ import {
   assignHandlerService,
   deliveryCostService,
 } from '../services/zoneService'
+
+export const getAllZonesController = async (req: Request, res: Response) => {
+  try {
+    const zones = await getAllZonesService()
+    res.json({
+      success: true,
+      body: zones,
+      message: 'All zones retrieved successfully.',
+    })
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+}
 
 export const registerZoneController = async (req: Request, res: Response) => {
   try {

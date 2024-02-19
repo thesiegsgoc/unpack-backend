@@ -33,7 +33,7 @@ const calculateDistanceService = async (pickupLocation, dropoffLocation) => {
 exports.calculateDistanceService = calculateDistanceService;
 const calculateDeliveryCostService = async (deliveryRequest) => {
     const { pickupLocation, dropoffLocation, package_size, delivery_type } = deliveryRequest;
-    console.log(deliveryRequest);
+    //TODO: Replace this with the formular for calculating distance from the demo
     const distance = await (0, exports.calculateDistanceService)(pickupLocation, dropoffLocation);
     let cost = 10; // Base cost
     cost += distance * 0.5; // Add cost based on distance

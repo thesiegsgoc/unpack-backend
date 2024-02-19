@@ -1,7 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deliveryCostController = exports.assignHandlerController = exports.updateZoneHandlerAvailabilityController = exports.deleteZoneHandlerController = exports.addZoneHandlerController = exports.deleteZoneController = exports.updateZoneInfoController = exports.registerZoneController = void 0;
+exports.deliveryCostController = exports.assignHandlerController = exports.updateZoneHandlerAvailabilityController = exports.deleteZoneHandlerController = exports.addZoneHandlerController = exports.deleteZoneController = exports.updateZoneInfoController = exports.registerZoneController = exports.getAllZonesController = void 0;
 const zoneService_1 = require("../services/zoneService");
+const getAllZonesController = async (req, res) => {
+    try {
+        const zones = await (0, zoneService_1.getAllZonesService)();
+        res.json({
+            success: true,
+            body: zones,
+            message: 'All zones retrieved successfully.',
+        });
+    }
+    catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+exports.getAllZonesController = getAllZonesController;
 const registerZoneController = async (req, res) => {
     try {
         const { zoneName, rate, centralLocation } = req.body;

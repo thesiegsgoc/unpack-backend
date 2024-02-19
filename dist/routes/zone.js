@@ -9,9 +9,7 @@ const router = express_1.default.Router();
 // Importing controller functions
 const zoneController_1 = require("../controllers/zoneController");
 // Implement the user routes:
-router.get('/zones', (req, res) => {
-    res.send('Get all zones');
-});
+router.get('/zones', zoneController_1.getAllZonesController);
 router.post('/zone/register', zoneController_1.registerZoneController);
 router.post('/zone/add-zone-handler', zoneController_1.addZoneHandlerController);
 router.put('/zone/delete-zone-handler', zoneController_1.deleteZoneHandlerController);
