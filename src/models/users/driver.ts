@@ -35,5 +35,7 @@ const DriverSchema = new mongoose.Schema({
   },
 })
 
+DriverSchema.index({ currentLocation: '2dsphere' })
+
 const DriverModel = UserModel.discriminator<IUser>('Driver', DriverSchema)
 export default DriverModel

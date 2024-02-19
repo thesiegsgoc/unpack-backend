@@ -35,4 +35,6 @@ router.delete('/driver/delete', DriverController.deleteDriverController);
 router.put('/driver/update', DriverController.updateDriverController);
 router.get('/drivers', DriverController.getAllDriversController);
 router.get('/driver/:userId', DriverController.getDriverDetailsController);
+router.get('/drivers/available', DriverController.getAllAvailableDriversController);
+router.get('/driver/availability/:driverId', DriverController.isDriverAvailableController);
 exports.default = router;

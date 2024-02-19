@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteDriverService = exports.updateDriverService = exports.getAllDriversService = exports.getDriverService = exports.loginDriverService = exports.registerDriverService = void 0;
+exports.getAllAvailableDriversService = exports.isDriverAvailableService = exports.deleteDriverService = exports.updateDriverService = exports.getAllDriversService = exports.getDriverService = exports.loginDriverService = exports.registerDriverService = void 0;
 //CRUD Driver
 const db_1 = __importDefault(require("../util/db"));
 const argon2_1 = __importDefault(require("argon2"));
@@ -94,3 +94,35 @@ const deleteDriverService = async (driverId) => {
     return { message: 'Driver deleted successfully.' };
 };
 exports.deleteDriverService = deleteDriverService;
+/**
+ * Checks if a driver is available.
+ * @param driverId The ID of the driver to check.
+ * @returns True if the driver is available, false otherwise.
+ */
+// Example usage within isDriverAvailableService
+const isDriverAvailableService = async (driverId) => {
+    const driver = (await driver_1.default.findById(driverId));
+    if (!driver) {
+        throw new Error(`Driver with ID ${driverId} not found.`);
+    }
+    const isAvailable = driver.availability === 'available';
+    return isAvailable;
+};
+exports.isDriverAvailableService = isDriverAvailableService;
+/**
+ * Fetches all available drivers.
+ * @returns A promise that resolves with an array of available drivers.
+ */
+const getAllAvailableDriversService = async () => {
+    try {
+        // Assuming 'available' is the value indicating availability in the 'availability' field
+        const availableDrivers = await driver_1.default.find({
+            availability: 'available',
+        });
+        return availableDrivers;
+    }
+    catch (error) {
+        throw new Error(`Failed to fetch available drivers: ${error.message}`);
+    }
+};
+exports.getAllAvailableDriversService = getAllAvailableDriversService;

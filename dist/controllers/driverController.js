@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteDriverController = exports.updateDriverController = exports.getAllDriversController = exports.getDriverDetailsController = exports.loginDriverController = exports.createDriverController = void 0;
+exports.getAllAvailableDriversController = exports.isDriverAvailableController = exports.deleteDriverController = exports.updateDriverController = exports.getAllDriversController = exports.getDriverDetailsController = exports.loginDriverController = exports.createDriverController = void 0;
 const DriverServices = __importStar(require("../services/driverService"));
 const createDriverController = async (req, res) => {
     try {
@@ -124,3 +124,42 @@ const deleteDriverController = async (req, res) => {
     }
 };
 exports.deleteDriverController = deleteDriverController;
+const isDriverAvailableController = async (req, res) => {
+    try {
+        // Extracting driverId from request parameters
+        const { driverId } = req.params;
+        // Validate the driverId if necessary
+        if (!driverId) {
+            return res
+                .status(400)
+                .json({ success: false, message: 'Driver ID is required.' });
+        }
+        // Call the service to check if the driver is available
+        const isAvailable = await DriverServices.isDriverAvailableService(driverId);
+        // Respond back with the availability status
+        res.json({
+            success: true,
+            isAvailable,
+            message: `Driver with ID ${driverId} is ${isAvailable ? 'available' : 'unavailable'}.`,
+        });
+    }
+    catch (error) {
+        // Handling errors from the service call
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+exports.isDriverAvailableController = isDriverAvailableController;
+const getAllAvailableDriversController = async (req, res) => {
+    try {
+        const availableDrivers = await DriverServices.getAllAvailableDriversService();
+        res.json({
+            success: true,
+            drivers: availableDrivers,
+            message: 'Available drivers retrieved successfully.',
+        });
+    }
+    catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+exports.getAllAvailableDriversController = getAllAvailableDriversController;

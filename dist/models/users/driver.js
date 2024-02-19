@@ -38,5 +38,6 @@ const DriverSchema = new mongoose_1.default.Schema({
         safetyAndComplianceIndicators: [{ type: String }],
     },
 });
+DriverSchema.index({ currentLocation: '2dsphere' });
 const DriverModel = user_1.default.discriminator('Driver', DriverSchema);
 exports.default = DriverModel;

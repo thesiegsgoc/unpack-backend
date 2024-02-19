@@ -103,3 +103,52 @@ export const deleteDriverController = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: 'Internal Server Error' })
   }
 }
+
+export const isDriverAvailableController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    // Extracting driverId from request parameters
+    const { driverId } = req.params
+
+    // Validate the driverId if necessary
+    if (!driverId) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Driver ID is required.' })
+    }
+
+    // Call the service to check if the driver is available
+    const isAvailable = await DriverServices.isDriverAvailableService(driverId)
+
+    // Respond back with the availability status
+    res.json({
+      success: true,
+      isAvailable,
+      message: `Driver with ID ${driverId} is ${
+        isAvailable ? 'available' : 'unavailable'
+      }.`,
+    })
+  } catch (error: any) {
+    // Handling errors from the service call
+    res.status(500).json({ success: false, message: error.message })
+  }
+}
+
+export const getAllAvailableDriversController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const availableDrivers =
+      await DriverServices.getAllAvailableDriversService()
+    res.json({
+      success: true,
+      drivers: availableDrivers,
+      message: 'Available drivers retrieved successfully.',
+    })
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+}
