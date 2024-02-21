@@ -2,16 +2,7 @@ import Zone from '../models/Zone'
 import db from '../util/db'
 import { distanceTo } from 'geolocation-utils'
 import { getDeliveryCostDetails } from '../util/scheduling'
-import { calculateDistanceService } from './pricingService'
-
-const ZONE_TO_ZONE_COST: Record<string, number> = {
-  'Temeke-Ilala': 2000,
-  'Temeke-Bunju': 5000,
-  'Bunju-Ilala': 8000,
-  'Ilala-Temeke': 2000,
-  'Bunju-Temeke': 5000,
-  'Ilala-Bunju': 8000,
-}
+import { calculateDistanceService } from './deliveryDistanceService'
 
 export const getAllZonesService = async () => {
   try {
@@ -192,36 +183,11 @@ export const assignHandlerService = async (location: {
   return handlerId
 }
 
-export const deliveryCostService = async (
-  pickUpLocation: any,
-  dropOffLocation: any,
-  deliveryType: string
-) => {
-  const zones = await Zone.find({})
-
-  const pickUpCostDetails: any = getDeliveryCostDetails(zones, pickUpLocation)
-  const dropOffCostDetails: any = getDeliveryCostDetails(zones, dropOffLocation)
-  //@ts-ignore
-  const zoneToZoneKey = `${pickUpCostDetails.zoneName}-${dropOffCostDetails.zoneName}`
-  const interZoneCost = ZONE_TO_ZONE_COST[zoneToZoneKey] || 0
-  //@ts-ignore
-  const totalCost =
-    pickUpCostDetails.cost + dropOffCostDetails.cost + interZoneCost
-
-  return {
-    //@ts-ignore
-    pickUpCost: pickUpCostDetails.cost,
-    //@ts-ignore
-    dropOffCost: dropOffCostDetails.cost,
-    totalCost,
-  }
-}
-
 // Revised determineClosestZoneService function that uses calculateDistanceService
 export async function determineClosestZoneService(
-  coordinates: [number, number],
-  zoneCenters: Record<string, [number, number]>
+  coordinates: [number, number]
 ): Promise<string> {
+  console.log('Getting closest zone')
   let minDistance = Infinity
   let closestZone = ''
 
@@ -234,6 +200,8 @@ export async function determineClosestZoneService(
     }
   }
 
+  console.log('Location coordinate: ', coordinates)
+
   // Convert coordinates to the expected LocationDetails format
   const locationDetails: LocationDetails = {
     geometry: {
@@ -244,6 +212,20 @@ export async function determineClosestZoneService(
     },
   }
 
+  // Fetch all zones to pass their centers to the service
+  const zones = await getAllZonesService()
+  const zoneCenters: Record<string, [number, number]> = zones.reduce(
+    (acc: any, zone: any) => {
+      acc[zone.zoneName] = [
+        zone.centralLocation.latitude,
+        zone.centralLocation.longitude,
+      ]
+      return acc
+    },
+    {}
+  )
+
+  //checking all the available zones and comparing their distance to the requested distance
   for (const [zone, center] of Object.entries(zoneCenters)) {
     // Convert each zone center to the expected LocationDetails format
     const centerDetails: LocationDetails = {
@@ -255,14 +237,18 @@ export async function determineClosestZoneService(
       },
     }
 
+    console.log('Center Location ', centerDetails, 'Zone Location: ', zone)
     // Since calculateDistanceService is async, use await to get the result
     const distance = await calculateDistanceService(
       locationDetails,
       centerDetails
     )
-    if (distance < minDistance) {
-      minDistance = distance
-      closestZone = zone
+    if (distance) {
+      if (distance < minDistance) {
+        console.log('Min Distance', minDistance)
+        minDistance = distance
+        closestZone = zone
+      }
     }
   }
 

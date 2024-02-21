@@ -153,9 +153,11 @@ const deliveryCostService = async (pickUpLocation, dropOffLocation, deliveryType
 };
 exports.deliveryCostService = deliveryCostService;
 // Revised determineClosestZoneService function that uses calculateDistanceService
-async function determineClosestZoneService(coordinates, zoneCenters) {
+async function determineClosestZoneService(coordinates) {
+    console.log('Getting closest zone');
     let minDistance = Infinity;
     let closestZone = '';
+    console.log('Location coordinate: ', coordinates);
     // Convert coordinates to the expected LocationDetails format
     const locationDetails = {
         geometry: {
@@ -165,6 +167,16 @@ async function determineClosestZoneService(coordinates, zoneCenters) {
             },
         },
     };
+    // Fetch all zones to pass their centers to the service
+    const zones = await (0, exports.getAllZonesService)();
+    const zoneCenters = zones.reduce((acc, zone) => {
+        acc[zone.zoneName] = [
+            zone.centralLocation.latitude,
+            zone.centralLocation.longitude,
+        ];
+        return acc;
+    }, {});
+    //checking all the available zones and comparing their distance to the requested distance
     for (const [zone, center] of Object.entries(zoneCenters)) {
         // Convert each zone center to the expected LocationDetails format
         const centerDetails = {
@@ -175,11 +187,15 @@ async function determineClosestZoneService(coordinates, zoneCenters) {
                 },
             },
         };
+        console.log('Center Location ', centerDetails, 'Zone Location: ', zone);
         // Since calculateDistanceService is async, use await to get the result
         const distance = await (0, pricingService_1.calculateDistanceService)(locationDetails, centerDetails);
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestZone = zone;
+        if (distance) {
+            if (distance < minDistance) {
+                console.log('Min Distance', minDistance);
+                minDistance = distance;
+                closestZone = zone;
+            }
         }
     }
     return closestZone;

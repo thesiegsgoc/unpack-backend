@@ -27,10 +27,8 @@ export const getAllZonesController = async (req: Request, res: Response) => {
 
 export const getClosestZoneController = async (req: Request, res: Response) => {
   try {
-    // Assuming the request body has a structure { location: { latitude: number, longitude: number } }
     const { location } = req.body
 
-    // Validate the presence of latitude and longitude in the request
     if (
       !location ||
       typeof location.latitude !== 'number' ||
@@ -49,24 +47,8 @@ export const getClosestZoneController = async (req: Request, res: Response) => {
       location.longitude,
     ]
 
-    // Fetch all zones to pass their centers to the service
-    const zones = await getAllZonesService()
-    const zoneCenters: Record<string, [number, number]> = zones.reduce(
-      (acc: any, zone: any) => {
-        acc[zone.zoneName] = [
-          zone.centralLocation.latitude,
-          zone.centralLocation.longitude,
-        ]
-        return acc
-      },
-      {}
-    )
-
     // Determine the closest zone
-    const closestZone = await determineClosestZoneService(
-      coordinates,
-      zoneCenters
-    )
+    const closestZone = await determineClosestZoneService(coordinates)
 
     // Respond with the closest zone name
     res.json({
