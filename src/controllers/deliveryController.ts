@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import * as DeliveryServices from '../services/deliveryService'
-import { calculateDeliveryCostService } from '../services/pricingService'
+import { calculateDeliveryCostService } from '../services/deliveryCostService'
 
 export const calculateDeliveryCostController = async (
   req: Request<{}, {}, DeliveryRequestBody>,

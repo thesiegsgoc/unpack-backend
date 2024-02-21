@@ -2,16 +2,7 @@ import Zone from '../models/Zone'
 import db from '../util/db'
 import { distanceTo } from 'geolocation-utils'
 import { getDeliveryCostDetails } from '../util/scheduling'
-import { calculateDistanceService } from './pricingService'
-
-const ZONE_TO_ZONE_COST: Record<string, number> = {
-  'Temeke-Ilala': 2000,
-  'Temeke-Bunju': 5000,
-  'Bunju-Ilala': 8000,
-  'Ilala-Temeke': 2000,
-  'Bunju-Temeke': 5000,
-  'Ilala-Bunju': 8000,
-}
+import { calculateDistanceService } from './deliveryDistanceService'
 
 export const getAllZonesService = async () => {
   try {
@@ -190,31 +181,6 @@ export const assignHandlerService = async (location: {
   }
 
   return handlerId
-}
-
-export const deliveryCostService = async (
-  pickUpLocation: any,
-  dropOffLocation: any,
-  deliveryType: string
-) => {
-  const zones = await Zone.find({})
-
-  const pickUpCostDetails: any = getDeliveryCostDetails(zones, pickUpLocation)
-  const dropOffCostDetails: any = getDeliveryCostDetails(zones, dropOffLocation)
-  //@ts-ignore
-  const zoneToZoneKey = `${pickUpCostDetails.zoneName}-${dropOffCostDetails.zoneName}`
-  const interZoneCost = ZONE_TO_ZONE_COST[zoneToZoneKey] || 0
-  //@ts-ignore
-  const totalCost =
-    pickUpCostDetails.cost + dropOffCostDetails.cost + interZoneCost
-
-  return {
-    //@ts-ignore
-    pickUpCost: pickUpCostDetails.cost,
-    //@ts-ignore
-    dropOffCost: dropOffCostDetails.cost,
-    totalCost,
-  }
 }
 
 // Revised determineClosestZoneService function that uses calculateDistanceService
