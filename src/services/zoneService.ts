@@ -219,8 +219,7 @@ export const deliveryCostService = async (
 
 // Revised determineClosestZoneService function that uses calculateDistanceService
 export async function determineClosestZoneService(
-  coordinates: [number, number],
-  zoneCenters: Record<string, [number, number]>
+  coordinates: [number, number]
 ): Promise<string> {
   let minDistance = Infinity
   let closestZone = ''
@@ -234,6 +233,8 @@ export async function determineClosestZoneService(
     }
   }
 
+  console.log('Location coordinate: ', coordinates)
+
   // Convert coordinates to the expected LocationDetails format
   const locationDetails: LocationDetails = {
     geometry: {
@@ -244,6 +245,20 @@ export async function determineClosestZoneService(
     },
   }
 
+  // Fetch all zones to pass their centers to the service
+  const zones = await getAllZonesService()
+  const zoneCenters: Record<string, [number, number]> = zones.reduce(
+    (acc: any, zone: any) => {
+      acc[zone.zoneName] = [
+        zone.centralLocation.latitude,
+        zone.centralLocation.longitude,
+      ]
+      return acc
+    },
+    {}
+  )
+
+  //checking all the available zones and comparing their distance to the requested distance
   for (const [zone, center] of Object.entries(zoneCenters)) {
     // Convert each zone center to the expected LocationDetails format
     const centerDetails: LocationDetails = {
@@ -255,14 +270,18 @@ export async function determineClosestZoneService(
       },
     }
 
+    console.log('Center Location ', centerDetails, 'Zone Location: ', zone)
     // Since calculateDistanceService is async, use await to get the result
     const distance = await calculateDistanceService(
       locationDetails,
       centerDetails
     )
-    if (distance < minDistance) {
-      minDistance = distance
-      closestZone = zone
+    if (distance) {
+      if (distance < minDistance) {
+        console.log('Min Distance', minDistance)
+        minDistance = distance
+        closestZone = zone
+      }
     }
   }
 
