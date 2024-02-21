@@ -154,6 +154,7 @@ const deliveryCostService = async (pickUpLocation, dropOffLocation, deliveryType
 exports.deliveryCostService = deliveryCostService;
 // Revised determineClosestZoneService function that uses calculateDistanceService
 async function determineClosestZoneService(coordinates) {
+    console.log('Getting closest zone');
     let minDistance = Infinity;
     let closestZone = '';
     console.log('Location coordinate: ', coordinates);
