@@ -221,6 +221,7 @@ export const deliveryCostService = async (
 export async function determineClosestZoneService(
   coordinates: [number, number]
 ): Promise<string> {
+  console.log('Getting closest zone')
   let minDistance = Infinity
   let closestZone = ''
 
