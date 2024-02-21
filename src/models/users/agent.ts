@@ -26,6 +26,9 @@ const AgentSchema = new mongoose.Schema({
   taxCertificates: {
     TIN: String,
   },
+  zone: { type: String, required: true },
+  availability: { type: Boolean, required: true, default: true },
+  isCurrentlyAssigned: { type: Boolean, required: true, default: false },
 })
 
 const AgentModel = mongoose.model<IAgent>('Agent', AgentSchema)
