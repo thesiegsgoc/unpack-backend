@@ -80,22 +80,15 @@ export const zoneToZoneCostService = async (
   return interZoneCost
 }
 
-export const deliveryCostService = async (
-  deliveryRequest: DeliveryRequestBody
+export const calculateDeliveryCostService = async (
+  deliveryRequest: any
 ): Promise<number> => {
   const { pickupLocation, dropoffLocation, pickupZone, dropoffZone } =
     deliveryRequest
 
-  // Get Zone Details for Pickup and Dropoff Locations
-  const pickupZoneDetails = await getZoneDetailsFromLocation(pickupLocation)
-  const dropoffZoneDetails = await getZoneDetailsFromLocation(dropoffLocation)
-
   // Calculate Costs
   const pickupToDropoffCost = await locationToZoneCostService(deliveryRequest)
-  const zonesCost = await zoneToZoneCostService(
-    pickupZoneDetails.zoneName,
-    dropoffZoneDetails.zoneName
-  )
+  const zonesCost = await zoneToZoneCostService(pickupZone, dropoffZone)
 
   // Assuming function to calculate cost from dropoff zone back to pickup location, if needed
   // const dropoffToPickupCost = await locationToZoneCostService({ ...deliveryRequest, pickupLocation: dropoffLocation, dropoffLocation: pickupLocation });
