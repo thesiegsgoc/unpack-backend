@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getHandlersLocationService = exports.pickupDeliveryService = exports.getDeliveryIdsService = exports.getPartnerDeliveryHistoryService = exports.getUserDeliveryHistoryService = exports.getAllDeliveriesService = exports.trackDeliveryService = exports.encryptDeliveryDetailsService = exports.updateDeliveryService = exports.createDeliveryService = void 0;
+exports.getHandlersLocationService = exports.pickupDeliveryService = exports.getDeliveryIdsService = exports.getPartnerDeliveryHistoryService = exports.getUserDeliveryHistoryService = exports.getDeliveryByIdService = exports.getAllDeliveriesService = exports.trackDeliveryService = exports.encryptDeliveryDetailsService = exports.updateDeliveryService = exports.createDeliveryService = void 0;
 const cryptr_1 = __importDefault(require("cryptr"));
 const Delivery_1 = __importDefault(require("../models/Delivery"));
 const user_1 = __importDefault(require("../models/users/user"));
@@ -158,6 +158,19 @@ const getAllDeliveriesService = async () => {
     }
 };
 exports.getAllDeliveriesService = getAllDeliveriesService;
+const getDeliveryByIdService = async (deliveryId) => {
+    try {
+        const delivery = await Delivery_1.default.findOne({ deliveryId });
+        if (!delivery) {
+            throw new Error('No deliveries found.');
+        }
+        return delivery;
+    }
+    catch (errro) {
+        throw new Error(`Error fetching delivery ${errro.message}`);
+    }
+};
+exports.getDeliveryByIdService = getDeliveryByIdService;
 const getUserDeliveryHistoryService = async (userId) => {
     const user = await user_1.default.findById(userId).populate('deliveries');
     if (!user || !user.deliveries?.length) {

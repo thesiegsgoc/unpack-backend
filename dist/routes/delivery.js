@@ -16,6 +16,7 @@ const deliveryController_1 = require("../controllers/deliveryController");
 // Versioning and plural nouns
 router.get('/deliveries', deliveryController_1.getAllDeliveriesController);
 router.post('/deliveries/calculate-delivery-cost', deliveryController_1.calculateDeliveryCostController);
+router.get('/deliveries/:deliveryId', deliveryController_1.getDeliveryByIdController);
 router.post('/deliveries/create', deliveryController_1.createDeliveryController);
 router.post('/deliveries/pickup', deliveryController_1.pickupDeliveryController);
 router.post('/deliveries/decrypt', deliveryController_1.encryptDeliveryDetailsController);

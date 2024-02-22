@@ -17,6 +17,7 @@ import {
   getHandlersLocationController as getHandlersLocation,
   getAllDeliveriesController,
   calculateDeliveryCostController,
+  getDeliveryByIdController,
 } from '../controllers/deliveryController'
 
 // TODO: return the isUserAuth middleware to the route above as bellow
@@ -30,6 +31,7 @@ router.post(
   '/deliveries/calculate-delivery-cost',
   calculateDeliveryCostController
 )
+router.get('/deliveries/:deliveryId', getDeliveryByIdController)
 router.post('/deliveries/create', createDelivery)
 router.post('/deliveries/pickup', pickupDelivery)
 router.post('/deliveries/decrypt', decryptDeliveryDetails)

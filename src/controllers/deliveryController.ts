@@ -163,6 +163,19 @@ export const getDeliveryIdsController = async (
   }
 }
 
+export const getDeliveryByIdController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { deliveryId } = req.params
+    const result = await DeliveryServices.getDeliveryByIdService(deliveryId)
+    res.json(result)
+  } catch (error: any) {
+    res.json({ success: false, message: error.message })
+  }
+}
+
 export const pickupDeliveryController = async (req: Request, res: Response) => {
   try {
     const { encryptedData, partnerId } = req.body

@@ -83,6 +83,13 @@ export const zoneToZoneCostService = async (
 export const calculateDeliveryCostService = async (
   deliveryRequest: any
 ): Promise<number> => {
+  /**
+     THINGS TO BE CONSIDERED 
+     1. pickUpLocation,
+     2. dropOffLocation,
+     3. deliveryType
+   */
+
   const { pickupLocation, dropoffLocation, pickupZone, dropoffZone } =
     deliveryRequest
 

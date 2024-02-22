@@ -223,6 +223,18 @@ export const getAllDeliveriesService = async () => {
   }
 }
 
+export const getDeliveryByIdService = async (deliveryId: string) => {
+  try {
+    const delivery = await DeliveryModel.findOne({ deliveryId })
+    if (!delivery) {
+      throw new Error('No deliveries found.')
+    }
+    return delivery
+  } catch (errro: any) {
+    throw new Error(`Error fetching delivery ${errro.message}`)
+  }
+}
+
 export const getUserDeliveryHistoryService = async (userId: string) => {
   const user = await UserModel.findById(userId).populate('deliveries')
 

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deliveryCostController = exports.assignHandlerController = exports.updateZoneHandlerAvailabilityController = exports.deleteZoneHandlerController = exports.addZoneHandlerController = exports.deleteZoneController = exports.updateZoneInfoController = exports.registerZoneController = exports.getClosestZoneController = exports.getAllZonesController = void 0;
 const zoneService_1 = require("../services/zoneService");
+const deliveryCostService_1 = require("../services/deliveryCostService");
 const getAllZonesController = async (req, res) => {
     try {
         const zones = await (0, zoneService_1.getAllZonesService)();
@@ -206,14 +207,14 @@ const assignHandlerController = async (req, res) => {
 exports.assignHandlerController = assignHandlerController;
 const deliveryCostController = async (req, res) => {
     try {
-        const { pickUpLocation, dropOffLocation, deliveryType } = req.body;
-        if (!pickUpLocation || !dropOffLocation || !deliveryType) {
+        const deliveryRequest = req.body;
+        if (!deliveryRequest) {
             return res.status(400).json({
                 success: false,
-                message: `Can't pick-up nor drop a package at an unknown location.`,
+                message: 'Delivery Request body must be provided',
             });
         }
-        const costDetails = await (0, zoneService_1.deliveryCostService)(pickUpLocation, dropOffLocation, deliveryType);
+        const costDetails = await (0, deliveryCostService_1.calculateDeliveryCostService)(deliveryRequest);
         res.json({
             success: true,
             body: costDetails,
