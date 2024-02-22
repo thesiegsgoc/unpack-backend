@@ -3,20 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.determineClosestZoneService = exports.deliveryCostService = exports.assignHandlerService = exports.updateZoneHandlerAvailabilityService = exports.deleteZoneHandlerService = exports.addZoneHandlerService = exports.deleteZoneService = exports.updateZoneInfoService = exports.registerZoneService = exports.getAllZonesService = void 0;
+exports.determineClosestZoneService = exports.assignHandlerService = exports.updateZoneHandlerAvailabilityService = exports.deleteZoneHandlerService = exports.addZoneHandlerService = exports.deleteZoneService = exports.updateZoneInfoService = exports.registerZoneService = exports.getAllZonesService = void 0;
 const Zone_1 = __importDefault(require("../models/Zone"));
 const db_1 = __importDefault(require("../util/db"));
 const geolocation_utils_1 = require("geolocation-utils");
-const scheduling_1 = require("../util/scheduling");
-const pricingService_1 = require("./pricingService");
-const ZONE_TO_ZONE_COST = {
-    'Temeke-Ilala': 2000,
-    'Temeke-Bunju': 5000,
-    'Bunju-Ilala': 8000,
-    'Ilala-Temeke': 2000,
-    'Bunju-Temeke': 5000,
-    'Ilala-Bunju': 8000,
-};
+const deliveryDistanceService_1 = require("./deliveryDistanceService");
 const getAllZonesService = async () => {
     try {
         const zones = await Zone_1.default.find();
@@ -134,24 +125,6 @@ const assignHandlerService = async (location) => {
     return handlerId;
 };
 exports.assignHandlerService = assignHandlerService;
-const deliveryCostService = async (pickUpLocation, dropOffLocation, deliveryType) => {
-    const zones = await Zone_1.default.find({});
-    const pickUpCostDetails = (0, scheduling_1.getDeliveryCostDetails)(zones, pickUpLocation);
-    const dropOffCostDetails = (0, scheduling_1.getDeliveryCostDetails)(zones, dropOffLocation);
-    //@ts-ignore
-    const zoneToZoneKey = `${pickUpCostDetails.zoneName}-${dropOffCostDetails.zoneName}`;
-    const interZoneCost = ZONE_TO_ZONE_COST[zoneToZoneKey] || 0;
-    //@ts-ignore
-    const totalCost = pickUpCostDetails.cost + dropOffCostDetails.cost + interZoneCost;
-    return {
-        //@ts-ignore
-        pickUpCost: pickUpCostDetails.cost,
-        //@ts-ignore
-        dropOffCost: dropOffCostDetails.cost,
-        totalCost,
-    };
-};
-exports.deliveryCostService = deliveryCostService;
 // Revised determineClosestZoneService function that uses calculateDistanceService
 async function determineClosestZoneService(coordinates) {
     console.log('Getting closest zone');
@@ -189,7 +162,7 @@ async function determineClosestZoneService(coordinates) {
         };
         console.log('Center Location ', centerDetails, 'Zone Location: ', zone);
         // Since calculateDistanceService is async, use await to get the result
-        const distance = await (0, pricingService_1.calculateDistanceService)(locationDetails, centerDetails);
+        const distance = await (0, deliveryDistanceService_1.calculateDistanceService)(locationDetails, centerDetails);
         if (distance) {
             if (distance < minDistance) {
                 console.log('Min Distance', minDistance);

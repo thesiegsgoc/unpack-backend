@@ -1,7 +1,6 @@
 import { Request, Response } from 'express'
 import * as DeliveryServices from '../services/deliveryService'
-import { calculateDeliveryCostService } from '../services/deliveryCostService'
-
+import { calculateDeliveryCostService } from './../services/deliveryCostService'
 export const calculateDeliveryCostController = async (
   req: Request<{}, {}, DeliveryRequestBody>,
   res: Response
@@ -161,6 +160,19 @@ export const getDeliveryIdsController = async (
     })
   } catch (error: any) {
     return res.json({ success: false, message: error.message })
+  }
+}
+
+export const getDeliveryByIdController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { deliveryId } = req.params
+    const result = await DeliveryServices.getDeliveryByIdService(deliveryId)
+    res.json(result)
+  } catch (error: any) {
+    res.json({ success: false, message: error.message })
   }
 }
 

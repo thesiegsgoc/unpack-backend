@@ -23,13 +23,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getHandlersLocationController = exports.pickupDeliveryController = exports.getDeliveryIdsController = exports.getPartnerDeliveryHistoryController = exports.getUserDeliveryHistoryController = exports.getAllDeliveriesController = exports.trackDeliveryController = exports.encryptDeliveryDetailsController = exports.updateDeliveryController = exports.createDeliveryController = exports.calculateDeliveryCostController = void 0;
+exports.getHandlersLocationController = exports.pickupDeliveryController = exports.getDeliveryByIdController = exports.getDeliveryIdsController = exports.getPartnerDeliveryHistoryController = exports.getUserDeliveryHistoryController = exports.getAllDeliveriesController = exports.trackDeliveryController = exports.encryptDeliveryDetailsController = exports.updateDeliveryController = exports.createDeliveryController = exports.calculateDeliveryCostController = void 0;
 const DeliveryServices = __importStar(require("../services/deliveryService"));
-const pricingService_1 = require("../services/pricingService");
+const deliveryCostService_1 = require("./../services/deliveryCostService");
 const calculateDeliveryCostController = async (req, res) => {
     try {
         const deliveryData = req.body;
-        const delivery_cost = await (0, pricingService_1.calculateDeliveryCostService)(deliveryData);
+        const delivery_cost = await (0, deliveryCostService_1.calculateDeliveryCostService)(deliveryData);
         return res.json({
             success: true,
             delivery_cost,
@@ -161,6 +161,17 @@ const getDeliveryIdsController = async (req, res) => {
     }
 };
 exports.getDeliveryIdsController = getDeliveryIdsController;
+const getDeliveryByIdController = async (req, res) => {
+    try {
+        const { deliveryId } = req.params;
+        const result = await DeliveryServices.getDeliveryByIdService(deliveryId);
+        res.json(result);
+    }
+    catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
+exports.getDeliveryByIdController = getDeliveryByIdController;
 const pickupDeliveryController = async (req, res) => {
     try {
         const { encryptedData, partnerId } = req.body;

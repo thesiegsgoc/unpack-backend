@@ -8,9 +8,9 @@ import {
   deleteZoneHandlerService,
   updateZoneHandlerAvailabilityService,
   assignHandlerService,
-  deliveryCostService,
   determineClosestZoneService,
 } from '../services/zoneService'
+import { calculateDeliveryCostService } from '../services/deliveryCostService'
 
 export const getAllZonesController = async (req: Request, res: Response) => {
   try {
@@ -243,20 +243,16 @@ export const assignHandlerController = async (req: Request, res: Response) => {
 
 export const deliveryCostController = async (req: Request, res: Response) => {
   try {
-    const { pickUpLocation, dropOffLocation, deliveryType } = req.body
+    const deliveryRequest = req.body
 
-    if (!pickUpLocation || !dropOffLocation || !deliveryType) {
+    if (!deliveryRequest) {
       return res.status(400).json({
         success: false,
-        message: `Can't pick-up nor drop a package at an unknown location.`,
+        message: 'Delivery Request body must be provided',
       })
     }
 
-    const costDetails = await deliveryCostService(
-      pickUpLocation,
-      dropOffLocation,
-      deliveryType
-    )
+    const costDetails = await calculateDeliveryCostService(deliveryRequest)
     res.json({
       success: true,
       body: costDetails,

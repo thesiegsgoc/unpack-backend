@@ -31,6 +31,8 @@ export const createDeliveryService = async (
     delivery_date,
     dropOffCost,
     delivery_cost,
+    pickupZone,
+    dropoffZone,
   } = deliveryData
 
   const numCurrentDeliveries = await db.deliveries.countDocuments()
@@ -52,6 +54,8 @@ export const createDeliveryService = async (
     delivery_date,
     dropOffCost,
     delivery_cost,
+    pickupZone,
+    dropoffZone,
   })
 
   await newDelivery.save()
@@ -220,6 +224,18 @@ export const getAllDeliveriesService = async () => {
     return mappedDeliveries
   } catch (error: any) {
     throw new Error(`Error fetching deliveries: ${error.message}`)
+  }
+}
+
+export const getDeliveryByIdService = async (deliveryId: string) => {
+  try {
+    const delivery = await DeliveryModel.findOne({ deliveryId })
+    if (!delivery) {
+      throw new Error('No deliveries found.')
+    }
+    return delivery
+  } catch (errro: any) {
+    throw new Error(`Error fetching delivery ${errro.message}`)
   }
 }
 
