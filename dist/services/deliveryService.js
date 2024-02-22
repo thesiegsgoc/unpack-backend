@@ -13,7 +13,7 @@ const Order_1 = __importDefault(require("../models/Order"));
 const Partner_1 = __importDefault(require("../models/Partner"));
 const cryptr = new cryptr_1.default('myTotallySecretKey');
 const createDeliveryService = async (deliveryData) => {
-    const { receiver, phoneNumber, pickupLocation, dropoffLocation, userId, size, delivery_type, parcel, delivery_quantity, delivery_time, delivery_date, dropOffCost, delivery_cost, } = deliveryData;
+    const { receiver, phoneNumber, pickupLocation, dropoffLocation, userId, size, delivery_type, parcel, delivery_quantity, delivery_time, delivery_date, dropOffCost, delivery_cost, pickupZone, dropoffZone, } = deliveryData;
     const numCurrentDeliveries = await db_1.default.deliveries.countDocuments();
     const handler = await scheduling_1.default.assignHandler(pickupLocation);
     const newDelivery = new Delivery_1.default({
@@ -32,6 +32,8 @@ const createDeliveryService = async (deliveryData) => {
         delivery_date,
         dropOffCost,
         delivery_cost,
+        pickupZone,
+        dropoffZone,
     });
     await newDelivery.save();
     await user_1.default.updateOne({ userId: userId }, { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } });

@@ -31,6 +31,8 @@ export const createDeliveryService = async (
     delivery_date,
     dropOffCost,
     delivery_cost,
+    pickupZone,
+    dropoffZone,
   } = deliveryData
 
   const numCurrentDeliveries = await db.deliveries.countDocuments()
@@ -52,6 +54,8 @@ export const createDeliveryService = async (
     delivery_date,
     dropOffCost,
     delivery_cost,
+    pickupZone,
+    dropoffZone,
   })
 
   await newDelivery.save()

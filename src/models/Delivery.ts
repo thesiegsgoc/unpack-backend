@@ -78,6 +78,12 @@ const DeliverySchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  pickupZone: {
+    type: String,
+  },
+  dropoffZone: {
+    type: String,
+  },
 })
 
 const DeliveryModel = mongoose.model('Delivery', DeliverySchema)

@@ -31,7 +31,7 @@ router.post(
   '/deliveries/calculate-delivery-cost',
   calculateDeliveryCostController
 )
-router.get('/deliveries/:deliveryId', getDeliveryByIdController)
+router.post('/deliveries/:deliveryId', getDeliveryByIdController)
 router.post('/deliveries/create', createDelivery)
 router.post('/deliveries/pickup', pickupDelivery)
 router.post('/deliveries/decrypt', decryptDeliveryDetails)

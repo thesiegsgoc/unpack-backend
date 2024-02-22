@@ -44,6 +44,7 @@ const zoneToZoneCostService = async (pickupZone, dropoffZone) => {
     const zones = await Zone_1.default.find({});
     const zoneToZoneKey = `${pickupZone}-${dropoffZone}`;
     const interZoneCost = ZONE_TO_ZONE_COST[zoneToZoneKey] || 0;
+    console.log('Inter zone cost', interZoneCost);
     return interZoneCost;
 };
 exports.zoneToZoneCostService = zoneToZoneCostService;

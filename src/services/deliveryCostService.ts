@@ -77,6 +77,7 @@ export const zoneToZoneCostService = async (
   const zoneToZoneKey = `${pickupZone}-${dropoffZone}`
   const interZoneCost = ZONE_TO_ZONE_COST[zoneToZoneKey] || 0
 
+  console.log('Inter zone cost', interZoneCost)
   return interZoneCost
 }
 
