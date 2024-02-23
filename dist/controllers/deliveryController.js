@@ -45,7 +45,6 @@ const createDeliveryController = async (req, res) => {
     try {
         const deliveryData = req.body;
         const result = await DeliveryServices.createDeliveryService(deliveryData);
-        console.log(result);
         return res.json({
             success: true,
             message: 'Delivery ordered successfully',
@@ -163,6 +162,7 @@ const getDeliveryIdsController = async (req, res) => {
 exports.getDeliveryIdsController = getDeliveryIdsController;
 const getDeliveryByIdController = async (req, res) => {
     try {
+        console.log('Get delivery by ID');
         const { deliveryId } = req.params;
         const result = await DeliveryServices.getDeliveryByIdService(deliveryId);
         res.json(result);

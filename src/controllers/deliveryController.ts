@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import * as DeliveryServices from '../services/deliveryService'
 import { calculateDeliveryCostService } from './../services/deliveryCostService'
 export const calculateDeliveryCostController = async (
-  req: Request<{}, {}, DeliveryRequestBody>,
+  req: Request<{}, {}, DeliveryRequest>,
   res: Response
 ) => {
   try {
@@ -18,14 +18,12 @@ export const calculateDeliveryCostController = async (
   }
 }
 
-export const createDeliveryController = async (
-  req: Request<{}, {}, DeliveryRequestBody>,
-  res: Response
-) => {
+export const createDeliveryController = async (req: Request, res: Response) => {
   try {
     const deliveryData = req.body
+
     const result = await DeliveryServices.createDeliveryService(deliveryData)
-    console.log(result)
+
     return res.json({
       success: true,
       message: 'Delivery ordered successfully',
@@ -37,7 +35,7 @@ export const createDeliveryController = async (
 }
 
 export const updateDeliveryController = async (
-  req: Request<{}, {}, DeliveryRequestBody>,
+  req: Request<{}, {}, DeliveryRequest>,
   res: Response
 ) => {
   try {
@@ -144,7 +142,7 @@ export const getPartnerDeliveryHistoryController = async (
 }
 
 export const getDeliveryIdsController = async (
-  req: Request<{}, {}, DeliveryRequestBody>,
+  req: Request<{}, {}, DeliveryRequest>,
   res: Response
 ) => {
   try {
@@ -168,6 +166,7 @@ export const getDeliveryByIdController = async (
   res: Response
 ) => {
   try {
+    console.log('Get delivery by ID')
     const { deliveryId } = req.params
     const result = await DeliveryServices.getDeliveryByIdService(deliveryId)
     res.json(result)

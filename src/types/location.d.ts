@@ -11,3 +11,8 @@ interface Geometry {
     lng: number
   }
 }
+
+interface Location {
+  latitude: number
+  longitude: number
+}

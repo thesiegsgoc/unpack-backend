@@ -70,10 +70,7 @@ export const getHandler = async (location: {
   return 'admin'
 }
 
-export const assignHandler = async (location: {
-  latitude: number
-  longitude: number
-}): Promise<any> => {
+export const assignHandler = async (location: LocationData): Promise<any> => {
   if (!location) {
     return {
       success: false,
@@ -96,7 +93,10 @@ export const assignHandler = async (location: {
           lat: zone.centralLocation.latitude,
           lon: zone.centralLocation.longitude,
         },
-        { lat: location.latitude, lon: location.longitude }
+        {
+          lat: location.geometry.location.lat,
+          lon: location.geometry.location.lng,
+        }
       )
 
       if (

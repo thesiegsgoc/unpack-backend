@@ -97,7 +97,10 @@ const assignHandler = async (location) => {
             distanceToLocationFromZoneCenter = (0, geolocation_utils_1.distanceTo)({
                 lat: zone.centralLocation.latitude,
                 lon: zone.centralLocation.longitude,
-            }, { lat: location.latitude, lon: location.longitude });
+            }, {
+                lat: location.geometry.location.lat,
+                lon: location.geometry.location.lng,
+            });
             if (prevDistance === undefined ||
                 distanceToLocationFromZoneCenter <= prevDistance) {
                 prevDistance = distanceToLocationFromZoneCenter;

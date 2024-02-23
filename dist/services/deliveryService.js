@@ -13,7 +13,7 @@ const Order_1 = __importDefault(require("../models/Order"));
 const Partner_1 = __importDefault(require("../models/Partner"));
 const cryptr = new cryptr_1.default('myTotallySecretKey');
 const createDeliveryService = async (deliveryData) => {
-    const { receiver, phoneNumber, pickupLocation, dropoffLocation, userId, size, delivery_type, parcel, delivery_quantity, delivery_time, delivery_date, dropOffCost, delivery_cost, pickupZone, dropoffZone, } = deliveryData;
+    const { receiver, phoneNumber, pickupLocation, dropoffLocation, userId, package_size, delivery_type, parcel, delivery_quantity, delivery_time, delivery_date, dropOffCost, delivery_cost, pickupZone, dropoffZone, } = deliveryData;
     const numCurrentDeliveries = await db_1.default.deliveries.countDocuments();
     const handler = await scheduling_1.default.assignHandler(pickupLocation);
     const newDelivery = new Delivery_1.default({
@@ -22,7 +22,7 @@ const createDeliveryService = async (deliveryData) => {
         pickupLocation,
         dropoffLocation,
         userId,
-        size,
+        package_size,
         delivery_type,
         parcel,
         delivery_quantity,
@@ -58,6 +58,9 @@ const updateDeliveryService = async (deliveryData) => {
         // Update the existing delivery record with the new data
         const updatedDelivery = await Delivery_1.default.findOneAndUpdate({ deliveryId }, { $set: deliveryData }, { new: true } // Return the updated document
         );
+        if (!updatedDelivery) {
+            throw new Error(`Failed  to update delivery request`);
+        }
         return updatedDelivery;
     }
     catch (error) {
@@ -80,6 +83,7 @@ const encryptDeliveryDetailsService = async (deliveryIds) => {
         }
         deliveryDetails.push({
             from: {
+                fullname: user.fullname,
                 phone: user.phone,
                 email: user.email,
                 pickup: delivery.pickupLocation,
@@ -141,16 +145,7 @@ const getAllDeliveriesService = async () => {
         // Modify this as per your application's requirements
         const mappedDeliveries = deliveries.map((delivery) => {
             return {
-                deliveryId: delivery.deliveryId,
-                userId: delivery.userId,
-                receiver: delivery.receiver,
-                delivery_status: delivery.delivery_status,
-                scheduled_handler: delivery.scheduled_handler,
-                pickupLocation: delivery.pickupLocation,
-                dropoffLocation: delivery.dropoffLocation,
-                delivery_time: delivery.delivery_time,
-                delivery_date: delivery.delivery_date,
-                // Add more fields as required
+                ...delivery,
             };
         });
         return mappedDeliveries;
@@ -174,36 +169,21 @@ const getDeliveryByIdService = async (deliveryId) => {
 };
 exports.getDeliveryByIdService = getDeliveryByIdService;
 const getUserDeliveryHistoryService = async (userId) => {
+    // 'deliveries' is the correct field name that holds references to delivery documents.
     const user = await user_1.default.findById(userId).populate('deliveries');
+    // Check if the user was found and has delivery history.
     if (!user || !user.deliveries?.length) {
         throw new Error('User not found or has no delivery history.');
     }
     const deliveryList = [];
-    for (const delivery of user.deliveries) {
-        const deliveryItem = await Delivery_1.default.findById(delivery);
+    for (const deliveryId of user.deliveries) {
+        const deliveryItem = await Delivery_1.default.findById(deliveryId);
         if (!deliveryItem) {
-            console.error(`Delivery data missing for ID: ${delivery}`);
+            console.error(`Delivery data missing for ID: ${deliveryId}`);
             continue;
         }
-        const sender = await user_1.default.findById(deliveryItem.userId);
-        deliveryList.push({
-            delivery: {
-                pickup: deliveryItem.pickupLocation,
-                dropoff: deliveryItem.dropoffLocation,
-                time: deliveryItem.delivery_time,
-                date: deliveryItem.delivery_date,
-                delivery_status: deliveryItem.delivery_status,
-                deliveryId: delivery,
-                delivery_type: deliveryItem.delivery_type,
-                receiver: deliveryItem.receiver,
-                sendor: sender?.fullname,
-                expoPushToken: sender?.expoPushToken,
-                dropOffCost: deliveryItem.drop_off_cost,
-                pickUpCost: deliveryItem.pick_up_cost,
-                deliveryCost: deliveryItem.delivery_cost,
-            },
-            // Additional details can be added here if needed
-        });
+        // Adjust the spreading of deliveryItem based on actual structure and required fields.
+        deliveryList.push({ ...deliveryItem });
     }
     return deliveryList;
 };
@@ -230,14 +210,14 @@ const getPartnerDeliveryHistoryService = async (partnerId) => {
                 date: deliveryData.delivery_date,
                 status: deliveryData.delivery_status,
                 deliveryId: deliveryData.id,
+                sender: deliveryData.id,
                 type: deliveryData.delivery_type,
                 receiver: deliveryData.receiver,
-                sendor: deliveryData.userId,
                 expoPushToken: vendorData?.expoPushToken,
                 dropOffCost: deliveryData.drop_off_cost,
                 pickUpCost: deliveryData.pick_up_cost,
                 deliveryCost: deliveryData.delivery_cost,
-                delivery_time: deliveryData.delivery_time, // Include delivery_time
+                deliveryTime: deliveryData.delivery_time, // Include delivery_time
             },
             order: {
                 name: orderData?.name,
