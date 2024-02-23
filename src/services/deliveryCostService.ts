@@ -51,11 +51,8 @@ export const zoneToZoneCostService = async (
   pickupZone: string,
   dropoffZone: string
 ) => {
-  const zones = await Zones.find({})
-
   const zoneToZoneKey = `${pickupZone}-${dropoffZone}`
   const interZoneCost = ZONE_TO_ZONE_COST[zoneToZoneKey] || 0
-
   console.log('Inter zone cost', interZoneCost)
   return interZoneCost
 }

@@ -26,24 +26,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDeliveryCostDetails = exports.assignHandler = exports.getHandler = exports.getPartner = exports.getZone = void 0;
+exports.getAvailableDriverService = exports.getDeliveryCostDetails = exports.assignHandler = exports.getHandler = exports.getPartner = exports.getZone = void 0;
 //@ts-ignore
 const isGeoPointInPolygon = __importStar(require("geo-point-in-polygon"));
 const geolocation_utils_1 = require("geolocation-utils");
 const user_1 = __importDefault(require("../models/users/user"));
+const Delivery_1 = __importDefault(require("../models/Delivery"));
 const Zone_1 = __importDefault(require("../models/Zone"));
 const db_1 = __importDefault(require("./db"));
 const ZONES = [];
 const PARTNERS = [];
-/*
-    For this issue--scheduling of handlers--the order of operation should be:
-    1. Determine where the pick up and drop-off zones are.
-    2. Check if the handlers in those zones are available.
-    3. If they are not, then check the drivers in the next zone. For the case
-       when there is no handler, set it to the admin. S/he should look for one
-       and assign it to the delivery.
-    4. Determine the people in the list and move them in order.
-*/
 const getZone = async (location) => {
     const latitude = location.latitude || location.lat;
     const longitude = location.longitude || location.lng;
@@ -173,11 +165,47 @@ const getDeliveryCostDetails = async (zones, location) => {
     };
 };
 exports.getDeliveryCostDetails = getDeliveryCostDetails;
+//DRIVER
+const getAvailableDriverService = async (location) => {
+    const zones = await Zone_1.default.find({});
+    let closestZone;
+    //TODO: Implement closest driver logic by checking drivers within the zone and then checking for shortest distance
+    for (const zone of zones) {
+        // Your logic to find the closest or appropriate zone based on location
+    }
+    if (!closestZone)
+        return undefined;
+    const availableDrivers = await user_1.default.find({
+        _id: { $in: closestZone.zoneHandlers },
+        driverStatus: 'active',
+    }).exec();
+    return availableDrivers.length > 0 ? availableDrivers[0]._id : undefined;
+};
+exports.getAvailableDriverService = getAvailableDriverService;
+// Adjust the parameter types as needed, perhaps to include more detailed location information
+async function assignDriverToDeliveryService(deliveryId, location) {
+    try {
+        const driverId = await (0, exports.getAvailableDriverService)(location);
+        if (!driverId) {
+            console.error('No available drivers found');
+            return null;
+        }
+        const updatedDelivery = await Delivery_1.default.findByIdAndUpdate(deliveryId, {
+            $set: { driverId: driverId, status: 'Driver Assigned' }, // Update the status accordingly
+        }, { new: true }).exec();
+        return updatedDelivery;
+    }
+    catch (error) {
+        console.error('Error assigning driver to delivery:', error);
+        return null;
+    }
+}
 const scheduling = {
     getZone: exports.getZone,
     getPartner: exports.getPartner,
     getHandler: exports.getHandler,
     assignHandler: exports.assignHandler,
     getDeliveryCostDetails: exports.getDeliveryCostDetails,
+    assignDriverToDeliveryService,
 };
 exports.default = scheduling;

@@ -50,7 +50,7 @@ export const createDeliveryService = async (deliveryData: DeliveryRequest) => {
     dropoffZone,
   })
 
-  await newDelivery.save()
+  let savedDelivery = await newDelivery.save()
 
   await UserModel.updateOne(
     { userId: userId },
@@ -64,7 +64,7 @@ export const createDeliveryService = async (deliveryData: DeliveryRequest) => {
     )
   }
 
-  return { trackingNumber: `D00${numCurrentDeliveries + 1}` }
+  return savedDelivery
 }
 
 export const updateDeliveryService = async (

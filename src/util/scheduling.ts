@@ -19,6 +19,9 @@ const PARTNERS: any[] = []
     4. Determine the people in the list and move them in order.     
 */
 
+type Zone = /*unresolved*/ any
+type IDelivery = /*unresolved*/ any
+
 export const getZone = async (location: {
   latitude?: number
   longitude?: number
@@ -188,11 +191,62 @@ export const getDeliveryCostDetails = async (
   }
 }
 
+//DRIVER
+export const getAvailableDriverService = async (
+  location: Location
+): Promise<string | undefined> => {
+  const zones: Zone[] = await Zone.find({})
+  let closestZone: Zone | undefined
+
+  //TODO: Implement closest driver logic by checking drivers within the zone and then checking for shortest distance
+  for (const zone of zones) {
+    // Your logic to find the closest or appropriate zone based on location
+  }
+
+  if (!closestZone) return undefined
+
+  const availableDrivers: any = await UserModel.find({
+    _id: { $in: closestZone.zoneHandlers },
+    driverStatus: 'active',
+  }).exec()
+
+  return availableDrivers.length > 0 ? availableDrivers[0]._id : undefined
+}
+
+// Adjust the parameter types as needed, perhaps to include more detailed location information
+async function assignDriverToDeliveryService(
+  deliveryId: string,
+  location: any
+): Promise<IDelivery | null> {
+  try {
+    const driverId = await getAvailableDriverService(location)
+
+    if (!driverId) {
+      console.error('No available drivers found')
+      return null
+    }
+
+    const updatedDelivery = await Delivery.findByIdAndUpdate(
+      deliveryId,
+      {
+        $set: { driverId: driverId, status: 'Driver Assigned' }, // Update the status accordingly
+      },
+      { new: true }
+    ).exec()
+
+    return updatedDelivery
+  } catch (error) {
+    console.error('Error assigning driver to delivery:', error)
+    return null
+  }
+}
+
 const scheduling = {
   getZone,
   getPartner,
   getHandler,
   assignHandler,
   getDeliveryCostDetails,
+  assignDriverToDeliveryService,
 }
 export default scheduling

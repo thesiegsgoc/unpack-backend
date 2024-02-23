@@ -114,3 +114,8 @@ function sendLocationUpdate(latitude, longitude) {
 }
 
  */
+
+/**
+ *TODO: Send driver live location 
+ io.emit('driverAssigned', { deliveryId: delivery._id, driverId: driver._id });
+ */

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import * as DeliveryServices from '../services/deliveryService'
 import { calculateDeliveryCostService } from './../services/deliveryCostService'
+import scheduling from './../util/scheduling'
 export const calculateDeliveryCostController = async (
   req: Request<{}, {}, DeliveryRequest>,
   res: Response
@@ -22,13 +23,46 @@ export const createDeliveryController = async (req: Request, res: Response) => {
   try {
     const deliveryData = req.body
 
-    const result = await DeliveryServices.createDeliveryService(deliveryData)
+    const newDelivery = await DeliveryServices.createDeliveryService(
+      deliveryData
+    )
 
-    return res.json({
-      success: true,
-      message: 'Delivery ordered successfully',
-      trackingNumber: result.trackingNumber,
-    })
+    console.log('New Delivery', newDelivery)
+
+    if (newDelivery) {
+      const assignedDriver = await scheduling.assignDriverToDeliveryService(
+        newDelivery.deliveryId,
+        newDelivery.pickupLocation
+      )
+      if (assignedDriver) {
+        return res.status(200).json({
+          success: true,
+          message: 'Delivery ordered successfully',
+          body: {
+            trackingNumber: newDelivery.deliveryId,
+            driver: assignedDriver,
+          },
+        })
+      } else {
+        return res.status(200).json({
+          success: false,
+          message:
+            'Delivery request created, but no driver is currently available.',
+        })
+      }
+    } else {
+      // Handle failure to create a delivery request
+      return res.status(400).json({
+        success: false,
+        message: 'Failed to create delivery request.',
+      })
+    }
+
+    // return res.json({
+    //   success: true,
+    //   message: 'Delivery ordered successfully',
+    //   trackingNumber: result.trackingNumber,
+    // })
   } catch (error: any) {
     return res.json({ success: false, message: error.message })
   }

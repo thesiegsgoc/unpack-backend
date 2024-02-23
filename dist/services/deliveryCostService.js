@@ -1,11 +1,7 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.calculateDeliveryCostService = exports.zoneToZoneCostService = exports.locationToZoneCostService = void 0;
 const deliveryDistanceService_1 = require("./deliveryDistanceService");
-const Zone_1 = __importDefault(require("../models/Zone"));
 const ZONE_TO_ZONE_COST = {
     'Temeke-Ilala': 2000,
     'Temeke-Bunju': 5000,
@@ -40,7 +36,6 @@ const locationToZoneCostService = async (deliveryRequest) => {
 };
 exports.locationToZoneCostService = locationToZoneCostService;
 const zoneToZoneCostService = async (pickupZone, dropoffZone) => {
-    const zones = await Zone_1.default.find({});
     const zoneToZoneKey = `${pickupZone}-${dropoffZone}`;
     const interZoneCost = ZONE_TO_ZONE_COST[zoneToZoneKey] || 0;
     console.log('Inter zone cost', interZoneCost);

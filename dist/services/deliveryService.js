@@ -35,12 +35,12 @@ const createDeliveryService = async (deliveryData) => {
         pickupZone,
         dropoffZone,
     });
-    await newDelivery.save();
+    let savedDelivery = await newDelivery.save();
     await user_1.default.updateOne({ userId: userId }, { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } });
     if (handler.success && handler.body.handler) {
         await user_1.default.updateOne({ _id: handler.body.handler }, { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } });
     }
-    return { trackingNumber: `D00${numCurrentDeliveries + 1}` };
+    return savedDelivery;
 };
 exports.createDeliveryService = createDeliveryService;
 const updateDeliveryService = async (deliveryData) => {
