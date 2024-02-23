@@ -41,6 +41,7 @@ export const createDeliveryController = async (req: Request, res: Response) => {
           body: {
             trackingNumber: newDelivery.deliveryId,
             driver: assignedDriver,
+            deliveryRequest: newDelivery,
           },
         })
       } else {
@@ -48,6 +49,9 @@ export const createDeliveryController = async (req: Request, res: Response) => {
           success: false,
           message:
             'Delivery request created, but no driver is currently available.',
+          body: {
+            deliveryRequest: newDelivery,
+          },
         })
       }
     } else {

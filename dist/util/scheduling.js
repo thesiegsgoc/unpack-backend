@@ -31,6 +31,7 @@ exports.getAvailableDriverService = exports.getDeliveryCostDetails = exports.ass
 const isGeoPointInPolygon = __importStar(require("geo-point-in-polygon"));
 const geolocation_utils_1 = require("geolocation-utils");
 const user_1 = __importDefault(require("../models/users/user"));
+const driver_1 = __importDefault(require("../models/users/driver"));
 const Delivery_1 = __importDefault(require("../models/Delivery"));
 const Zone_1 = __importDefault(require("../models/Zone"));
 const db_1 = __importDefault(require("./db"));
@@ -166,23 +167,40 @@ const getDeliveryCostDetails = async (zones, location) => {
 };
 exports.getDeliveryCostDetails = getDeliveryCostDetails;
 //DRIVER
-const getAvailableDriverService = async (location) => {
-    const zones = await Zone_1.default.find({});
-    let closestZone;
-    //TODO: Implement closest driver logic by checking drivers within the zone and then checking for shortest distance
-    for (const zone of zones) {
-        // Your logic to find the closest or appropriate zone based on location
+const getAvailableDriverService = async (locationObj) => {
+    try {
+        //TODO: Implement closest driver logic by checking drivers within the zone and then checking for shortest distance
+        const coordinates = [
+            locationObj.location.latitude,
+            locationObj.location.longitude,
+        ];
+        // let closestZone = await determineClosestZoneService(coordinates)
+        // if (!closestZone) return undefined
+        //TODO: check for driver in the zone
+        /**
+     *  const availableDrivers: any = await DriverModel.find({
+          _id: { $in: closestZone },
+          driverStatus: 'active',
+        }).exec()
+     */
+        const availableDrivers = await driver_1.default.find({
+            driverStatus: 'active',
+        }).exec();
+        console.log('Available Drivers', availableDrivers);
+        return availableDrivers.length > 0
+            ? availableDrivers[0]._id.toString()
+            : undefined; // Ensure _id is converted to string if necessary
     }
-    if (!closestZone)
+    catch (error) {
+        console.error('Error in getAvailableDriverService:', error);
+        // Depending on your error handling strategy, you may want to:
+        // - Log the error to a logging service
+        // - Return undefined to indicate no driver could be found due to an error
+        // - Rethrow the error or throw a custom error to be handled by the caller
         return undefined;
-    const availableDrivers = await user_1.default.find({
-        _id: { $in: closestZone.zoneHandlers },
-        driverStatus: 'active',
-    }).exec();
-    return availableDrivers.length > 0 ? availableDrivers[0]._id : undefined;
+    }
 };
 exports.getAvailableDriverService = getAvailableDriverService;
-// Adjust the parameter types as needed, perhaps to include more detailed location information
 async function assignDriverToDeliveryService(deliveryId, location) {
     try {
         const driverId = await (0, exports.getAvailableDriverService)(location);
@@ -190,8 +208,8 @@ async function assignDriverToDeliveryService(deliveryId, location) {
             console.error('No available drivers found');
             return null;
         }
-        const updatedDelivery = await Delivery_1.default.findByIdAndUpdate(deliveryId, {
-            $set: { driverId: driverId, status: 'Driver Assigned' }, // Update the status accordingly
+        const updatedDelivery = await Delivery_1.default.findOneAndUpdate({ deliveryId: deliveryId }, {
+            $set: { driverId: driverId, delivery_status: 'Driver Assigned' },
         }, { new: true }).exec();
         return updatedDelivery;
     }

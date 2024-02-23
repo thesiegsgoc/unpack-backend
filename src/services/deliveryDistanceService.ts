@@ -9,7 +9,6 @@ export const calculateDistanceService = async (
   pickupLocation: any,
   dropoffLocation: any
 ): Promise<number | null> => {
-  console.log('Pickup Location', pickupLocation)
   const pickupLat = pickupLocation.location.latitude
   const pickupLng = pickupLocation.location.longitude
   const deliveryLat = dropoffLocation.location.latitude

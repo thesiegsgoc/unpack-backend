@@ -36,6 +36,9 @@ const DeliverySchema = new mongoose_1.default.Schema({
         type: String,
         required: true,
     },
+    driverId: {
+        type: String,
+    },
     partnerId: {
         type: String,
     },

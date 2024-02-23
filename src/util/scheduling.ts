@@ -2,9 +2,11 @@
 import * as isGeoPointInPolygon from 'geo-point-in-polygon'
 import { distanceTo } from 'geolocation-utils'
 import UserModel from '../models/users/user'
+import DriverModel from '../models/users/driver'
 import Delivery from '../models/Delivery'
 import Zone from '../models/Zone'
 import db from './db'
+import { determineClosestZoneService } from '../services/zoneService'
 
 const ZONES: any[] = []
 const PARTNERS: any[] = []
@@ -192,28 +194,47 @@ export const getDeliveryCostDetails = async (
 }
 
 //DRIVER
-export const getAvailableDriverService = async (
-  location: Location
-): Promise<string | undefined> => {
-  const zones: Zone[] = await Zone.find({})
-  let closestZone: Zone | undefined
+export const getAvailableDriverService = async (locationObj: {
+  location: { latitude: number; longitude: number }
+  address: string
+}): Promise<string | undefined> => {
+  try {
+    //TODO: Implement closest driver logic by checking drivers within the zone and then checking for shortest distance
+    const coordinates: [number, number] = [
+      locationObj.location.latitude,
+      locationObj.location.longitude,
+    ]
 
-  //TODO: Implement closest driver logic by checking drivers within the zone and then checking for shortest distance
-  for (const zone of zones) {
-    // Your logic to find the closest or appropriate zone based on location
+    // let closestZone = await determineClosestZoneService(coordinates)
+
+    // if (!closestZone) return undefined
+    //TODO: check for driver in the zone
+    /**
+ *  const availableDrivers: any = await DriverModel.find({
+      _id: { $in: closestZone },
+      driverStatus: 'active',
+    }).exec()
+ */
+
+    const availableDrivers: any = await DriverModel.find({
+      driverStatus: 'active',
+    }).exec()
+
+    console.log('Available Drivers', availableDrivers)
+
+    return availableDrivers.length > 0
+      ? availableDrivers[0]._id.toString()
+      : undefined // Ensure _id is converted to string if necessary
+  } catch (error) {
+    console.error('Error in getAvailableDriverService:', error)
+    // Depending on your error handling strategy, you may want to:
+    // - Log the error to a logging service
+    // - Return undefined to indicate no driver could be found due to an error
+    // - Rethrow the error or throw a custom error to be handled by the caller
+    return undefined
   }
-
-  if (!closestZone) return undefined
-
-  const availableDrivers: any = await UserModel.find({
-    _id: { $in: closestZone.zoneHandlers },
-    driverStatus: 'active',
-  }).exec()
-
-  return availableDrivers.length > 0 ? availableDrivers[0]._id : undefined
 }
 
-// Adjust the parameter types as needed, perhaps to include more detailed location information
 async function assignDriverToDeliveryService(
   deliveryId: string,
   location: any
@@ -226,10 +247,10 @@ async function assignDriverToDeliveryService(
       return null
     }
 
-    const updatedDelivery = await Delivery.findByIdAndUpdate(
-      deliveryId,
+    const updatedDelivery = await Delivery.findOneAndUpdate(
+      { deliveryId: deliveryId },
       {
-        $set: { driverId: driverId, status: 'Driver Assigned' }, // Update the status accordingly
+        $set: { driverId: driverId, delivery_status: 'Driver Assigned' },
       },
       { new: true }
     ).exec()

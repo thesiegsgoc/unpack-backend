@@ -127,50 +127,63 @@ const assignHandlerService = async (location) => {
 exports.assignHandlerService = assignHandlerService;
 // Revised determineClosestZoneService function that uses calculateDistanceService
 async function determineClosestZoneService(coordinates) {
-    console.log('Getting closest zone');
-    let minDistance = Infinity;
-    let closestZone = '';
-    console.log('Location coordinate: ', coordinates);
-    // Convert coordinates to the expected LocationDetails format
-    const locationDetails = {
-        geometry: {
-            location: {
-                lat: coordinates[0],
-                lng: coordinates[1],
-            },
-        },
-    };
-    // Fetch all zones to pass their centers to the service
-    const zones = await (0, exports.getAllZonesService)();
-    const zoneCenters = zones.reduce((acc, zone) => {
-        acc[zone.zoneName] = [
-            zone.centralLocation.latitude,
-            zone.centralLocation.longitude,
-        ];
-        return acc;
-    }, {});
-    //checking all the available zones and comparing their distance to the requested distance
-    for (const [zone, center] of Object.entries(zoneCenters)) {
-        // Convert each zone center to the expected LocationDetails format
-        const centerDetails = {
+    try {
+        let minDistance = Infinity;
+        let closestZone = '';
+        // Convert coordinates to the expected LocationDetails format
+        const locationDetails = {
             geometry: {
                 location: {
-                    lat: center[0],
-                    lng: center[1],
+                    lat: coordinates[0],
+                    lng: coordinates[1],
                 },
             },
         };
-        console.log('Center Location ', centerDetails, 'Zone Location: ', zone);
-        // Since calculateDistanceService is async, use await to get the result
-        const distance = await (0, deliveryDistanceService_1.calculateDistanceService)(locationDetails, centerDetails);
-        if (distance) {
-            if (distance < minDistance) {
-                console.log('Min Distance', minDistance);
-                minDistance = distance;
-                closestZone = zone;
+        // Fetch all zones to pass their centers to the service
+        const zones = await (0, exports.getAllZonesService)();
+        const zoneCenters = zones.reduce((acc, zone) => {
+            // Check if zone.centralLocation is defined
+            if (zone.centralLocation &&
+                typeof zone.centralLocation.latitude === 'number' &&
+                typeof zone.centralLocation.longitude === 'number') {
+                acc[zone.zoneName] = [
+                    zone.centralLocation.latitude,
+                    zone.centralLocation.longitude,
+                ];
+            }
+            else {
+                console.warn(`Zone ${zone.zoneName} does not have a valid centralLocation.`);
+            }
+            return acc;
+        }, {});
+        // Checking all the available zones and comparing their distance to the requested distance
+        for (const [zone, center] of Object.entries(zoneCenters)) {
+            // Convert each zone center to the expected LocationDetails format
+            const centerDetails = {
+                geometry: {
+                    location: {
+                        lat: center[0],
+                        lng: center[1],
+                    },
+                },
+            };
+            // Since calculateDistanceService is async, use await to get the result
+            const distance = await (0, deliveryDistanceService_1.calculateDistanceService)(locationDetails, centerDetails);
+            if (distance) {
+                if (distance < minDistance) {
+                    console.log('Min Distance', minDistance);
+                    minDistance = distance;
+                    closestZone = zone;
+                }
             }
         }
+        return closestZone;
     }
-    return closestZone;
+    catch (error) {
+        console.error('Error determining closest zone:', error);
+        // Depending on how you want to handle errors, you could throw the error,
+        // return a default value, or handle it in another appropriate way.
+        throw new Error('Failed to determine closest zone due to an error.');
+    }
 }
 exports.determineClosestZoneService = determineClosestZoneService;

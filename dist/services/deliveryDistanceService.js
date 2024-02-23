@@ -8,7 +8,6 @@ const axios_1 = __importDefault(require("axios"));
 const config_1 = __importDefault(require("../config"));
 const googleMapsApiKey = config_1.default.GOOGLE_MAPS_API_KEY;
 const calculateDistanceService = async (pickupLocation, dropoffLocation) => {
-    console.log('Pickup Location', pickupLocation);
     const pickupLat = pickupLocation.location.latitude;
     const pickupLng = pickupLocation.location.longitude;
     const deliveryLat = dropoffLocation.location.latitude;
