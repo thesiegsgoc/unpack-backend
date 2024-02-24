@@ -232,18 +232,19 @@ async function assignDriverToDeliveryService(
     console.log('DELIVERY ID', deliveryId)
     console.log('DRIVER ID', driverId)
 
-    const updatedDelivery = await Delivery.findOneAndUpdate(
-      { deliveryId: deliveryId },
-      { $set: { driverId: driverId, delivery_status: 'Driver Assigned' } }
-      // {
-      //   $set: { userId: driverId, delivery_status: 'Driver Assigned' },
-      // },
-      // { new: true }
-    ).exec()
+    const delivery = await Delivery.findOne({ deliveryId: deliveryId }).exec()
 
-    console.log('UPDATED DELIVERY', updatedDelivery)
-
-    return updatedDelivery
+    if (delivery) {
+      delivery.driverId = driverId
+      delivery.delivery_status = 'Driver Assigned'
+      const updatedDelivery = await delivery.save()
+      console.log('UPDATED DELIVERY', updatedDelivery)
+      return updatedDelivery
+    } else {
+      // Handle case where delivery is not found
+      console.log(`Delivery with ID ${deliveryId} not found.`)
+      return null
+    }
   } catch (error) {
     console.error('Error assigning driver to delivery:', error)
     return null

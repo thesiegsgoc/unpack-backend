@@ -36,14 +36,14 @@ const createDeliveryService = async (deliveryData) => {
         pickupZone,
         dropoffZone,
     });
+    let savedDelivery = await newDelivery.save();
     const deliveryWithDriver = await scheduling_1.default.assignDriverToDeliveryService(newDelivery.deliveryId, newDelivery.pickupLocation);
     console.log('Delivery with Driver', deliveryWithDriver);
     if (deliveryWithDriver) {
         newDelivery.driverId = deliveryWithDriver.driverId;
         newDelivery.delivery_status = 'Driver Assigned';
-        await driver_1.default.updateOne({ _id: deliveryWithDriver.driverId }, { $push: { deliveries: newDelivery.deliveryId } });
+        await driver_1.default.updateOne({ driverId: deliveryWithDriver.driverId }, { $push: { deliveries: newDelivery.deliveryId } });
     }
-    let savedDelivery = await newDelivery.save();
     await user_1.default.updateOne({ userId: userId }, { $push: { deliveries: newDelivery.deliveryId } });
     if (handler.success && handler.body.handler) {
         await user_1.default.updateOne({ _id: handler.body.handler }, { $push: { deliveries: newDelivery.deliveryId } });

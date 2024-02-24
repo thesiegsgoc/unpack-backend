@@ -51,6 +51,8 @@ export const createDeliveryService = async (deliveryData: DeliveryRequest) => {
     dropoffZone,
   })
 
+  let savedDelivery = await newDelivery.save()
+
   const deliveryWithDriver = await scheduling.assignDriverToDeliveryService(
     newDelivery.deliveryId,
     newDelivery.pickupLocation
@@ -62,12 +64,10 @@ export const createDeliveryService = async (deliveryData: DeliveryRequest) => {
     newDelivery.delivery_status = 'Driver Assigned'
 
     await DriverModel.updateOne(
-      { _id: deliveryWithDriver.driverId },
+      { driverId: deliveryWithDriver.driverId },
       { $push: { deliveries: newDelivery.deliveryId } }
     )
   }
-
-  let savedDelivery = await newDelivery.save()
 
   await UserModel.updateOne(
     { userId: userId },
