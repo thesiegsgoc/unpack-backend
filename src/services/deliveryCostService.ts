@@ -12,40 +12,19 @@ const ZONE_TO_ZONE_COST: Record<string, number> = {
   'Ilala-Bunju': 8000,
 }
 
-export interface Geometry {
-  location: {
-    lat: number
-    lng: number
-  }
-}
-
-export interface LocationDetails {
-  geometry: Geometry
-  // Include other properties as needed
-}
-
-interface DeliveryRequestBody {
-  pickupLocation: LocationDetails
-  dropoffLocation: LocationDetails
-  dropoffZone: string
-  pickupZone: string
-  package_size: 'small' | 'medium' | 'large'
-  delivery_type: 'standard' | 'express'
-}
-
 export const locationToZoneCostService = async (
-  deliveryRequest: DeliveryRequestBody
+  deliveryRequest: DeliveryRequest
 ): Promise<number | null> => {
   const { pickupLocation, dropoffLocation, package_size, delivery_type } =
     deliveryRequest
 
-  //TODO: Replace this with the formular for calculating distance from the demo
   const distance = await calculateDistanceService(
     pickupLocation,
     dropoffLocation
   )
+
   if (distance) {
-    let cost = 10 // Base cost
+    let cost = 1000 // Base cost
     cost += distance * 0.5 // Add cost based on distance
 
     switch (package_size) {
@@ -72,11 +51,8 @@ export const zoneToZoneCostService = async (
   pickupZone: string,
   dropoffZone: string
 ) => {
-  const zones = await Zones.find({})
-
   const zoneToZoneKey = `${pickupZone}-${dropoffZone}`
   const interZoneCost = ZONE_TO_ZONE_COST[zoneToZoneKey] || 0
-
   console.log('Inter zone cost', interZoneCost)
   return interZoneCost
 }
@@ -91,8 +67,7 @@ export const calculateDeliveryCostService = async (
      3. deliveryType
    */
 
-  const { pickupLocation, dropoffLocation, pickupZone, dropoffZone } =
-    deliveryRequest
+  const { pickupZone, dropoffZone } = deliveryRequest
 
   // Calculate Costs
   const pickupToDropoffCost = await locationToZoneCostService(deliveryRequest)

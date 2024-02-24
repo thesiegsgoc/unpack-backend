@@ -5,7 +5,7 @@ const router = express.Router()
 // Importing your custom middleware and controller functions
 import { isUserAuth } from '../auth/isAuth'
 import {
-  createDeliveryController as createDelivery,
+  createDeliveryController,
   trackDeliveryController as trackDelivery,
   updateDeliveryController as updateDelivery,
   getUserDeliveryHistoryController as getUserDeliveryHistory,
@@ -31,8 +31,8 @@ router.post(
   '/deliveries/calculate-delivery-cost',
   calculateDeliveryCostController
 )
+router.post('/deliveries/create', createDeliveryController)
 router.post('/deliveries/:deliveryId', getDeliveryByIdController)
-router.post('/deliveries/create', createDelivery)
 router.post('/deliveries/pickup', pickupDelivery)
 router.post('/deliveries/decrypt', decryptDeliveryDetails)
 router.post('/deliveries/match-pickupto-delivery', () =>

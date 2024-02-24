@@ -1,9 +1,29 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose_1 = __importDefault(require("mongoose"));
+const mongoose_1 = __importStar(require("mongoose"));
 const DeliverySchema = new mongoose_1.default.Schema({
     deliveryId: {
         type: String,
@@ -15,6 +35,9 @@ const DeliverySchema = new mongoose_1.default.Schema({
     userId: {
         type: String,
         required: true,
+    },
+    driverId: {
+        type: String,
     },
     partnerId: {
         type: String,
@@ -31,24 +54,30 @@ const DeliverySchema = new mongoose_1.default.Schema({
     },
     package_size: {
         type: String,
+        enum: ['small', 'medium', 'large'],
+        required: true, // Assuming package_size is required, adjust if it's optional
     },
     delivery_type: {
         type: String,
+        enum: ['standard', 'express'],
+        required: true, // Assuming delivery_type is required, adjust if it's optional
     },
     dropoffLocation: {
-        type: Object,
+        type: mongoose_1.Schema.Types.Mixed,
+        required: true,
+    },
+    pickupLocation: {
+        type: mongoose_1.Schema.Types.Mixed,
+        required: true,
     },
     delivery_notes: {
         type: String,
     },
-    pickupLocation: {
-        type: Object,
-    },
     current_handler: {
-        type: Object,
+        type: mongoose_1.Schema.Types.Mixed, // Adjust to a more specific type if possible
     },
     scheduled_handler: {
-        type: String || undefined,
+        type: String,
     },
     delivery_time: {
         type: String,
@@ -57,20 +86,18 @@ const DeliverySchema = new mongoose_1.default.Schema({
         type: String,
     },
     drop_off_cost: {
-        type: Object,
+        type: Number,
     },
     pick_up_cost: {
-        type: Object,
+        type: Number,
     },
     delivery_cost: {
         type: Number,
         required: true,
     },
     delivery_status: {
-        type: Object,
-        default: {
-            value: 'In Process',
-        },
+        type: mongoose_1.Schema.Types.Mixed,
+        default: 'In Process', // Adjust default value as needed
     },
     orderId: {
         type: String,
@@ -83,10 +110,12 @@ const DeliverySchema = new mongoose_1.default.Schema({
         default: Date.now,
     },
     pickupZone: {
-        type: String,
+        type: mongoose_1.Schema.Types.Mixed,
+        required: true,
     },
     dropoffZone: {
-        type: String,
+        type: mongoose_1.Schema.Types.Mixed,
+        required: true,
     },
 });
 const DeliveryModel = mongoose_1.default.model('Delivery', DeliverySchema);

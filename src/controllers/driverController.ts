@@ -32,7 +32,7 @@ export const loginDriverController = async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      userID: driver.userId,
+      userID: driver.driverId,
       token,
       expoPushToken: driver.expoPushToken,
       profilePhoto: driver.profilePhoto,

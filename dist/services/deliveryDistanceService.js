@@ -8,10 +8,10 @@ const axios_1 = __importDefault(require("axios"));
 const config_1 = __importDefault(require("../config"));
 const googleMapsApiKey = config_1.default.GOOGLE_MAPS_API_KEY;
 const calculateDistanceService = async (pickupLocation, dropoffLocation) => {
-    const pickupLat = pickupLocation.geometry.location.lat;
-    const pickupLng = pickupLocation.geometry.location.lng;
-    const deliveryLat = dropoffLocation.geometry.location.lat;
-    const deliveryLng = dropoffLocation.geometry.location.lng;
+    const pickupLat = pickupLocation.location.latitude;
+    const pickupLng = pickupLocation.location.longitude;
+    const deliveryLat = dropoffLocation.location.latitude;
+    const deliveryLng = dropoffLocation.location.longitude;
     const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${pickupLat},${pickupLng}&destinations=${deliveryLat},${deliveryLng}&key=${googleMapsApiKey}`;
     try {
         const response = await axios_1.default.get(url);
@@ -23,6 +23,7 @@ const calculateDistanceService = async (pickupLocation, dropoffLocation) => {
         }
         if (data.rows[0].elements[0].status === 'OK') {
             const distance = data.rows[0].elements[0].distance.value; // Distance in meters
+            console.log('Distance', distance);
             return distance / 1000; // Convert to kilometers
         }
         else {

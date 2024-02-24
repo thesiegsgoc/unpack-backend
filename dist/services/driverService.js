@@ -52,7 +52,7 @@ const loginDriverService = async (username, password) => {
     if (!isPasswordMatch) {
         throw new Error('Incorrect password.');
     }
-    const token = await (0, generateJwtToken_1.generateJwtToken)(driver.userId);
+    const token = await (0, generateJwtToken_1.generateJwtToken)(driver.driverId);
     return {
         token,
         driver,

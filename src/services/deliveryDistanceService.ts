@@ -6,13 +6,13 @@ export interface LocationDetails {
   geometry: Geometry
 }
 export const calculateDistanceService = async (
-  pickupLocation: LocationDetails,
-  dropoffLocation: LocationDetails
+  pickupLocation: any,
+  dropoffLocation: any
 ): Promise<number | null> => {
-  const pickupLat = pickupLocation.geometry.location.lat
-  const pickupLng = pickupLocation.geometry.location.lng
-  const deliveryLat = dropoffLocation.geometry.location.lat
-  const deliveryLng = dropoffLocation.geometry.location.lng
+  const pickupLat = pickupLocation.location.latitude
+  const pickupLng = pickupLocation.location.longitude
+  const deliveryLat = dropoffLocation.location.latitude
+  const deliveryLng = dropoffLocation.location.longitude
 
   const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${pickupLat},${pickupLng}&destinations=${deliveryLat},${deliveryLng}&key=${googleMapsApiKey}`
 
@@ -32,6 +32,7 @@ export const calculateDistanceService = async (
 
     if (data.rows[0].elements[0].status === 'OK') {
       const distance = data.rows[0].elements[0].distance.value // Distance in meters
+      console.log('Distance', distance)
       return distance / 1000 // Convert to kilometers
     } else {
       console.log(

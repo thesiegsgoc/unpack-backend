@@ -26,24 +26,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDeliveryCostDetails = exports.assignHandler = exports.getHandler = exports.getPartner = exports.getZone = void 0;
+exports.getAvailableDriverService = exports.getDeliveryCostDetails = exports.assignHandler = exports.getHandler = exports.getPartner = exports.getZone = void 0;
 //@ts-ignore
 const isGeoPointInPolygon = __importStar(require("geo-point-in-polygon"));
 const geolocation_utils_1 = require("geolocation-utils");
 const user_1 = __importDefault(require("../models/users/user"));
+const driver_1 = __importDefault(require("../models/users/driver"));
+const Delivery_1 = __importDefault(require("../models/Delivery"));
 const Zone_1 = __importDefault(require("../models/Zone"));
 const db_1 = __importDefault(require("./db"));
 const ZONES = [];
 const PARTNERS = [];
-/*
-    For this issue--scheduling of handlers--the order of operation should be:
-    1. Determine where the pick up and drop-off zones are.
-    2. Check if the handlers in those zones are available.
-    3. If they are not, then check the drivers in the next zone. For the case
-       when there is no handler, set it to the admin. S/he should look for one
-       and assign it to the delivery.
-    4. Determine the people in the list and move them in order.
-*/
 const getZone = async (location) => {
     const latitude = location.latitude || location.lat;
     const longitude = location.longitude || location.lng;
@@ -97,7 +90,10 @@ const assignHandler = async (location) => {
             distanceToLocationFromZoneCenter = (0, geolocation_utils_1.distanceTo)({
                 lat: zone.centralLocation.latitude,
                 lon: zone.centralLocation.longitude,
-            }, { lat: location.latitude, lon: location.longitude });
+            }, {
+                lat: location.geometry.location.lat,
+                lon: location.geometry.location.lng,
+            });
             if (prevDistance === undefined ||
                 distanceToLocationFromZoneCenter <= prevDistance) {
                 prevDistance = distanceToLocationFromZoneCenter;
@@ -170,11 +166,59 @@ const getDeliveryCostDetails = async (zones, location) => {
     };
 };
 exports.getDeliveryCostDetails = getDeliveryCostDetails;
+//DRIVER
+const getAvailableDriverService = async (locationObj) => {
+    try {
+        const coordinates = [
+            locationObj.location.longitude,
+            locationObj.location.latitude,
+        ];
+        const availableDriver = await driver_1.default.findOne({
+            driverStatus: 'active',
+        }).exec();
+        console.log('AVAILABLE DRIVER', availableDriver);
+        return availableDriver ? availableDriver.driverId : undefined;
+    }
+    catch (error) {
+        console.error('Error in getAvailableDriverService:', error);
+        return undefined;
+    }
+};
+exports.getAvailableDriverService = getAvailableDriverService;
+async function assignDriverToDeliveryService(deliveryId, location) {
+    try {
+        const driverId = await (0, exports.getAvailableDriverService)(location);
+        if (!driverId) {
+            console.error('No available drivers found');
+            return null;
+        }
+        console.log('DELIVERY ID', deliveryId);
+        console.log('DRIVER ID', driverId);
+        const delivery = await Delivery_1.default.findOne({ deliveryId: deliveryId }).exec();
+        if (delivery) {
+            delivery.driverId = driverId;
+            delivery.delivery_status = 'Driver Assigned';
+            const updatedDelivery = await delivery.save();
+            console.log('UPDATED DELIVERY', updatedDelivery);
+            return updatedDelivery;
+        }
+        else {
+            // Handle case where delivery is not found
+            console.log(`Delivery with ID ${deliveryId} not found.`);
+            return null;
+        }
+    }
+    catch (error) {
+        console.error('Error assigning driver to delivery:', error);
+        return null;
+    }
+}
 const scheduling = {
     getZone: exports.getZone,
     getPartner: exports.getPartner,
     getHandler: exports.getHandler,
     assignHandler: exports.assignHandler,
     getDeliveryCostDetails: exports.getDeliveryCostDetails,
+    assignDriverToDeliveryService,
 };
 exports.default = scheduling;

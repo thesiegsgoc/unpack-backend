@@ -2,9 +2,11 @@
 import * as isGeoPointInPolygon from 'geo-point-in-polygon'
 import { distanceTo } from 'geolocation-utils'
 import UserModel from '../models/users/user'
+import DriverModel from '../models/users/driver'
 import Delivery from '../models/Delivery'
 import Zone from '../models/Zone'
 import db from './db'
+import { determineClosestZoneService } from '../services/zoneService'
 
 const ZONES: any[] = []
 const PARTNERS: any[] = []
@@ -18,6 +20,9 @@ const PARTNERS: any[] = []
        and assign it to the delivery.
     4. Determine the people in the list and move them in order.     
 */
+
+type Zone = /*unresolved*/ any
+type IDelivery = /*unresolved*/ any
 
 export const getZone = async (location: {
   latitude?: number
@@ -70,10 +75,7 @@ export const getHandler = async (location: {
   return 'admin'
 }
 
-export const assignHandler = async (location: {
-  latitude: number
-  longitude: number
-}): Promise<any> => {
+export const assignHandler = async (location: LocationData): Promise<any> => {
   if (!location) {
     return {
       success: false,
@@ -96,7 +98,10 @@ export const assignHandler = async (location: {
           lat: zone.centralLocation.latitude,
           lon: zone.centralLocation.longitude,
         },
-        { lat: location.latitude, lon: location.longitude }
+        {
+          lat: location.geometry.location.lat,
+          lon: location.geometry.location.lng,
+        }
       )
 
       if (
@@ -188,11 +193,70 @@ export const getDeliveryCostDetails = async (
   }
 }
 
+//DRIVER
+export const getAvailableDriverService = async (locationObj: {
+  location: { latitude: number; longitude: number }
+  address: string
+}): Promise<string | undefined> => {
+  try {
+    const coordinates: [number, number] = [
+      locationObj.location.longitude,
+      locationObj.location.latitude,
+    ]
+
+    const availableDriver = await DriverModel.findOne({
+      driverStatus: 'active',
+    }).exec()
+
+    console.log('AVAILABLE DRIVER', availableDriver)
+
+    return availableDriver ? availableDriver.driverId : undefined
+  } catch (error) {
+    console.error('Error in getAvailableDriverService:', error)
+    return undefined
+  }
+}
+
+async function assignDriverToDeliveryService(
+  deliveryId: string,
+  location: any
+): Promise<IDelivery | null> {
+  try {
+    const driverId = await getAvailableDriverService(location)
+
+    if (!driverId) {
+      console.error('No available drivers found')
+      return null
+    }
+
+    console.log('DELIVERY ID', deliveryId)
+    console.log('DRIVER ID', driverId)
+
+    const delivery = await Delivery.findOne({ deliveryId: deliveryId }).exec()
+
+    if (delivery) {
+      delivery.driverId = driverId
+      delivery.delivery_status = 'Driver Assigned'
+      const updatedDelivery = await delivery.save()
+      console.log('UPDATED DELIVERY', updatedDelivery)
+      return updatedDelivery
+    } else {
+      // Handle case where delivery is not found
+      console.log(`Delivery with ID ${deliveryId} not found.`)
+      return null
+    }
+  } catch (error) {
+    console.error('Error assigning driver to delivery:', error)
+    return null
+  }
+}
+
 const scheduling = {
   getZone,
   getPartner,
   getHandler,
   assignHandler,
   getDeliveryCostDetails,
+  assignDriverToDeliveryService,
 }
 export default scheduling

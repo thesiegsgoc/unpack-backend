@@ -1,11 +1,7 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.calculateDeliveryCostService = exports.zoneToZoneCostService = exports.locationToZoneCostService = void 0;
 const deliveryDistanceService_1 = require("./deliveryDistanceService");
-const Zone_1 = __importDefault(require("../models/Zone"));
 const ZONE_TO_ZONE_COST = {
     'Temeke-Ilala': 2000,
     'Temeke-Bunju': 5000,
@@ -16,10 +12,9 @@ const ZONE_TO_ZONE_COST = {
 };
 const locationToZoneCostService = async (deliveryRequest) => {
     const { pickupLocation, dropoffLocation, package_size, delivery_type } = deliveryRequest;
-    //TODO: Replace this with the formular for calculating distance from the demo
     const distance = await (0, deliveryDistanceService_1.calculateDistanceService)(pickupLocation, dropoffLocation);
     if (distance) {
-        let cost = 10; // Base cost
+        let cost = 1000; // Base cost
         cost += distance * 0.5; // Add cost based on distance
         switch (package_size) {
             case 'medium':
@@ -41,7 +36,6 @@ const locationToZoneCostService = async (deliveryRequest) => {
 };
 exports.locationToZoneCostService = locationToZoneCostService;
 const zoneToZoneCostService = async (pickupZone, dropoffZone) => {
-    const zones = await Zone_1.default.find({});
     const zoneToZoneKey = `${pickupZone}-${dropoffZone}`;
     const interZoneCost = ZONE_TO_ZONE_COST[zoneToZoneKey] || 0;
     console.log('Inter zone cost', interZoneCost);
@@ -55,7 +49,7 @@ const calculateDeliveryCostService = async (deliveryRequest) => {
        2. dropOffLocation,
        3. deliveryType
      */
-    const { pickupLocation, dropoffLocation, pickupZone, dropoffZone } = deliveryRequest;
+    const { pickupZone, dropoffZone } = deliveryRequest;
     // Calculate Costs
     const pickupToDropoffCost = await (0, exports.locationToZoneCostService)(deliveryRequest);
     const zonesCost = await (0, exports.zoneToZoneCostService)(pickupZone, dropoffZone);

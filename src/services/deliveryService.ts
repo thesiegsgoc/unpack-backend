@@ -1,5 +1,6 @@
 import Cryptr from 'cryptr'
 import DeliveryModel from '../models/Delivery'
+import DriverModel from '../models/users/driver'
 import UserModel from '../models/users/user'
 import scheduling from '../util/scheduling'
 import db from '../util/db'
@@ -7,23 +8,14 @@ import OrderModel from '../models/Order'
 import PartnerModel from '../models/Partner'
 const cryptr = new Cryptr('myTotallySecretKey')
 
-type AddDeliveryRequestBody = /*unresolved*/ any // TODO: Define the delivery_type for AddDeliveryRequestBody in the delivery_types file
-type DeliveryDetailsFrom = /*unresolved*/ any
-type DeliveryDetailsTo = /*unresolved*/ any
-type DeliveryItem = /*unresolved*/ any
-type PartnerDeliveryItem = /*unresolved*/ any
-type Delivery = /*unresolved*/ any
-
-export const createDeliveryService = async (
-  deliveryData: AddDeliveryRequestBody
-) => {
+export const createDeliveryService = async (deliveryData: DeliveryRequest) => {
   const {
     receiver,
     phoneNumber,
     pickupLocation,
     dropoffLocation,
     userId,
-    size,
+    package_size,
     delivery_type,
     parcel,
     delivery_quantity,
@@ -36,6 +28,7 @@ export const createDeliveryService = async (
   } = deliveryData
 
   const numCurrentDeliveries = await db.deliveries.countDocuments()
+
   const handler = await scheduling.assignHandler(pickupLocation)
 
   const newDelivery = new DeliveryModel({
@@ -44,7 +37,7 @@ export const createDeliveryService = async (
     pickupLocation,
     dropoffLocation,
     userId,
-    size,
+    package_size,
     delivery_type,
     parcel,
     delivery_quantity,
@@ -58,26 +51,42 @@ export const createDeliveryService = async (
     dropoffZone,
   })
 
-  await newDelivery.save()
+  let savedDelivery = await newDelivery.save()
+
+  const deliveryWithDriver = await scheduling.assignDriverToDeliveryService(
+    newDelivery.deliveryId,
+    newDelivery.pickupLocation
+  )
+
+  console.log('Delivery with Driver', deliveryWithDriver)
+  if (deliveryWithDriver) {
+    newDelivery.driverId = deliveryWithDriver.driverId
+    newDelivery.delivery_status = 'Driver Assigned'
+
+    await DriverModel.updateOne(
+      { driverId: deliveryWithDriver.driverId },
+      { $push: { deliveries: newDelivery.deliveryId } }
+    )
+  }
 
   await UserModel.updateOne(
     { userId: userId },
-    { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } }
+    { $push: { deliveries: newDelivery.deliveryId } }
   )
 
   if (handler.success && handler.body.handler) {
     await UserModel.updateOne(
       { _id: handler.body.handler },
-      { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } }
+      { $push: { deliveries: newDelivery.deliveryId } }
     )
   }
 
-  return { trackingNumber: `D00${numCurrentDeliveries + 1}` }
+  return savedDelivery
 }
 
 export const updateDeliveryService = async (
-  deliveryData: Delivery
-): Promise<Delivery | null> => {
+  deliveryData: DeliveryRequest
+): Promise<any> => {
   try {
     // Ensure the deliveryData includes the deliveryId
     const { deliveryId } = deliveryData
@@ -98,6 +107,10 @@ export const updateDeliveryService = async (
       { $set: deliveryData },
       { new: true } // Return the updated document
     )
+
+    if (!updatedDelivery) {
+      throw new Error(`Failed  to update delivery request`)
+    }
 
     return updatedDelivery
   } catch (error: any) {
@@ -131,6 +144,7 @@ export const encryptDeliveryDetailsService = async (deliveryIds: string[]) => {
 
       deliveryDetails.push({
         from: {
+          fullname: user.fullname!,
           phone: user.phone!,
           email: user.email!,
           pickup: delivery.pickupLocation!,
@@ -199,7 +213,6 @@ export const trackDeliveryService = async (trackingId: string) => {
 export const getAllDeliveriesService = async () => {
   try {
     const deliveries = await DeliveryModel.find({})
-
     if (!deliveries || deliveries.length === 0) {
       throw new Error('No deliveries found.')
     }
@@ -208,16 +221,7 @@ export const getAllDeliveriesService = async () => {
     // Modify this as per your application's requirements
     const mappedDeliveries = deliveries.map((delivery) => {
       return {
-        deliveryId: delivery.deliveryId,
-        userId: delivery.userId,
-        receiver: delivery.receiver,
-        delivery_status: delivery.delivery_status,
-        scheduled_handler: delivery.scheduled_handler,
-        pickupLocation: delivery.pickupLocation,
-        dropoffLocation: delivery.dropoffLocation,
-        delivery_time: delivery.delivery_time,
-        delivery_date: delivery.delivery_date,
-        // Add more fields as required
+        ...delivery,
       }
     })
 
@@ -240,44 +244,26 @@ export const getDeliveryByIdService = async (deliveryId: string) => {
 }
 
 export const getUserDeliveryHistoryService = async (userId: string) => {
+  // 'deliveries' is the correct field name that holds references to delivery documents.
   const user = await UserModel.findById(userId).populate('deliveries')
 
+  // Check if the user was found and has delivery history.
   if (!user || !user.deliveries?.length) {
     throw new Error('User not found or has no delivery history.')
   }
 
-  const deliveryList: DeliveryItem[] = []
+  const deliveryList: any = []
 
-  for (const delivery of user.deliveries) {
-    const deliveryItem = await DeliveryModel.findById(delivery)
+  for (const deliveryId of user.deliveries) {
+    const deliveryItem = await DeliveryModel.findById(deliveryId)
 
     if (!deliveryItem) {
-      console.error(`Delivery data missing for ID: ${delivery}`)
+      console.error(`Delivery data missing for ID: ${deliveryId}`)
       continue
     }
-
-    const sender = await UserModel.findById(deliveryItem.userId)
-
-    deliveryList.push({
-      delivery: {
-        pickup: deliveryItem.pickupLocation,
-        dropoff: deliveryItem.dropoffLocation,
-        time: deliveryItem.delivery_time!,
-        date: deliveryItem.delivery_date!,
-        delivery_status: deliveryItem.delivery_status,
-        deliveryId: delivery,
-        delivery_type: deliveryItem.delivery_type!,
-        receiver: deliveryItem.receiver!,
-        sendor: sender?.fullname,
-        expoPushToken: sender?.expoPushToken!,
-        dropOffCost: deliveryItem.drop_off_cost,
-        pickUpCost: deliveryItem.pick_up_cost,
-        deliveryCost: deliveryItem.delivery_cost!,
-      },
-      // Additional details can be added here if needed
-    })
+    // Adjust the spreading of deliveryItem based on actual structure and required fields.
+    deliveryList.push({ ...deliveryItem })
   }
-
   return deliveryList
 }
 
@@ -311,14 +297,14 @@ export const getPartnerDeliveryHistoryService = async (partnerId: string) => {
         date: deliveryData.delivery_date!, // Assume delivery_date is available
         status: deliveryData.delivery_status,
         deliveryId: deliveryData.id!, // Assume _id is the deliveryId
+        sender: deliveryData.id!,
         type: deliveryData.delivery_type!, // Assume delivery_type is available
         receiver: deliveryData.receiver!, // Assume receiver is available
-        sendor: deliveryData.userId, // Assume userId is available
         expoPushToken: vendorData?.expoPushToken,
-        dropOffCost: deliveryData.drop_off_cost,
-        pickUpCost: deliveryData.pick_up_cost,
+        dropOffCost: deliveryData.drop_off_cost!,
+        pickUpCost: deliveryData.pick_up_cost!,
         deliveryCost: deliveryData.delivery_cost!,
-        delivery_time: deliveryData.delivery_time!, // Include delivery_time
+        deliveryTime: deliveryData.delivery_time!, // Include delivery_time
       },
       order: {
         name: orderData?.name!,
@@ -346,7 +332,7 @@ export const getDeliveryIdsService = async (userId: string) => {
     throw new Error('User not found.')
   }
 
-  let deliveries: Delivery[] = []
+  let deliveries: any
 
   if (user.status === 'vendor' || user.status === 'consumer') {
     deliveries = await DeliveryModel.find({ userId: userId }).exec()
@@ -357,7 +343,7 @@ export const getDeliveryIdsService = async (userId: string) => {
     throw new Error('No deliveries from the user.')
   }
 
-  let deliveryIds = deliveries.map((delivery) => delivery.deliveryId)
+  let deliveryIds = deliveries.map((delivery: any) => delivery.deliveryId)
 
   const encryptedDeliveries = cryptr.encrypt(
     JSON.stringify({

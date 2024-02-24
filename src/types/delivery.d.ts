@@ -1,21 +1,22 @@
-interface DeliveryRequestBody {
+interface DeliveryRequest {
   userId: string
   deliveryId: string
   receiverId?: string
   partnerId?: string
   receiver?: string
-  quantity: number
+  driverId: string
   phoneNumber?: string
   package_size: 'small' | 'medium' | 'large'
   delivery_type: 'standard' | 'express'
+  delivery_quantity: number
   parcel?: string
-  dropoffLocation: LocationData
+  dropoffLocation?: LocationData
   pickupLocation: LocationData
   notes?: string
   currentHandler?: any // Consider defining a more specific type
   scheduledHandler?: string | undefined
-  deliveryTime?: string
-  deliveryDate?: string
+  delivery_time?: string
+  delivery_date?: string
   dropOffCost?: number // Consider using number if costs are numeric
   pickUpCost?: number // Same as above
   delivery_cost: number
@@ -23,6 +24,8 @@ interface DeliveryRequestBody {
   orderId?: string
   vendorId?: string
   date?: Date
+  pickupZone: Zone
+  dropoffZone: Zone
 }
 
 interface DeliveryItemDetails {
@@ -64,7 +67,7 @@ interface OrderItem {
 
 interface VendorItem {
   fullname?: string
-  avatar?: string
+  avatar?: Buffer
 }
 
 interface PartnerDeliveryItem {
