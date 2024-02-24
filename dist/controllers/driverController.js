@@ -53,7 +53,7 @@ const loginDriverController = async (req, res) => {
         const { token, driver } = await DriverServices.loginDriverService(username, password);
         res.json({
             success: true,
-            userID: driver.userId,
+            userID: driver.driverId,
             token,
             expoPushToken: driver.expoPushToken,
             profilePhoto: driver.profilePhoto,

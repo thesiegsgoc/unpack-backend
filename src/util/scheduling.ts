@@ -199,38 +199,20 @@ export const getAvailableDriverService = async (locationObj: {
   address: string
 }): Promise<string | undefined> => {
   try {
-    //TODO: Implement closest driver logic by checking drivers within the zone and then checking for shortest distance
     const coordinates: [number, number] = [
-      locationObj.location.latitude,
       locationObj.location.longitude,
+      locationObj.location.latitude,
     ]
 
-    // let closestZone = await determineClosestZoneService(coordinates)
-
-    // if (!closestZone) return undefined
-    //TODO: check for driver in the zone
-    /**
- *  const availableDrivers: any = await DriverModel.find({
-      _id: { $in: closestZone },
-      driverStatus: 'active',
-    }).exec()
- */
-
-    const availableDrivers: any = await DriverModel.find({
+    const availableDriver = await DriverModel.findOne({
       driverStatus: 'active',
     }).exec()
 
-    console.log('Available Drivers', availableDrivers)
+    console.log('AVAILABLE DRIVER', availableDriver)
 
-    return availableDrivers.length > 0
-      ? availableDrivers[0]._id.toString()
-      : undefined // Ensure _id is converted to string if necessary
+    return availableDriver ? availableDriver.driverId : undefined
   } catch (error) {
     console.error('Error in getAvailableDriverService:', error)
-    // Depending on your error handling strategy, you may want to:
-    // - Log the error to a logging service
-    // - Return undefined to indicate no driver could be found due to an error
-    // - Rethrow the error or throw a custom error to be handled by the caller
     return undefined
   }
 }
@@ -247,13 +229,19 @@ async function assignDriverToDeliveryService(
       return null
     }
 
+    console.log('DELIVERY ID', deliveryId)
+    console.log('DRIVER ID', driverId)
+
     const updatedDelivery = await Delivery.findOneAndUpdate(
       { deliveryId: deliveryId },
-      {
-        $set: { driverId: driverId, delivery_status: 'Driver Assigned' },
-      },
-      { new: true }
+      { $set: { driverId: driverId, delivery_status: 'Driver Assigned' } }
+      // {
+      //   $set: { userId: driverId, delivery_status: 'Driver Assigned' },
+      // },
+      // { new: true }
     ).exec()
+
+    console.log('UPDATED DELIVERY', updatedDelivery)
 
     return updatedDelivery
   } catch (error) {

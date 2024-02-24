@@ -54,7 +54,7 @@ export const loginDriverService = async (
     throw new Error('Incorrect password.')
   }
 
-  const token = await generateJwtToken(driver.userId!)
+  const token = await generateJwtToken(driver.driverId!)
   return {
     token,
     driver,

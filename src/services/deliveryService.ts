@@ -1,5 +1,6 @@
 import Cryptr from 'cryptr'
 import DeliveryModel from '../models/Delivery'
+import DriverModel from '../models/users/driver'
 import UserModel from '../models/users/user'
 import scheduling from '../util/scheduling'
 import db from '../util/db'
@@ -55,9 +56,15 @@ export const createDeliveryService = async (deliveryData: DeliveryRequest) => {
     newDelivery.pickupLocation
   )
 
+  console.log('Delivery with Driver', deliveryWithDriver)
   if (deliveryWithDriver) {
     newDelivery.driverId = deliveryWithDriver.driverId
     newDelivery.delivery_status = 'Driver Assigned'
+
+    await DriverModel.updateOne(
+      { _id: deliveryWithDriver.driverId },
+      { $push: { deliveries: newDelivery.deliveryId } }
+    )
   }
 
   let savedDelivery = await newDelivery.save()

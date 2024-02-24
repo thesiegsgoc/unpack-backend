@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getHandlersLocationService = exports.pickupDeliveryService = exports.getDeliveryIdsService = exports.getPartnerDeliveryHistoryService = exports.getUserDeliveryHistoryService = exports.getDeliveryByIdService = exports.getAllDeliveriesService = exports.trackDeliveryService = exports.encryptDeliveryDetailsService = exports.updateDeliveryService = exports.createDeliveryService = void 0;
 const cryptr_1 = __importDefault(require("cryptr"));
 const Delivery_1 = __importDefault(require("../models/Delivery"));
+const driver_1 = __importDefault(require("../models/users/driver"));
 const user_1 = __importDefault(require("../models/users/user"));
 const scheduling_1 = __importDefault(require("../util/scheduling"));
 const db_1 = __importDefault(require("../util/db"));
@@ -36,9 +37,11 @@ const createDeliveryService = async (deliveryData) => {
         dropoffZone,
     });
     const deliveryWithDriver = await scheduling_1.default.assignDriverToDeliveryService(newDelivery.deliveryId, newDelivery.pickupLocation);
+    console.log('Delivery with Driver', deliveryWithDriver);
     if (deliveryWithDriver) {
         newDelivery.driverId = deliveryWithDriver.driverId;
         newDelivery.delivery_status = 'Driver Assigned';
+        await driver_1.default.updateOne({ _id: deliveryWithDriver.driverId }, { $push: { deliveries: newDelivery.deliveryId } });
     }
     let savedDelivery = await newDelivery.save();
     await user_1.default.updateOne({ userId: userId }, { $push: { deliveries: newDelivery.deliveryId } });
