@@ -4,12 +4,13 @@ interface DeliveryRequest {
   receiverId?: string
   partnerId?: string
   receiver?: string
+  driverId: string
   phoneNumber?: string
   package_size: 'small' | 'medium' | 'large'
   delivery_type: 'standard' | 'express'
   delivery_quantity: number
   parcel?: string
-  dropoffLocation: LocationData
+  dropoffLocation?: LocationData
   pickupLocation: LocationData
   notes?: string
   currentHandler?: any // Consider defining a more specific type

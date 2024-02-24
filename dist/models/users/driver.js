@@ -3,8 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose_1 = __importDefault(require("mongoose"));
 const user_1 = __importDefault(require("./user"));
+const mongoose_1 = __importDefault(require("mongoose"));
 const DriverSchema = new mongoose_1.default.Schema({
     licenseInfo: {
         number: { type: String, required: true },
@@ -37,6 +37,9 @@ const DriverSchema = new mongoose_1.default.Schema({
         customerRatings: [{ type: Number }],
         safetyAndComplianceIndicators: [{ type: String }],
     },
+});
+DriverSchema.virtual('driverId').get(function () {
+    return this.userId;
 });
 DriverSchema.index({ currentLocation: '2dsphere' });
 const DriverModel = user_1.default.discriminator('Driver', DriverSchema);

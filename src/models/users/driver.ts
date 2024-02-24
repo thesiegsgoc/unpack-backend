@@ -1,7 +1,9 @@
-import mongoose from 'mongoose'
 import UserModel from './user'
+import mongoose, { Schema, Document } from 'mongoose'
 
-const DriverSchema = new mongoose.Schema({
+export interface IDeiverModal extends IDriver, Document {}
+
+const DriverSchema: Schema<IDeiverModal> = new mongoose.Schema({
   licenseInfo: {
     number: { type: String, required: true },
     expiryDate: { type: Date, required: true },
@@ -35,7 +37,11 @@ const DriverSchema = new mongoose.Schema({
   },
 })
 
+DriverSchema.virtual('driverId').get(function () {
+  return this.userId
+})
+
 DriverSchema.index({ currentLocation: '2dsphere' })
 
-const DriverModel = UserModel.discriminator<IUser>('Driver', DriverSchema)
+const DriverModel = UserModel.discriminator<IDriver>('Driver', DriverSchema)
 export default DriverModel

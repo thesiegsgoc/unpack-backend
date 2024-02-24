@@ -35,10 +35,15 @@ const createDeliveryService = async (deliveryData) => {
         pickupZone,
         dropoffZone,
     });
+    const deliveryWithDriver = await scheduling_1.default.assignDriverToDeliveryService(newDelivery.deliveryId, newDelivery.pickupLocation);
+    if (deliveryWithDriver) {
+        newDelivery.driverId = deliveryWithDriver.driverId;
+        newDelivery.delivery_status = 'Driver Assigned';
+    }
     let savedDelivery = await newDelivery.save();
-    await user_1.default.updateOne({ userId: userId }, { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } });
+    await user_1.default.updateOne({ userId: userId }, { $push: { deliveries: newDelivery.deliveryId } });
     if (handler.success && handler.body.handler) {
-        await user_1.default.updateOne({ _id: handler.body.handler }, { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } });
+        await user_1.default.updateOne({ _id: handler.body.handler }, { $push: { deliveries: newDelivery.deliveryId } });
     }
     return savedDelivery;
 };
@@ -242,7 +247,7 @@ const getDeliveryIdsService = async (userId) => {
     if (!user) {
         throw new Error('User not found.');
     }
-    let deliveries = [];
+    let deliveries;
     if (user.status === 'vendor' || user.status === 'consumer') {
         deliveries = await Delivery_1.default.find({ userId: userId }).exec();
     }

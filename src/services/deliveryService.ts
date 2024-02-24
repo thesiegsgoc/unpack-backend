@@ -50,17 +50,27 @@ export const createDeliveryService = async (deliveryData: DeliveryRequest) => {
     dropoffZone,
   })
 
+  const deliveryWithDriver = await scheduling.assignDriverToDeliveryService(
+    newDelivery.deliveryId,
+    newDelivery.pickupLocation
+  )
+
+  if (deliveryWithDriver) {
+    newDelivery.driverId = deliveryWithDriver.driverId
+    newDelivery.delivery_status = 'Driver Assigned'
+  }
+
   let savedDelivery = await newDelivery.save()
 
   await UserModel.updateOne(
     { userId: userId },
-    { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } }
+    { $push: { deliveries: newDelivery.deliveryId } }
   )
 
   if (handler.success && handler.body.handler) {
     await UserModel.updateOne(
       { _id: handler.body.handler },
-      { $push: { deliveries: [`D00${numCurrentDeliveries + 1}`] } }
+      { $push: { deliveries: newDelivery.deliveryId } }
     )
   }
 
@@ -69,7 +79,7 @@ export const createDeliveryService = async (deliveryData: DeliveryRequest) => {
 
 export const updateDeliveryService = async (
   deliveryData: DeliveryRequest
-): Promise<DeliveryRequest> => {
+): Promise<any> => {
   try {
     // Ensure the deliveryData includes the deliveryId
     const { deliveryId } = deliveryData
@@ -235,7 +245,7 @@ export const getUserDeliveryHistoryService = async (userId: string) => {
     throw new Error('User not found or has no delivery history.')
   }
 
-  const deliveryList: DeliveryRequest[] = []
+  const deliveryList: any = []
 
   for (const deliveryId of user.deliveries) {
     const deliveryItem = await DeliveryModel.findById(deliveryId)
@@ -315,7 +325,7 @@ export const getDeliveryIdsService = async (userId: string) => {
     throw new Error('User not found.')
   }
 
-  let deliveries: DeliveryRequest[] = []
+  let deliveries: any
 
   if (user.status === 'vendor' || user.status === 'consumer') {
     deliveries = await DeliveryModel.find({ userId: userId }).exec()
@@ -326,7 +336,7 @@ export const getDeliveryIdsService = async (userId: string) => {
     throw new Error('No deliveries from the user.')
   }
 
-  let deliveryIds = deliveries.map((delivery) => delivery.deliveryId)
+  let deliveryIds = deliveries.map((delivery: any) => delivery.deliveryId)
 
   const encryptedDeliveries = cryptr.encrypt(
     JSON.stringify({

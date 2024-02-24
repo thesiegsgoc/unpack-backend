@@ -22,14 +22,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getHandlersLocationController = exports.pickupDeliveryController = exports.getDeliveryByIdController = exports.getDeliveryIdsController = exports.getPartnerDeliveryHistoryController = exports.getUserDeliveryHistoryController = exports.getAllDeliveriesController = exports.trackDeliveryController = exports.encryptDeliveryDetailsController = exports.updateDeliveryController = exports.createDeliveryController = exports.calculateDeliveryCostController = void 0;
 const DeliveryServices = __importStar(require("../services/deliveryService"));
 const deliveryCostService_1 = require("./../services/deliveryCostService");
-const scheduling_1 = __importDefault(require("./../util/scheduling"));
 const calculateDeliveryCostController = async (req, res) => {
     try {
         const deliveryData = req.body;
@@ -49,42 +45,11 @@ const createDeliveryController = async (req, res) => {
     try {
         const deliveryData = req.body;
         const newDelivery = await DeliveryServices.createDeliveryService(deliveryData);
-        console.log('New Delivery', newDelivery);
-        if (newDelivery) {
-            const assignedDriver = await scheduling_1.default.assignDriverToDeliveryService(newDelivery.deliveryId, newDelivery.pickupLocation);
-            if (assignedDriver) {
-                return res.status(200).json({
-                    success: true,
-                    message: 'Delivery ordered successfully',
-                    body: {
-                        trackingNumber: newDelivery.deliveryId,
-                        driver: assignedDriver,
-                        deliveryRequest: newDelivery,
-                    },
-                });
-            }
-            else {
-                return res.status(200).json({
-                    success: false,
-                    message: 'Delivery request created, but no driver is currently available.',
-                    body: {
-                        deliveryRequest: newDelivery,
-                    },
-                });
-            }
-        }
-        else {
-            // Handle failure to create a delivery request
-            return res.status(400).json({
-                success: false,
-                message: 'Failed to create delivery request.',
-            });
-        }
-        // return res.json({
-        //   success: true,
-        //   message: 'Delivery ordered successfully',
-        //   trackingNumber: result.trackingNumber,
-        // })
+        return res.json({
+            success: true,
+            message: 'Delivery ordered successfully',
+            trackingNumber: newDelivery.deliveryId,
+        });
     }
     catch (error) {
         return res.json({ success: false, message: error.message });
