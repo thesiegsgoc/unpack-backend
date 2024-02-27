@@ -9,10 +9,11 @@ export const calculateDistanceService = async (
   pickupLocation: any,
   dropoffLocation: any
 ): Promise<number | null> => {
-  const pickupLat = pickupLocation.location.latitude
-  const pickupLng = pickupLocation.location.longitude
-  const deliveryLat = dropoffLocation.location.latitude
-  const deliveryLng = dropoffLocation.location.longitude
+  console.log('Pickup location', JSON.stringify(pickupLocation, null, 2))
+  const pickupLat = pickupLocation.geometry.location.latitude
+  const pickupLng = pickupLocation.geometry.location.longitude
+  const deliveryLat = dropoffLocation.geometry.location.latitude
+  const deliveryLng = dropoffLocation.geometry.location.longitude
 
   const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${pickupLat},${pickupLng}&destinations=${deliveryLat},${deliveryLng}&key=${googleMapsApiKey}`
 
