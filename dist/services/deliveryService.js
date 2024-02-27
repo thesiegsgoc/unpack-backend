@@ -145,18 +145,8 @@ const trackDeliveryService = async (trackingId) => {
 exports.trackDeliveryService = trackDeliveryService;
 const getAllDeliveriesService = async () => {
     try {
-        const deliveries = await Delivery_1.default.find({});
-        if (!deliveries || deliveries.length === 0) {
-            throw new Error('No deliveries found.');
-        }
-        // Mapping the deliveries to return a simplified or specific structure
-        // Modify this as per your application's requirements
-        const mappedDeliveries = deliveries.map((delivery) => {
-            return {
-                ...delivery,
-            };
-        });
-        return mappedDeliveries;
+        const deliveries = await Delivery_1.default.find();
+        return deliveries;
     }
     catch (error) {
         throw new Error(`Error fetching deliveries: ${error.message}`);

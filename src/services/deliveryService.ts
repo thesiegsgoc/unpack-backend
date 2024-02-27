@@ -212,20 +212,9 @@ export const trackDeliveryService = async (trackingId: string) => {
 
 export const getAllDeliveriesService = async () => {
   try {
-    const deliveries = await DeliveryModel.find({})
-    if (!deliveries || deliveries.length === 0) {
-      throw new Error('No deliveries found.')
-    }
+    const deliveries = await DeliveryModel.find()
 
-    // Mapping the deliveries to return a simplified or specific structure
-    // Modify this as per your application's requirements
-    const mappedDeliveries = deliveries.map((delivery) => {
-      return {
-        ...delivery,
-      }
-    })
-
-    return mappedDeliveries
+    return deliveries
   } catch (error: any) {
     throw new Error(`Error fetching deliveries: ${error.message}`)
   }

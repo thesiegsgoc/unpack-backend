@@ -98,7 +98,6 @@ export const getAllDeliveriesController = async (
 ) => {
   try {
     const allDeliveries = await DeliveryServices.getAllDeliveriesService()
-
     return res.json({
       success: true,
       body: allDeliveries,
