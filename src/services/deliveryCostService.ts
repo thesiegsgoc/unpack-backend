@@ -18,10 +18,13 @@ export const locationToZoneCostService = async (
   const { pickupLocation, dropoffLocation, package_size, delivery_type } =
     deliveryRequest
 
+  console.log('Calculating distance')
   const distance = await calculateDistanceService(
     pickupLocation,
     dropoffLocation
   )
+
+  console.log('DISTANCE', distance)
 
   if (distance) {
     let cost = 1000 // Base cost
@@ -69,8 +72,10 @@ export const calculateDeliveryCostService = async (
 
   const { pickupZone, dropoffZone } = deliveryRequest
 
+  console.log('Pickup Zone', pickupZone)
   // Calculate Costs
   const pickupToDropoffCost = await locationToZoneCostService(deliveryRequest)
+  console.log('Pickup to dropoff cost', pickupToDropoffCost)
   const zonesCost = await zoneToZoneCostService(pickupZone, dropoffZone)
 
   // Assuming function to calculate cost from dropoff zone back to pickup location, if needed
