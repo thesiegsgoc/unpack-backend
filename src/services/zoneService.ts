@@ -191,22 +191,11 @@ export async function determineClosestZoneService(
     let minDistance = Infinity
     let closestZone = ''
 
-    type LocationDetails = {
-      geometry: {
-        location: {
-          lat: number
-          lng: number
-        }
-      }
-    }
-
     // Convert coordinates to the expected LocationDetails format
-    const locationDetails: LocationDetails = {
-      geometry: {
-        location: {
-          lat: coordinates[0],
-          lng: coordinates[1],
-        },
+    const locationDetails = {
+      location: {
+        latitude: coordinates[0],
+        longitude: coordinates[1],
       },
     }
 
@@ -237,12 +226,10 @@ export async function determineClosestZoneService(
     // Checking all the available zones and comparing their distance to the requested distance
     for (const [zone, center] of Object.entries(zoneCenters)) {
       // Convert each zone center to the expected LocationDetails format
-      const centerDetails: LocationDetails = {
-        geometry: {
-          location: {
-            lat: center[0],
-            lng: center[1],
-          },
+      const centerDetails = {
+        location: {
+          latitude: center[0],
+          longitude: center[1],
         },
       }
 
@@ -253,7 +240,6 @@ export async function determineClosestZoneService(
       )
       if (distance) {
         if (distance < minDistance) {
-          console.log('Min Distance', minDistance)
           minDistance = distance
           closestZone = zone
         }

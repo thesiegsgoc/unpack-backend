@@ -9,8 +9,6 @@ export const calculateDistanceService = async (
   pickupLocation: any,
   dropoffLocation: any
 ): Promise<number | null> => {
-  console.log('Calculating distance')
-
   try {
     const pickupLat = pickupLocation.location.latitude
     const pickupLng = pickupLocation.location.longitude
@@ -32,7 +30,6 @@ export const calculateDistanceService = async (
 
     if (data.rows[0].elements[0].status === 'OK') {
       const distance = data.rows[0].elements[0].distance.value
-      console.log('Distance', distance)
       return distance / 1000 // Convert to kilometers
     } else {
       console.log(

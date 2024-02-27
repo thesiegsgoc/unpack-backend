@@ -8,7 +8,6 @@ const axios_1 = __importDefault(require("axios"));
 const config_1 = __importDefault(require("../config"));
 const googleMapsApiKey = config_1.default.GOOGLE_MAPS_API_KEY;
 const calculateDistanceService = async (pickupLocation, dropoffLocation) => {
-    console.log('Calculating distance');
     try {
         const pickupLat = pickupLocation.location.latitude;
         const pickupLng = pickupLocation.location.longitude;
@@ -22,7 +21,6 @@ const calculateDistanceService = async (pickupLocation, dropoffLocation) => {
         }
         if (data.rows[0].elements[0].status === 'OK') {
             const distance = data.rows[0].elements[0].distance.value;
-            console.log('Distance', distance);
             return distance / 1000; // Convert to kilometers
         }
         else {

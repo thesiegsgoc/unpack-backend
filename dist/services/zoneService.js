@@ -132,11 +132,9 @@ async function determineClosestZoneService(coordinates) {
         let closestZone = '';
         // Convert coordinates to the expected LocationDetails format
         const locationDetails = {
-            geometry: {
-                location: {
-                    lat: coordinates[0],
-                    lng: coordinates[1],
-                },
+            location: {
+                latitude: coordinates[0],
+                longitude: coordinates[1],
             },
         };
         // Fetch all zones to pass their centers to the service
@@ -160,18 +158,15 @@ async function determineClosestZoneService(coordinates) {
         for (const [zone, center] of Object.entries(zoneCenters)) {
             // Convert each zone center to the expected LocationDetails format
             const centerDetails = {
-                geometry: {
-                    location: {
-                        lat: center[0],
-                        lng: center[1],
-                    },
+                location: {
+                    latitude: center[0],
+                    longitude: center[1],
                 },
             };
             // Since calculateDistanceService is async, use await to get the result
             const distance = await (0, deliveryDistanceService_1.calculateDistanceService)(locationDetails, centerDetails);
             if (distance) {
                 if (distance < minDistance) {
-                    console.log('Min Distance', minDistance);
                     minDistance = distance;
                     closestZone = zone;
                 }
