@@ -103,7 +103,9 @@ const trackDeliveryController = async (req, res) => {
 exports.trackDeliveryController = trackDeliveryController;
 const getAllDeliveriesController = async (req, res) => {
     try {
-        const allDeliveries = await DeliveryServices.getAllDeliveriesService();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const allDeliveries = await DeliveryServices.getAllDeliveriesService(page, limit);
         return res.json({
             success: true,
             body: allDeliveries.data,

@@ -97,7 +97,14 @@ export const getAllDeliveriesController = async (
   res: Response
 ) => {
   try {
-    const allDeliveries = await DeliveryServices.getAllDeliveriesService()
+    const page = parseInt(req.query.page as string) || 1
+    const limit = parseInt(req.query.limit as string) || 10
+
+    const allDeliveries = await DeliveryServices.getAllDeliveriesService(
+      page,
+      limit
+    )
+
     return res.json({
       success: true,
       body: allDeliveries.data,
