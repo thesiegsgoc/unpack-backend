@@ -210,11 +210,30 @@ export const trackDeliveryService = async (trackingId: string) => {
   }
 }
 
-export const getAllDeliveriesService = async () => {
+export const getAllDeliveriesService = async (
+  page: any = 1,
+  limit: any = 10
+) => {
   try {
-    const deliveries = await DeliveryModel.find()
+    // Convert page and limit to numbers to ensure proper calculations
+    const pageNum = Number(page)
+    const limitNum = Number(limit)
+    // Calculate the number of documents to skip
+    const skip = (pageNum - 1) * limitNum
 
-    return deliveries
+    // Fetch paginated list of deliveries
+    const deliveries = await DeliveryModel.find().skip(skip).limit(limitNum)
+
+    // Get the total count of documents in the collection
+    const count = await DeliveryModel.countDocuments()
+
+    // Return deliveries along with pagination info
+    return {
+      data: deliveries,
+      currentPage: pageNum,
+      totalPages: Math.ceil(count / limitNum),
+      totalCount: count,
+    }
   } catch (error: any) {
     throw new Error(`Error fetching deliveries: ${error.message}`)
   }

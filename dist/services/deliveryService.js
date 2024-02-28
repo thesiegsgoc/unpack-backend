@@ -143,10 +143,24 @@ const trackDeliveryService = async (trackingId) => {
     };
 };
 exports.trackDeliveryService = trackDeliveryService;
-const getAllDeliveriesService = async () => {
+const getAllDeliveriesService = async (page = 1, limit = 10) => {
     try {
-        const deliveries = await Delivery_1.default.find();
-        return deliveries;
+        // Convert page and limit to numbers to ensure proper calculations
+        const pageNum = Number(page);
+        const limitNum = Number(limit);
+        // Calculate the number of documents to skip
+        const skip = (pageNum - 1) * limitNum;
+        // Fetch paginated list of deliveries
+        const deliveries = await Delivery_1.default.find().skip(skip).limit(limitNum);
+        // Get the total count of documents in the collection
+        const count = await Delivery_1.default.countDocuments();
+        // Return deliveries along with pagination info
+        return {
+            data: deliveries,
+            currentPage: pageNum,
+            totalPages: Math.ceil(count / limitNum),
+            totalCount: count,
+        };
     }
     catch (error) {
         throw new Error(`Error fetching deliveries: ${error.message}`);
