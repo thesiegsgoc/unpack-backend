@@ -100,7 +100,10 @@ export const getAllDeliveriesController = async (
     const allDeliveries = await DeliveryServices.getAllDeliveriesService()
     return res.json({
       success: true,
-      body: allDeliveries,
+      body: allDeliveries.data,
+      currentPage: allDeliveries.currentPage,
+      totalPage: allDeliveries.totalPages,
+      totalCount: allDeliveries.totalCount,
       message: 'All delivery details retrieved successfully.',
     })
   } catch (error: any) {
