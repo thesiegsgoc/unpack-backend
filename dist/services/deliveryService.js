@@ -97,8 +97,8 @@ const encryptDeliveryDetailsService = async (deliveryIds) => {
                 pickup: delivery.pickupLocation,
             },
             to: {
-                receiver: delivery.receiver,
-                phonenumber: delivery.phoneNumber,
+                receiver: delivery.receiver?.name,
+                phonenumber: delivery.receiver?.phone,
                 dropoff: delivery.dropoffLocation,
             },
             shipper: delivery.scheduled_handler,
@@ -224,12 +224,12 @@ const getPartnerDeliveryHistoryService = async (partnerId) => {
                 deliveryId: deliveryData.id,
                 sender: deliveryData.id,
                 type: deliveryData.delivery_type,
-                receiver: deliveryData.receiver,
+                receiver: deliveryData?.receiver?.name,
                 expoPushToken: vendorData?.expoPushToken,
                 dropOffCost: deliveryData.drop_off_cost,
                 pickUpCost: deliveryData.pick_up_cost,
                 deliveryCost: deliveryData.delivery_cost,
-                deliveryTime: deliveryData.delivery_time, // Include delivery_time
+                deliveryTime: deliveryData.delivery_time,
             },
             order: {
                 name: orderData?.name,
@@ -289,7 +289,8 @@ const pickupDeliveryService = async (encryptedData, partnerId) => {
     let deliveryIds = [];
     for (const deliveryId of deliveryData.deliveryIds) {
         const delivery = await Delivery_1.default.findOne({ deliveryId });
-        if (delivery && delivery.scheduled_handler === partnerId) {
+        if (delivery &&
+            delivery.scheduled_handler.some((handlerId) => handlerId.toString() === partnerId)) {
             await db_1.default.deliveries.updateOne({ deliveryId }, {
                 $set: {
                     currentHandler: {

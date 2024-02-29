@@ -1,22 +1,20 @@
 import mongoose, { Schema } from 'mongoose'
 
-const ReceiverSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  phone: {
-    type: String,
-    required: true,
-  },
-})
-
 const DeliverySchema = new mongoose.Schema({
   deliveryId: {
     type: String,
     required: true,
   },
-  receiverId: ReceiverSchema,
+  receiver: {
+    name: {
+      type: String,
+      required: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+    },
+  },
   userId: {
     type: String,
     required: true,
@@ -28,9 +26,7 @@ const DeliverySchema = new mongoose.Schema({
   partnerId: {
     type: String,
   },
-  receiver: {
-    type: String,
-  },
+
   delivery_quantity: {
     type: Number,
     required: true,

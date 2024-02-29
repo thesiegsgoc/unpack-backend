@@ -127,7 +127,7 @@ export const encryptDeliveryDetailsService = async (deliveryIds: string[]) => {
   const deliveryDetails: {
     from: DeliveryDetailsFrom
     to: DeliveryDetailsTo
-    shipper: string
+    shipper: Object[]
     notes?: string
   }[] = []
 
@@ -150,8 +150,8 @@ export const encryptDeliveryDetailsService = async (deliveryIds: string[]) => {
           pickup: delivery.pickupLocation!,
         },
         to: {
-          receiver: delivery.receiver!,
-          phonenumber: delivery.phoneNumber!,
+          receiver: delivery.receiver?.name!,
+          phonenumber: delivery.receiver?.phone!,
           dropoff: delivery.dropoffLocation,
         },
         shipper: delivery.scheduled_handler!,
@@ -301,18 +301,18 @@ export const getPartnerDeliveryHistoryService = async (partnerId: string) => {
       delivery: {
         pickup: deliveryData.pickupLocation!,
         dropoff: deliveryData.dropoffLocation,
-        time: deliveryData.delivery_time!, // Assume delivery_time is available
-        date: deliveryData.delivery_date!, // Assume delivery_date is available
+        time: deliveryData.delivery_time!,
+        date: deliveryData.delivery_date!,
         status: deliveryData.delivery_status,
-        deliveryId: deliveryData.id!, // Assume _id is the deliveryId
+        deliveryId: deliveryData.id!,
         sender: deliveryData.id!,
-        type: deliveryData.delivery_type!, // Assume delivery_type is available
-        receiver: deliveryData.receiver!, // Assume receiver is available
+        type: deliveryData.delivery_type!,
+        receiver: deliveryData?.receiver?.name!,
         expoPushToken: vendorData?.expoPushToken,
         dropOffCost: deliveryData.drop_off_cost!,
         pickUpCost: deliveryData.pick_up_cost!,
         deliveryCost: deliveryData.delivery_cost!,
-        deliveryTime: deliveryData.delivery_time!, // Include delivery_time
+        deliveryTime: deliveryData.delivery_time!,
       },
       order: {
         name: orderData?.name!,
@@ -393,7 +393,12 @@ export const pickupDeliveryService = async (
   for (const deliveryId of deliveryData.deliveryIds) {
     const delivery = await DeliveryModel.findOne({ deliveryId })
 
-    if (delivery && delivery.scheduled_handler === partnerId) {
+    if (
+      delivery &&
+      delivery.scheduled_handler.some(
+        (handlerId) => handlerId.toString() === partnerId
+      )
+    ) {
       await db.deliveries.updateOne(
         { deliveryId },
         {

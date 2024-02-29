@@ -29,8 +29,15 @@ const DeliverySchema = new mongoose_1.default.Schema({
         type: String,
         required: true,
     },
-    receiverId: {
-        type: String,
+    receiver: {
+        name: {
+            type: String,
+            required: true,
+        },
+        phone: {
+            type: String,
+            required: true,
+        },
     },
     userId: {
         type: String,
@@ -43,9 +50,6 @@ const DeliverySchema = new mongoose_1.default.Schema({
     partnerId: {
         type: String,
     },
-    receiver: {
-        type: String,
-    },
     delivery_quantity: {
         type: Number,
         required: true,
@@ -56,12 +60,12 @@ const DeliverySchema = new mongoose_1.default.Schema({
     package_size: {
         type: String,
         enum: ['small', 'medium', 'large'],
-        required: true, // Assuming package_size is required, adjust if it's optional
+        required: true,
     },
     delivery_type: {
         type: String,
         enum: ['standard', 'express'],
-        required: true, // Assuming delivery_type is required, adjust if it's optional
+        required: true,
     },
     dropoffLocation: {
         type: mongoose_1.Schema.Types.Mixed,
@@ -75,10 +79,16 @@ const DeliverySchema = new mongoose_1.default.Schema({
         type: String,
     },
     current_handler: {
-        type: mongoose_1.Schema.Types.Mixed, // Adjust to a more specific type if possible
+        type: mongoose_1.Schema.Types.Mixed,
     },
-    scheduled_handler: {
-        type: String,
+    scheduled_handler: [
+        {
+            type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: 'PackageHandler',
+        },
+    ],
+    scheduled_delivery_date: {
+        type: Date,
     },
     delivery_time: {
         type: String,
@@ -98,7 +108,7 @@ const DeliverySchema = new mongoose_1.default.Schema({
     },
     delivery_status: {
         type: mongoose_1.Schema.Types.Mixed,
-        default: 'In Process', // Adjust default value as needed
+        default: 'ACTIVE',
     },
     orderId: {
         type: String,
