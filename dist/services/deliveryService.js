@@ -77,23 +77,25 @@ const updateDeliveryService = async (deliveryData) => {
     }
 };
 exports.updateDeliveryService = updateDeliveryService;
-const encryptDeliveryDetailsService = async (deliveryIds) => {
-    if (!deliveryIds || deliveryIds.length === 0) {
-        throw new Error('No delivery IDs provided.');
-    }
+const encryptDeliveryDetailsService = async (userId) => {
     const deliveryDetails = [];
+    console.log('User Id', userId);
+    const user = await user_1.default.findOne({ userId: userId });
+    console.log('User ecnriptiuon', user);
+    const deliveryIds = user?.deliveries && user.deliveries.length > 0 ? user.deliveries : [];
     await Promise.all(deliveryIds.map(async (deliveryId) => {
-        const delivery = await Delivery_1.default.findOne({ deliveryId });
-        const user = delivery?.userId &&
-            (await user_1.default.findOne({ userId: delivery.userId }));
-        if (!delivery || !user) {
-            throw new Error(`Invalid delivery data for ID: ${deliveryId}`);
+        const delivery = await Delivery_1.default.findOne({ deliveryId: deliveryId });
+        if (!delivery) {
+            const encryptedDetails = cryptr.encrypt(JSON.stringify({
+                data: 'No deliveries',
+            }));
+            return encryptedDetails;
         }
         deliveryDetails.push({
             from: {
-                fullname: user.fullname,
-                phone: user.phone,
-                email: user.email,
+                fullname: user?.fullname,
+                phone: user?.phone,
+                email: user?.email,
                 pickup: delivery.pickupLocation,
             },
             to: {

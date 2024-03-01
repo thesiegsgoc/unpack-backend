@@ -61,10 +61,11 @@ export const encryptDeliveryDetailsController = async (
   req: Request,
   res: Response
 ) => {
+  console.log('REQUEST', req.body)
   try {
-    const { deliveryIds } = req.body
+    const { userId } = req.body
     const encryptedDetails =
-      await DeliveryServices.encryptDeliveryDetailsService(deliveryIds)
+      await DeliveryServices.encryptDeliveryDetailsService(userId)
     return res.json({
       success: true,
       body: encryptedDetails,

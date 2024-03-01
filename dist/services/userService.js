@@ -113,7 +113,8 @@ const getAllUsersService = async () => {
 };
 exports.getAllUsersService = getAllUsersService;
 const getUserByIdService = async (userId) => {
-    const user = await user_1.default.findOne({ userId });
+    const user = await user_1.default.findOne({ userId: userId });
+    console.log(user);
     if (!user) {
         throw new Error('No user found.');
     }

@@ -119,11 +119,7 @@ export const updateDeliveryService = async (
   }
 }
 
-export const encryptDeliveryDetailsService = async (deliveryIds: string[]) => {
-  if (!deliveryIds || deliveryIds.length === 0) {
-    throw new Error('No delivery IDs provided.')
-  }
-
+export const encryptDeliveryDetailsService = async (userId: string) => {
   const deliveryDetails: {
     from: DeliveryDetailsFrom
     to: DeliveryDetailsTo
@@ -131,22 +127,31 @@ export const encryptDeliveryDetailsService = async (deliveryIds: string[]) => {
     notes?: string
   }[] = []
 
+  console.log('User Id', userId)
+  const user = await UserModel.findOne({ userId: userId })
+
+  console.log('User ecnriptiuon', user)
+  const deliveryIds =
+    user?.deliveries && user.deliveries.length > 0 ? user.deliveries : []
+
   await Promise.all(
     deliveryIds.map(async (deliveryId: string) => {
-      const delivery = await DeliveryModel.findOne({ deliveryId })
-      const user =
-        delivery?.userId &&
-        (await UserModel.findOne({ userId: delivery.userId }))
+      const delivery = await DeliveryModel.findOne({ deliveryId: deliveryId })
 
-      if (!delivery || !user) {
-        throw new Error(`Invalid delivery data for ID: ${deliveryId}`)
+      if (!delivery) {
+        const encryptedDetails = cryptr.encrypt(
+          JSON.stringify({
+            data: 'No deliveries',
+          })
+        )
+        return encryptedDetails
       }
 
       deliveryDetails.push({
         from: {
-          fullname: user.fullname!,
-          phone: user.phone!,
-          email: user.email!,
+          fullname: user?.fullname!,
+          phone: user?.phone!,
+          email: user?.email!,
           pickup: delivery.pickupLocation!,
         },
         to: {

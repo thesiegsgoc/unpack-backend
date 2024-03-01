@@ -72,9 +72,10 @@ const updateDeliveryController = async (req, res) => {
 };
 exports.updateDeliveryController = updateDeliveryController;
 const encryptDeliveryDetailsController = async (req, res) => {
+    console.log('REQUEST', req.body);
     try {
-        const { deliveryIds } = req.body;
-        const encryptedDetails = await DeliveryServices.encryptDeliveryDetailsService(deliveryIds);
+        const { userId } = req.body;
+        const encryptedDetails = await DeliveryServices.encryptDeliveryDetailsService(userId);
         return res.json({
             success: true,
             body: encryptedDetails,
