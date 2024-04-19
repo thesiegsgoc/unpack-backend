@@ -72,9 +72,10 @@ const updateDeliveryController = async (req, res) => {
 };
 exports.updateDeliveryController = updateDeliveryController;
 const encryptDeliveryDetailsController = async (req, res) => {
+    console.log('REQUEST', req.body);
     try {
-        const { deliveryIds } = req.body;
-        const encryptedDetails = await DeliveryServices.encryptDeliveryDetailsService(deliveryIds);
+        const { userId } = req.body;
+        const encryptedDetails = await DeliveryServices.encryptDeliveryDetailsService(userId);
         return res.json({
             success: true,
             body: encryptedDetails,
@@ -103,10 +104,15 @@ const trackDeliveryController = async (req, res) => {
 exports.trackDeliveryController = trackDeliveryController;
 const getAllDeliveriesController = async (req, res) => {
     try {
-        const allDeliveries = await DeliveryServices.getAllDeliveriesService();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const allDeliveries = await DeliveryServices.getAllDeliveriesService(page, limit);
         return res.json({
             success: true,
-            body: allDeliveries,
+            body: allDeliveries.data,
+            currentPage: allDeliveries.currentPage,
+            totalPage: allDeliveries.totalPages,
+            totalCount: allDeliveries.totalCount,
             message: 'All delivery details retrieved successfully.',
         });
     }

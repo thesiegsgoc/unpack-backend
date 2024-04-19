@@ -5,8 +5,15 @@ const DeliverySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  receiverId: {
-    type: String,
+  receiver: {
+    name: {
+      type: String,
+      required: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+    },
   },
   userId: {
     type: String,
@@ -14,13 +21,12 @@ const DeliverySchema = new mongoose.Schema({
   },
   driverId: {
     type: String,
+    ref: 'Driver',
   },
   partnerId: {
     type: String,
   },
-  receiver: {
-    type: String,
-  },
+
   delivery_quantity: {
     type: Number,
     required: true,
@@ -31,29 +37,35 @@ const DeliverySchema = new mongoose.Schema({
   package_size: {
     type: String,
     enum: ['small', 'medium', 'large'],
-    required: true, // Assuming package_size is required, adjust if it's optional
+    required: true,
   },
   delivery_type: {
     type: String,
     enum: ['standard', 'express'],
-    required: true, // Assuming delivery_type is required, adjust if it's optional
+    required: true,
   },
   dropoffLocation: {
-    type: Schema.Types.Mixed, // Adjust according to LocationData structure
+    type: Schema.Types.Mixed,
     required: true,
   },
   pickupLocation: {
-    type: Schema.Types.Mixed, // Adjust according to LocationData structure
+    type: Schema.Types.Mixed,
     required: true,
   },
   delivery_notes: {
     type: String,
   },
   current_handler: {
-    type: Schema.Types.Mixed, // Adjust to a more specific type if possible
+    type: Schema.Types.Mixed,
   },
-  scheduled_handler: {
-    type: String,
+  scheduled_handler: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'PackageHandler',
+    },
+  ],
+  scheduled_delivery_date: {
+    type: Date,
   },
   delivery_time: {
     type: String,
@@ -72,8 +84,8 @@ const DeliverySchema = new mongoose.Schema({
     required: true,
   },
   delivery_status: {
-    type: Schema.Types.Mixed, // Consider defining a specific type for status
-    default: 'In Process', // Adjust default value as needed
+    type: Schema.Types.Mixed,
+    default: 'ACTIVE',
   },
   orderId: {
     type: String,
@@ -86,11 +98,11 @@ const DeliverySchema = new mongoose.Schema({
     default: Date.now,
   },
   pickupZone: {
-    type: Schema.Types.Mixed, // Adjust according to Zone structure
+    type: Schema.Types.Mixed,
     required: true,
   },
   dropoffZone: {
-    type: Schema.Types.Mixed, // Adjust according to Zone structure
+    type: Schema.Types.Mixed,
     required: true,
   },
 })

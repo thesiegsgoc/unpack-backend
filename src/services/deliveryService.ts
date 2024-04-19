@@ -119,39 +119,44 @@ export const updateDeliveryService = async (
   }
 }
 
-export const encryptDeliveryDetailsService = async (deliveryIds: string[]) => {
-  if (!deliveryIds || deliveryIds.length === 0) {
-    throw new Error('No delivery IDs provided.')
-  }
-
+export const encryptDeliveryDetailsService = async (userId: string) => {
   const deliveryDetails: {
     from: DeliveryDetailsFrom
     to: DeliveryDetailsTo
-    shipper: string
+    shipper: Object[]
     notes?: string
   }[] = []
 
+  console.log('User Id', userId)
+  const user = await UserModel.findOne({ userId: userId })
+
+  console.log('User ecnriptiuon', user)
+  const deliveryIds =
+    user?.deliveries && user.deliveries.length > 0 ? user.deliveries : []
+
   await Promise.all(
     deliveryIds.map(async (deliveryId: string) => {
-      const delivery = await DeliveryModel.findOne({ deliveryId })
-      const user =
-        delivery?.userId &&
-        (await UserModel.findOne({ userId: delivery.userId }))
+      const delivery = await DeliveryModel.findOne({ deliveryId: deliveryId })
 
-      if (!delivery || !user) {
-        throw new Error(`Invalid delivery data for ID: ${deliveryId}`)
+      if (!delivery) {
+        const encryptedDetails = cryptr.encrypt(
+          JSON.stringify({
+            data: 'No deliveries',
+          })
+        )
+        return encryptedDetails
       }
 
       deliveryDetails.push({
         from: {
-          fullname: user.fullname!,
-          phone: user.phone!,
-          email: user.email!,
+          fullname: user?.fullname!,
+          phone: user?.phone!,
+          email: user?.email!,
           pickup: delivery.pickupLocation!,
         },
         to: {
-          receiver: delivery.receiver!,
-          phonenumber: delivery.phoneNumber!,
+          receiver: delivery.receiver?.name!,
+          phonenumber: delivery.receiver?.phone!,
           dropoff: delivery.dropoffLocation,
         },
         shipper: delivery.scheduled_handler!,
@@ -210,22 +215,30 @@ export const trackDeliveryService = async (trackingId: string) => {
   }
 }
 
-export const getAllDeliveriesService = async () => {
+export const getAllDeliveriesService = async (
+  page: any = 1,
+  limit: any = 10
+) => {
   try {
-    const deliveries = await DeliveryModel.find({})
-    if (!deliveries || deliveries.length === 0) {
-      throw new Error('No deliveries found.')
+    // Convert page and limit to numbers to ensure proper calculations
+    const pageNum = Number(page)
+    const limitNum = Number(limit)
+    // Calculate the number of documents to skip
+    const skip = (pageNum - 1) * limitNum
+
+    // Fetch paginated list of deliveries
+    const deliveries = await DeliveryModel.find().skip(skip).limit(limitNum)
+
+    // Get the total count of documents in the collection
+    const count = await DeliveryModel.countDocuments()
+
+    // Return deliveries along with pagination info
+    return {
+      data: deliveries,
+      currentPage: pageNum,
+      totalPages: Math.ceil(count / limitNum),
+      totalCount: count,
     }
-
-    // Mapping the deliveries to return a simplified or specific structure
-    // Modify this as per your application's requirements
-    const mappedDeliveries = deliveries.map((delivery) => {
-      return {
-        ...delivery,
-      }
-    })
-
-    return mappedDeliveries
   } catch (error: any) {
     throw new Error(`Error fetching deliveries: ${error.message}`)
   }
@@ -293,18 +306,18 @@ export const getPartnerDeliveryHistoryService = async (partnerId: string) => {
       delivery: {
         pickup: deliveryData.pickupLocation!,
         dropoff: deliveryData.dropoffLocation,
-        time: deliveryData.delivery_time!, // Assume delivery_time is available
-        date: deliveryData.delivery_date!, // Assume delivery_date is available
+        time: deliveryData.delivery_time!,
+        date: deliveryData.delivery_date!,
         status: deliveryData.delivery_status,
-        deliveryId: deliveryData.id!, // Assume _id is the deliveryId
+        deliveryId: deliveryData.id!,
         sender: deliveryData.id!,
-        type: deliveryData.delivery_type!, // Assume delivery_type is available
-        receiver: deliveryData.receiver!, // Assume receiver is available
+        type: deliveryData.delivery_type!,
+        receiver: deliveryData?.receiver?.name!,
         expoPushToken: vendorData?.expoPushToken,
         dropOffCost: deliveryData.drop_off_cost!,
         pickUpCost: deliveryData.pick_up_cost!,
         deliveryCost: deliveryData.delivery_cost!,
-        deliveryTime: deliveryData.delivery_time!, // Include delivery_time
+        deliveryTime: deliveryData.delivery_time!,
       },
       order: {
         name: orderData?.name!,
@@ -376,6 +389,8 @@ export const pickupDeliveryService = async (
   const decryptedData = cryptr.decrypt(encryptedData)
   const deliveryData = JSON.parse(decryptedData)
 
+  console.log('Delivery Data', deliveryData)
+
   if (deliveryData.length === 0) {
     return { success: true, message: 'No package to pick up.' }
   }
@@ -385,7 +400,12 @@ export const pickupDeliveryService = async (
   for (const deliveryId of deliveryData.deliveryIds) {
     const delivery = await DeliveryModel.findOne({ deliveryId })
 
-    if (delivery && delivery.scheduled_handler === partnerId) {
+    if (
+      delivery &&
+      delivery.scheduled_handler.some(
+        (handlerId) => handlerId.toString() === partnerId
+      )
+    ) {
       await db.deliveries.updateOne(
         { deliveryId },
         {

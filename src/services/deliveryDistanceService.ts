@@ -9,19 +9,17 @@ export const calculateDistanceService = async (
   pickupLocation: any,
   dropoffLocation: any
 ): Promise<number | null> => {
-  const pickupLat = pickupLocation.location.latitude
-  const pickupLng = pickupLocation.location.longitude
-  const deliveryLat = dropoffLocation.location.latitude
-  const deliveryLng = dropoffLocation.location.longitude
-
-  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${pickupLat},${pickupLng}&destinations=${deliveryLat},${deliveryLng}&key=${googleMapsApiKey}`
-
   try {
+    const pickupLat = pickupLocation.location.latitude
+    const pickupLng = pickupLocation.location.longitude
+    const deliveryLat = dropoffLocation.location.latitude
+    const deliveryLng = dropoffLocation.location.longitude
+
+    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${pickupLat},${pickupLng}&destinations=${deliveryLat},${deliveryLng}&key=${googleMapsApiKey}`
+
     const response = await axios.get(url)
     const data = response.data
 
-    console.log('DATA ', data)
-    // Checking if the API returned an error
     if (data.status !== 'OK') {
       throw new Error(
         `API Error: ${data.status} - ${
@@ -31,8 +29,7 @@ export const calculateDistanceService = async (
     }
 
     if (data.rows[0].elements[0].status === 'OK') {
-      const distance = data.rows[0].elements[0].distance.value // Distance in meters
-      console.log('Distance', distance)
+      const distance = data.rows[0].elements[0].distance.value
       return distance / 1000 // Convert to kilometers
     } else {
       console.log(

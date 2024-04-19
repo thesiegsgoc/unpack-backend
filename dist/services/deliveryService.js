@@ -77,28 +77,30 @@ const updateDeliveryService = async (deliveryData) => {
     }
 };
 exports.updateDeliveryService = updateDeliveryService;
-const encryptDeliveryDetailsService = async (deliveryIds) => {
-    if (!deliveryIds || deliveryIds.length === 0) {
-        throw new Error('No delivery IDs provided.');
-    }
+const encryptDeliveryDetailsService = async (userId) => {
     const deliveryDetails = [];
+    console.log('User Id', userId);
+    const user = await user_1.default.findOne({ userId: userId });
+    console.log('User ecnriptiuon', user);
+    const deliveryIds = user?.deliveries && user.deliveries.length > 0 ? user.deliveries : [];
     await Promise.all(deliveryIds.map(async (deliveryId) => {
-        const delivery = await Delivery_1.default.findOne({ deliveryId });
-        const user = delivery?.userId &&
-            (await user_1.default.findOne({ userId: delivery.userId }));
-        if (!delivery || !user) {
-            throw new Error(`Invalid delivery data for ID: ${deliveryId}`);
+        const delivery = await Delivery_1.default.findOne({ deliveryId: deliveryId });
+        if (!delivery) {
+            const encryptedDetails = cryptr.encrypt(JSON.stringify({
+                data: 'No deliveries',
+            }));
+            return encryptedDetails;
         }
         deliveryDetails.push({
             from: {
-                fullname: user.fullname,
-                phone: user.phone,
-                email: user.email,
+                fullname: user?.fullname,
+                phone: user?.phone,
+                email: user?.email,
                 pickup: delivery.pickupLocation,
             },
             to: {
-                receiver: delivery.receiver,
-                phonenumber: delivery.phoneNumber,
+                receiver: delivery.receiver?.name,
+                phonenumber: delivery.receiver?.phone,
                 dropoff: delivery.dropoffLocation,
             },
             shipper: delivery.scheduled_handler,
@@ -143,20 +145,24 @@ const trackDeliveryService = async (trackingId) => {
     };
 };
 exports.trackDeliveryService = trackDeliveryService;
-const getAllDeliveriesService = async () => {
+const getAllDeliveriesService = async (page = 1, limit = 10) => {
     try {
-        const deliveries = await Delivery_1.default.find({});
-        if (!deliveries || deliveries.length === 0) {
-            throw new Error('No deliveries found.');
-        }
-        // Mapping the deliveries to return a simplified or specific structure
-        // Modify this as per your application's requirements
-        const mappedDeliveries = deliveries.map((delivery) => {
-            return {
-                ...delivery,
-            };
-        });
-        return mappedDeliveries;
+        // Convert page and limit to numbers to ensure proper calculations
+        const pageNum = Number(page);
+        const limitNum = Number(limit);
+        // Calculate the number of documents to skip
+        const skip = (pageNum - 1) * limitNum;
+        // Fetch paginated list of deliveries
+        const deliveries = await Delivery_1.default.find().skip(skip).limit(limitNum);
+        // Get the total count of documents in the collection
+        const count = await Delivery_1.default.countDocuments();
+        // Return deliveries along with pagination info
+        return {
+            data: deliveries,
+            currentPage: pageNum,
+            totalPages: Math.ceil(count / limitNum),
+            totalCount: count,
+        };
     }
     catch (error) {
         throw new Error(`Error fetching deliveries: ${error.message}`);
@@ -220,12 +226,12 @@ const getPartnerDeliveryHistoryService = async (partnerId) => {
                 deliveryId: deliveryData.id,
                 sender: deliveryData.id,
                 type: deliveryData.delivery_type,
-                receiver: deliveryData.receiver,
+                receiver: deliveryData?.receiver?.name,
                 expoPushToken: vendorData?.expoPushToken,
                 dropOffCost: deliveryData.drop_off_cost,
                 pickUpCost: deliveryData.pick_up_cost,
                 deliveryCost: deliveryData.delivery_cost,
-                deliveryTime: deliveryData.delivery_time, // Include delivery_time
+                deliveryTime: deliveryData.delivery_time,
             },
             order: {
                 name: orderData?.name,
@@ -279,13 +285,15 @@ const pickupDeliveryService = async (encryptedData, partnerId) => {
     }
     const decryptedData = cryptr.decrypt(encryptedData);
     const deliveryData = JSON.parse(decryptedData);
+    console.log('Delivery Data', deliveryData);
     if (deliveryData.length === 0) {
         return { success: true, message: 'No package to pick up.' };
     }
     let deliveryIds = [];
     for (const deliveryId of deliveryData.deliveryIds) {
         const delivery = await Delivery_1.default.findOne({ deliveryId });
-        if (delivery && delivery.scheduled_handler === partnerId) {
+        if (delivery &&
+            delivery.scheduled_handler.some((handlerId) => handlerId.toString() === partnerId)) {
             await db_1.default.deliveries.updateOne({ deliveryId }, {
                 $set: {
                     currentHandler: {

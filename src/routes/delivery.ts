@@ -9,8 +9,7 @@ import {
   trackDeliveryController as trackDelivery,
   updateDeliveryController as updateDelivery,
   getUserDeliveryHistoryController as getUserDeliveryHistory,
-  encryptDeliveryDetailsController as encryptDeliveryDetails,
-  encryptDeliveryDetailsController as decryptDeliveryDetails,
+  encryptDeliveryDetailsController,
   getPartnerDeliveryHistoryController as getPartnerDeliveryHistory,
   getDeliveryIdsController as getDeliveryIds,
   pickupDeliveryController as pickupDelivery,
@@ -32,21 +31,14 @@ router.post(
   calculateDeliveryCostController
 )
 router.post('/deliveries/create', createDeliveryController)
-router.post('/deliveries/:deliveryId', getDeliveryByIdController)
 router.post('/deliveries/pickup', pickupDelivery)
-router.post('/deliveries/decrypt', decryptDeliveryDetails)
-router.post('/deliveries/match-pickupto-delivery', () =>
-  console.log('match-pickupto-delivery')
-)
+// router.post('/deliveries/decrypt', encryptDeliveryDetailsController)
+// router.post('/deliveries/match-pickupto-delivery', () =>
+//   console.log('match-pickupto-delivery')
+// )
 
-// Secure endpoint with isUserAuth middleware
-router.post(
-  '/deliveries/encrypt',
-  isUserAuth,
-  async (req: Request, res: Response) => {
-    await encryptDeliveryDetails(req, res)
-  }
-)
+// Secure endpoint with isUserAuth middleware, isUserAuth,
+router.post('/deliveries/encrypt', encryptDeliveryDetailsController)
 
 router.post('/deliveries/ids', getDeliveryIds)
 router.get('/deliveries/:trackingId/track', trackDelivery)
@@ -54,5 +46,6 @@ router.put('/deliveries/:deliverId/update', updateDelivery)
 router.post('/deliveries/history/user', getUserDeliveryHistory)
 router.put('/deliveries/history/partner', getPartnerDeliveryHistory)
 router.post('/deliveries/handler/location', getHandlersLocation)
+router.post('/deliveries/:deliveryId', getDeliveryByIdController)
 
 export default router

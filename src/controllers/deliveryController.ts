@@ -61,10 +61,11 @@ export const encryptDeliveryDetailsController = async (
   req: Request,
   res: Response
 ) => {
+  console.log('REQUEST', req.body)
   try {
-    const { deliveryIds } = req.body
+    const { userId } = req.body
     const encryptedDetails =
-      await DeliveryServices.encryptDeliveryDetailsService(deliveryIds)
+      await DeliveryServices.encryptDeliveryDetailsService(userId)
     return res.json({
       success: true,
       body: encryptedDetails,
@@ -97,11 +98,20 @@ export const getAllDeliveriesController = async (
   res: Response
 ) => {
   try {
-    const allDeliveries = await DeliveryServices.getAllDeliveriesService()
+    const page = parseInt(req.query.page as string) || 1
+    const limit = parseInt(req.query.limit as string) || 10
+
+    const allDeliveries = await DeliveryServices.getAllDeliveriesService(
+      page,
+      limit
+    )
 
     return res.json({
       success: true,
-      body: allDeliveries,
+      body: allDeliveries.data,
+      currentPage: allDeliveries.currentPage,
+      totalPage: allDeliveries.totalPages,
+      totalCount: allDeliveries.totalCount,
       message: 'All delivery details retrieved successfully.',
     })
   } catch (error: any) {

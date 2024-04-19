@@ -155,7 +155,9 @@ export const getAllUsersService = async () => {
 }
 
 export const getUserByIdService = async (userId: string) => {
-  const user = await UserModel.findOne({ userId })
+  const user = await UserModel.findOne({ userId: userId })
+
+  console.log(user)
   if (!user) {
     throw new Error('No user found.')
   }

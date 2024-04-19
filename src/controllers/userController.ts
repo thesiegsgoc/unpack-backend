@@ -175,7 +175,9 @@ export const getAllUsersController = async (req: Request, res: Response) => {
 
 export const getUserByIdController = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params
+    const { userId } = req.body
+
+    console.log('User ID', userId)
     const user = await UserServices.getUserByIdService(userId)
     if (user) {
       res.json({ success: true, user })
