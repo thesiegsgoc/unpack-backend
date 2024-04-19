@@ -389,6 +389,8 @@ export const pickupDeliveryService = async (
   const decryptedData = cryptr.decrypt(encryptedData)
   const deliveryData = JSON.parse(decryptedData)
 
+  console.log('Delivery Data', deliveryData)
+
   if (deliveryData.length === 0) {
     return { success: true, message: 'No package to pick up.' }
   }

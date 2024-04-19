@@ -32,7 +32,7 @@ router.post(
 )
 router.post('/deliveries/create', createDeliveryController)
 router.post('/deliveries/pickup', pickupDelivery)
-router.post('/deliveries/decrypt', encryptDeliveryDetailsController)
+// router.post('/deliveries/decrypt', encryptDeliveryDetailsController)
 // router.post('/deliveries/match-pickupto-delivery', () =>
 //   console.log('match-pickupto-delivery')
 // )

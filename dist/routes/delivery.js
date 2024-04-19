@@ -16,7 +16,7 @@ router.get('/deliveries', deliveryController_1.getAllDeliveriesController);
 router.post('/deliveries/calculate-delivery-cost', deliveryController_1.calculateDeliveryCostController);
 router.post('/deliveries/create', deliveryController_1.createDeliveryController);
 router.post('/deliveries/pickup', deliveryController_1.pickupDeliveryController);
-router.post('/deliveries/decrypt', deliveryController_1.encryptDeliveryDetailsController);
+// router.post('/deliveries/decrypt', encryptDeliveryDetailsController)
 // router.post('/deliveries/match-pickupto-delivery', () =>
 //   console.log('match-pickupto-delivery')
 // )
